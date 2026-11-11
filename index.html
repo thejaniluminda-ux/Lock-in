@@ -641,6 +641,43 @@ body.lockmode .rail,body.lockmode .fo-side,body.lockmode .date,body.lockmode .co
 body.lockmode .fo-grid{grid-template-columns:1fr}
 body.lockmode .fo-main{background:transparent;border-color:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
 
+
+/* =================== BUILD 3 =================== */
+.cd[data-k]{cursor:pointer;transition:background .2s ease}
+.cd[data-k]:hover{background:rgba(255,255,255,.05)}
+.cd.sel{background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(185,168,255,.55)}
+#rBack{margin-left:auto;align-self:flex-start}
+.cfs{margin-left:auto}
+.cfs svg,.ds-x svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.cfs:hover{background:rgba(255,255,255,.08);color:var(--ink)}
+body.cal-fs .app{transform:none!important}
+body.cal-fs .rail{display:none!important}
+body.cal-fs #calPage{position:fixed;inset:0;z-index:45;height:100vh!important;padding:12px;grid-template-columns:minmax(0,1fr)!important;background:#1b1a19}
+body.cal-fs .cside{display:none!important}
+body.cal-fs .cmain{height:100%}
+/* day sheet */
+#daySheet{position:fixed;top:12px;right:12px;bottom:12px;width:min(420px,92vw);z-index:58;display:flex;flex-direction:column;border-radius:24px;background:rgba(30,28,27,.95);border:1px solid var(--edge);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 30px 80px rgba(0,0,0,.6);transform:translateX(calc(100% + 24px));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+#daySheet.show{transform:none}
+.ds-h{display:flex;align-items:flex-start;gap:10px;padding:18px 18px 12px;border-bottom:1px solid var(--edge)}
+.ds-h h2{margin:0;font-size:18px;font-weight:400}
+.ds-h p{margin:3px 0 0;font-size:12px;color:var(--ink-3)}
+.ds-x{margin-left:auto;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:var(--ink-2)}
+.ds-x:hover{background:rgba(255,255,255,.08)}
+#dsRows{flex:1;overflow:auto;padding:8px 10px 14px}
+.ds-r{display:grid;grid-template-columns:86px 3px 1fr 28px;gap:10px;align-items:center;padding:9px 8px;border-radius:12px}
+.ds-r .t{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.ds-r .bar{align-self:stretch;border-radius:2px;background:#5d5953}
+.ds-r.phy .bar{background:var(--phy)}.ds-r.chem .bar{background:var(--chem)}.ds-r.maths .bar{background:var(--maths)}.ds-r.paper .bar,.ds-r.review .bar{background:var(--lav)}
+.ds-r .ti{display:block;font-family:var(--si);font-size:13.5px;color:var(--ink)}
+.ds-r .si{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:3px;font-size:11.5px;color:var(--ink-3)}
+.ds-r .rec{color:var(--lav);text-decoration:none}
+.ds-r.done .ti{color:var(--ink-3);text-decoration:line-through}
+.ds-f{padding:12px 18px;border-top:1px solid var(--edge)}
+/* finish-early prompt */
+#fin{position:fixed;left:50%;bottom:26px;z-index:62;display:flex;gap:12px;align-items:center;padding:10px 12px 10px 18px;border-radius:999px;background:rgba(36,34,32,.96);border:1px solid rgba(185,168,255,.35);box-shadow:0 18px 50px rgba(0,0,0,.55);font-size:13px;transform:translate(-50%,140%);opacity:0;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s ease;pointer-events:none}
+#fin.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+#fin .pbtn{padding:7px 14px;font-size:12.5px}
+
 </style>
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#1a1918"></head>
 <body>
@@ -687,14 +724,14 @@ body.lockmode .fo-main{background:transparent;border-color:transparent;box-shado
 <div class="bk"><p>Your progress lives in this browser. Back up once a week so clearing the browser can’t wipe it.</p><div class="row"><button class="tbtn2" id="bkNow">💾 Back up</button><button class="tbtn2" id="bkRestore">Restore from file</button><button class="tbtn2" id="bkPaste">Paste a code</button></div>
 <div id="bkBox"><p>If no file downloaded, copy this code and keep it somewhere safe, like Telegram Saved Messages.</p><textarea id="bkCode" readonly aria-label="Backup code"></textarea><button class="tbtn2" id="bkCopy">Copy code</button></div><input type="file" id="bkFile" accept=".json,application/json" hidden></div></div></div>
         <div class="streak" title="Streak"><span>🔥</span><b id="streakN">0</b><span id="streakL">starts tomorrow</span></div>
-        <div class="count"><div class="n" id="daysLeft">266</div><div class="l">days to A/L</div><div class="tbc">exam date to confirm</div></div>
+        <div class="count"><div class="n" id="daysLeft">266</div><div class="l">days to A/L</div><div class="tbc">exam starts 3 Aug 2027</div></div>
       </div>
     </div>
 
     <div class="grid">
       <section class="card routine" aria-labelledby="rTitle">
         <div class="head">
-          <div><h2 id="rTitle">Today’s routine</h2><p class="sub" id="rSub">Sunday, finish at 17:30</p></div>
+          <div><h2 id="rTitle">Today’s routine</h2><p class="sub" id="rSub">Sunday, finish at 17:30</p></div><button class="tbtn2" id="rBack" hidden>Back to today</button>
           
         </div>
         <div class="prog"><span id="progTxt">0 of 0 done</span><div class="track"><i id="progBar" style="width:0"></i></div></div>
@@ -769,7 +806,7 @@ body.lockmode .fo-main{background:transparent;border-color:transparent;box-shado
           <label><input type="checkbox" data-f="paper" checked><i style="background:var(--lav)"></i>Paper days</label>
           <label><input type="checkbox" data-f="life" checked><i style="background:#6b665f"></i>Meals, workout, review</label>
         </div>
-        <p class="chint">Drag a block to move it, or drag its bottom edge to resize. Click an empty slot to add a block. Click a day’s name to take that day off.</p>
+        <p class="chint">Drag a block to move it, or drag its bottom edge to resize. Click an empty slot to add a block. Click a day’s name to see its routine or take it off.</p>
         <button class="tbtn" id="cReset">Rebuild plan from scratch</button>
       </aside>
       <div class="card cmain">
@@ -778,6 +815,7 @@ body.lockmode .fo-main{background:transparent;border-color:transparent;box-shado
           <div class="navw"><button class="ibtn" id="cPrev" aria-label="Previous week"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button><button class="ibtn" id="cNext" aria-label="Next week"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button></div>
           <h2 id="cTitle">November 2026</h2>
           <span class="crange" id="cRange"></span>
+          <button class="ibtn cfs" id="cFs" aria-label="Full screen calendar" aria-pressed="false" title="Full screen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
         </div>
         <div class="cscroll" id="cScroll">
           <div class="chead" id="cHead"></div>
@@ -842,12 +880,14 @@ body.lockmode .fo-main{background:transparent;border-color:transparent;box-shado
       </div>
     </section>
 
-    <div class="demo"><span>Lock In · build 2</span>
+    <div class="demo"><span>Lock In · build 3</span>
 
 <button id="replay">Replay intro</button><button id="sndBtn" aria-pressed="true">Intro sound: on</button></div>
   </main>
 </div>
 <div class="toast" id="toast" role="status"></div>
+<aside id="daySheet" aria-label="Day routine"><div class="ds-h"><div><h2 id="dsTitle"></h2><p id="dsSub"></p></div><button class="ds-x" data-x aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div id="dsRows"></div><div class="ds-f"><button class="tbtn2" id="dsHome">Open on Home</button></div></aside>
+<div id="fin" role="status"><span id="finTxt"></span><button class="pbtn" data-no>No</button><button class="pbtn pri" data-yes>Yes, move my plan up</button></div>
 <div class="ovl" id="quiz" role="dialog" aria-label="Sunday quiz"><div class="qz" id="qzBody"></div></div>
 <div class="ovl" id="hall" role="dialog" aria-label="Exam hall"><div class="h-in"><div class="h-for" id="hFor"></div><div id="hTime">0:00:00</div><p class="h-note">Exam-hall mode. No notes, no phone, no switching. Just you and the paper.</p><button class="pbtn" id="hEnd">Leave exam hall</button></div></div>
 <div id="calPop" role="dialog" aria-label="Block details"></div>
@@ -1016,7 +1056,7 @@ $('#fsBtn').addEventListener('click',async()=>{
 const dkey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const addDays=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
 /* ================= Lock In data + scheduler ================= */
-const START=new Date(2026,10,11),EXAM=new Date(2027,7,10),CLASSES_BY=new Date(2027,5,27),JULY=new Date(2027,6,1);
+const START=new Date(2026,10,11),EXAM=new Date(2027,7,3),CLASSES_BY=new Date(2027,5,27),JULY=new Date(2027,6,1);
 const REC={mech:'https://t.me/Sci_Link/1007',therm:'https://t.me/Sci_Link/876',cur:'https://t.me/Sci_Link/1094',wave:'https://t.me/Sci_Link/1184',light:'https://t.me/Sci_Link/1214',mag:'https://t.me/Sci_Link/1207',elec:'https://t.me/Sci_Link/1255',matter:'https://t.me/Sci_Link/1354',estat:'https://t.me/Sci_Link/1448',mprop:'https://t.me/Sci_Link/1524',grav:'https://t.me/Sci_Link/1645',
   calc:'https://t.me/Sci_Link/855',redox:'https://www.youtube.com/live/Swwr_vNYU5s',bond:'https://t.me/Sci_Link/884',sblock:'https://youtu.be/G23RPKI--MY',pblock:'https://t.me/Sci_Link/865',dblock:'https://t.me/Sci_Link/865',period:'https://t.me/Sci_Link/858',kin:'https://t.me/Sci_Link/937',ener:'https://t.me/Sci_Link/1040',gas:'https://t.me/Sci_Link/1113',org:'https://t.me/Sci_Link/2194',isom:'https://youtu.be/upeffNyWyPA',guna:'https://youtube.com/live/Ibfn2DWZHog',equil:'https://t.me/Sci_Link/1331',echem:'https://t.me/Sci_Link/1498',ind:'https://t.me/Sci_Link/1227',
   mSep:'https://t.me/Vikumlk/213',mOct:'https://t.me/Vikumlk/214',mNov:'https://t.me/Vikumlk/234',mPure26:'https://t.me/Vikumlk/117',mApp26:'https://t.me/Vikumlk/119'};
@@ -1198,23 +1238,23 @@ const toMin=s=>{const[h,m]=s.split(':').map(Number);return h*60+m};
 const CHECK='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const fm=m=>`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
 const DOWL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-const todayKey=dkey(today0),preview=today0<START,viewKey=preview?dkey(START):todayKey;
+const todayKey=dkey(today0),preview=today0<START;let viewKey=preview?dkey(START):todayKey;
 let nrOpen=false,nudgeOn=false,autoNudged=false;
 const dayEvents=()=>(CS.days[viewKey]||[]).slice().sort((a,b)=>a.s-b.s);
 const isStudy=e=>e.kind!=='life'&&e.kind!=='review'&&['phy','chem','maths'].includes(e.subj);
 function renderRoutine(){
-  const evs=dayEvents(),d=preview?START:today0,away=Math.round((START-today0)/864e5);
-  $('#rTitle').textContent=preview?(away===1?'Tomorrow’s routine':'Your first day'):'Today’s routine';
-  $('#rSub').textContent=`${DOWL[d.getDay()]}, ${d.getDate()} ${MON[d.getMonth()]}`+(preview?'. Lock In starts then, so ticks open on the day.':'')+(CS.off[viewKey]?'. Day off.':'');
+  const evs=dayEvents(),d=new Date(viewKey+'T00:00'),away=Math.round((START-today0)/864e5),other=viewKey!==(preview?dkey(START):todayKey),tmr=viewKey===dkey(addDays(today0,1));
+  $('#rTitle').textContent=other?(tmr?'Tomorrow’s routine':viewKey<todayKey?'Past day':'Upcoming day'):preview?(away===1?'Tomorrow’s routine':'Your first day'):'Today’s routine';$('#rBack').hidden=!other;
+  $('#rSub').textContent=`${DOWL[d.getDay()]}, ${d.getDate()} ${MON[d.getMonth()]}`+(preview&&!other?'. Lock In starts then, so ticks open on the day.':'')+(other&&viewKey>todayKey?'. Ticks open on the day.':'')+(CS.off[viewKey]?'. Day off.':'');
   const n=new Date(),nowM=n.getHours()*60+n.getMinutes();
   $('#rows').innerHTML=evs.length?evs.map(e=>{
-    const rev=e.kind==='review',cls=rev?'review':e.kind==='paper'?'paper':e.subj,isNow=!preview&&nowM>=e.s&&nowM<e.e;
+    const rev=e.kind==='review',cls=rev?'review':e.kind==='paper'?'paper':e.subj,isNow=!preview&&viewKey===todayKey&&nowM>=e.s&&nowM<e.e;
     const rl=e.rec||recFor(e.title);
     const second=[e.tag?`<span class="qt">${esc(e.tag)}</span>`:'',e.fixed?'<span class="qt live">LIVE</span>':'',e.sub?`<span>${esc(e.sub)}</span>`:'',rev?'<span>Night review, about a minute</span>':'',rl?`<a class="rec" href="${rl}" target="_blank" rel="noopener">▶ Recordings</a>`:''].filter(Boolean).join('');
     return `<div class="r ${cls}${e.done?' done':''}${isNow?' now':''}${rev&&nudgeOn&&!e.done?' pulse':''}" data-id="${e.id}">`+
       `<span class="t">${e.e-e.s<=5?fm(e.s):fm(e.s)+'–'+fm(e.e)}</span><span class="bar"></span>`+
       `<span class="w"><span class="ti">${esc(e.title)}</span>${second?`<span class="si">${second}</span>`:''}</span>`+
-      `<button class="tick" role="checkbox" aria-checked="${!!e.done}" aria-label="Done: ${esc(e.title)}"${preview?' disabled':''}>${CHECK}</button></div>`+
+      `<button class="tick" role="checkbox" aria-checked="${!!e.done}" aria-label="Done: ${esc(e.title)}"${preview||viewKey>todayKey?' disabled':''}>${CHECK}</button></div>`+
       (rev&&nrOpen&&!e.done?nrHtml():'');
   }).join(''):'<p class="sub" style="padding:14px 10px">Nothing is planned for this day.</p>';
   updateProg();
@@ -1251,7 +1291,7 @@ $('#rows').addEventListener('click',e=>{
   if(e.target.closest('#nrSave')){saveReview();return}
   if(e.target.closest('.nr'))return;
   const row=e.target.closest('.r');if(!row)return;
-  if(preview){toast('Ticks open on your first day.');return}
+  if(preview||viewKey>todayKey){toast(preview?'Ticks open on your first day.':'That day hasn’t come yet. Ticks open on the day.');return}
   const ev=(CS.days[viewKey]||[]).find(x=>x.id===row.dataset.id);if(!ev)return;
   const isTick=!!e.target.closest('.tick');
   if(ev.kind==='review'){
@@ -1259,7 +1299,7 @@ $('#rows').addEventListener('click',e=>{
     nrOpen=!nrOpen;renderRoutine();if(nrOpen)setTimeout(()=>{const h=$('#nrH');if(h)h.focus()},30);return;
   }
   if(!isTick)return;
-  ev.done=!ev.done;saveCS();renderRoutine();renderRings();renderBars();
+  ev.done=!ev.done;saveCS();renderRoutine();renderRings();renderBars();if(ev.done)offerFinish(ev);
   const all=updateProg();
   if(ev.done&&all){setMood('dance',7000);say('Whole day done! 🎉',3500)}
   else if(ev.done){hop();say(['Nice!','One down.','Keep going!','Easy.'][Math.floor(Math.random()*4)],1400)}
@@ -1310,7 +1350,7 @@ function renderCal(){
     const paper=(CS.days[dkey(dt)]||[]).some(e=>e.kind==='paper');
     if(paper)cls.push('paper');
     const ds=dots(dt).map(s=>`<i style="background:var(--${s})"></i>`).join('');
-    h+=`<div class="${cls.join(' ')}" title="${+dt===+EXAM?'A/L exam (date to confirm)':paper?'Paper day':''}">${d}<span class="dots">${ds}</span></div>`;
+    h+=`<div class="${cls.join(' ')}${dkey(dt)===viewKey&&viewKey!==todayKey?' sel':''}" data-k="${dkey(dt)}" title="${+dt===+EXAM?'A/L exam starts (3 to 28 Aug)':paper?'Paper day':''}">${d}<span class="dots">${ds}</span></div>`;
   }
   $('#calGrid').innerHTML=h;
   $('#prevM').disabled=vm<=MINM;$('#nextM').disabled=vm>=MAXM;
@@ -1537,7 +1577,7 @@ function openDay(k,r){
   formEv=null;pop.dataset.k=k;
   pop.innerHTML=`<div class="cp-top"><b class="cp-day">${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}</b><button class="cp-x" data-a="close" aria-label="Close">×</button></div>`+
     (off?`<p class="cp-p">This is a day off.</p>`+(lastAct&&lastAct.key===k?'<div class="cp-btns"><button class="pri" data-a="undo">Undo day off</button></div>':'<p class="cp-hint">Reset the demo calendar to bring it back.</p>')
-    :inPlan?'<p class="cp-p">Take it off and every study block on it slides forward into the next days. Live Maths classes stay where they are.</p><div class="cp-btns"><button class="pri" data-a="off">Take this day off</button><button data-a="add">Add a block</button></div>'
+    :inPlan?'<div class="cp-btns"><button class="pri" data-a="routine">See this day’s routine</button></div><p class="cp-p">Taking it off slides every study block on it into the next days. Live Maths classes stay where they are.</p><div class="cp-btns"><button data-a="off">Take this day off</button><button data-a="add">Add a block</button></div>'
     :'<p class="cp-p">This day is outside your plan.</p><div class="cp-btns"><button data-a="add">Add a block</button></div>');
   showPop(r);
 }
@@ -1547,11 +1587,12 @@ pop.addEventListener('click',e=>{
   const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a;
   if(a==='close')return closePop();
   if(a==='save')return saveForm();
-  if(a==='done'){snapAct('done');formEv.done=!formEv.done;saveCS();closePop();renderWeek();return}
+  if(a==='done'){snapAct('done');const fe=formEv;fe.done=!fe.done;saveCS();closePop();renderWeek();renderRoutine();renderRings();if(fe.done)offerFinish(fe);return}
   if(a==='skip'){const ev=formEv;snapAct('skip');cascade(ev.date,ev.s,ev.subj,new Set([ev.id]));saveCS();closePop();renderWeek();undoToast(`Skipped. Every later ${SUBJ[ev.subj]} block slid forward one slot.`);return}
   if(a==='del'){const ev=formEv;snapAct('delete');const arr=CS.days[ev.date];arr.splice(arr.indexOf(ev),1);saveCS();closePop();renderWeek();undoToast('Block deleted.');return}
   if(a==='off')return takeOff(pop.dataset.k);
   if(a==='undo')return undoAct();
+  if(a==='routine'){const k=pop.dataset.k;closePop();return showDaySheet(k)}
   if(a==='add'){const k=pop.dataset.k;return openForm({date:k,s:1140,e:1200,title:'',sub:'',subj:'phy',tag:''},true,popRect)}
 });
 pop.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='fTitle')saveForm()});
@@ -1998,6 +2039,89 @@ renderBell();
 if($('#bell').classList.contains('dot'))setTimeout(()=>{$('#bell').classList.add('swing');setTimeout(()=>$('#bell').classList.remove('swing'),1200)},4200);
 
 try{ptShow(true)}catch(e){}
+
+/* =================== BUILD 3 =================== */
+/* ---------- Home: click a date to see that day's routine ---------- */
+function showDay(k){
+  if(!k)return;viewKey=k;nrOpen=false;renderRoutine();renderCal();
+  if(!document.body.classList.contains('page-cal')&&!document.body.classList.contains('page-pap'))go('Home');
+}
+$('#calGrid').addEventListener('click',e=>{const c=e.target.closest('.cd[data-k]');if(!c)return;showDay(c.dataset.k===viewKey&&viewKey!==todayKey?todayKey:c.dataset.k)});
+$('#rBack').addEventListener('click',()=>{viewKey=preview?dkey(START):todayKey;nrOpen=false;renderRoutine();renderCal()});
+
+/* ---------- Calendar: true full screen ---------- */
+function calFs(on){
+  document.body.classList.toggle('cal-fs',on);$('#cFs').setAttribute('aria-pressed',on);
+  $('#cFs').innerHTML=on?'<svg viewBox="0 0 24 24"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>':'<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+  try{if(on&&!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});if(!on&&document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch(e){}
+  requestAnimationFrame(()=>renderWeek());
+}
+$('#cFs').addEventListener('click',()=>calFs(!document.body.classList.contains('cal-fs')));
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&document.body.classList.contains('cal-fs'))calFs(false)});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('cal-fs')&&!pop.classList.contains('show'))calFs(false)});
+const _go0=go;go=function(p){if(p!=='Calendar'&&document.body.classList.contains('cal-fs'))calFs(false);return _go0(p)};
+
+/* day sheet: the routine for one day, opened from a date in the Calendar */
+function showDaySheet(k){
+  const d=new Date(k+'T00:00'),evs=(CS.days[k]||[]).slice().sort((a,b)=>a.s-b.s),fut=k>todayKey;
+  $('#dsTitle').textContent=`${DOWL[d.getDay()]}, ${d.getDate()} ${MON[d.getMonth()]}`;
+  $('#dsSub').textContent=k===todayKey?'Today':fut?'Ticks open on the day.':'Past day';
+  $('#dsRows').innerHTML=evs.length?evs.map(e=>{const cls=e.kind==='review'?'review':e.kind==='paper'?'paper':e.subj,rl=e.rec||recFor(e.title);
+    return `<div class="ds-r ${cls}${e.done?' done':''}" data-id="${e.id}"><span class="t">${e.e-e.s<=5?fm(e.s):fm(e.s)+'–'+fm(e.e)}</span><span class="bar"></span><span class="w"><span class="ti">${esc(e.title)}</span>${e.sub||e.tag||rl?`<span class="si">${e.tag?`<span class="qt">${esc(e.tag)}</span>`:''}${e.fixed?'<span class="qt live">LIVE</span>':''}${e.sub?`<span>${esc(e.sub)}</span>`:''}${rl?`<a class="rec" href="${rl}" target="_blank" rel="noopener">▶ Recordings</a>`:''}</span>`:''}</span><button class="tick" role="checkbox" aria-checked="${!!e.done}" aria-label="Done: ${esc(e.title)}"${fut?' disabled':''}>${CHECK}</button></div>`}).join(''):'<p class="sub">Nothing is planned for this day.</p>';
+  $('#daySheet').dataset.k=k;$('#daySheet').classList.add('show');
+}
+$('#daySheet').addEventListener('click',e=>{
+  if(e.target.closest('[data-x]')){$('#daySheet').classList.remove('show');return}
+  if(e.target.closest('#dsHome')){const k=$('#daySheet').dataset.k;$('#daySheet').classList.remove('show');calFs(false);go('Home');showDay(k);return}
+  const t=e.target.closest('.tick');if(!t||t.disabled)return;
+  const k=$('#daySheet').dataset.k,ev=(CS.days[k]||[]).find(x=>x.id===t.closest('.ds-r').dataset.id);if(!ev)return;
+  ev.done=!ev.done;saveCS();showDaySheet(k);renderWeek();renderRoutine();renderRings();renderBars();if(ev.done)offerFinish(ev);
+});
+document.addEventListener('pointerdown',e=>{const s=$('#daySheet');if(s.classList.contains('show')&&!s.contains(e.target)&&!e.target.closest('.cp'))s.classList.remove('show')},true);
+
+/* ---------- Finished a whole topic early: clear the rest, pull the plan up ---------- */
+function restParts(ev){
+  if(!ev||ev.fixed||ev.user||ev.kind==='life'||ev.kind==='paper')return [];
+  const out=[];
+  for(const k in CS.days){if(k<ev.date)continue;for(const x of CS.days[k]){
+    if(x===ev||x.done||x.fixed||x.user||x.subj!==ev.subj||x.kind!=='class')continue;
+    if(k===ev.date&&x.s<=ev.s)continue;
+    if(ev.unit?x.unit===ev.unit:x.title===ev.title)out.push(x)}}
+  out.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.s-b.s);
+  return ev.unit?out.slice(0,1):out;
+}
+function pullUp(ev,rest){
+  const removed=new Set(rest.map(x=>x.id)),list=[];
+  for(let d=new Date(ev.date+'T00:00');d<=EXAM;d=addDays(d,1)){const k=dkey(d);
+    list.push(...(CS.days[k]||[]).filter(x=>x.subj===ev.subj&&x.kind==='class'&&!x.free&&!x.fixed&&!x.done&&!x.user&&(k!==ev.date||x.s>ev.s)).sort((a,b)=>a.s-b.s))}
+  ev.sub=(ev.sub||'')+` · also covered: ${rest.map(x=>(x.sub||x.title).replace(/^.*?\(|\)$/g,'')).join(', ')}`;
+  const keep=list.filter(x=>!removed.has(x.id)).map(x=>({title:x.title,sub:x.sub,tag:x.tag,kind:x.kind,rec:x.rec||'',unit:x.unit||'',bp:x.bp}));
+  list.forEach((sl,i)=>{
+    if(i<keep.length)Object.assign(sl,keep[i]);
+    else Object.assign(sl,{title:'Free revision slot',sub:'Time you won back by finishing early. Use it for weak spots or past-paper questions.',tag:'',kind:'class',rec:'',unit:'',bp:undefined,free:true});
+  });
+  return list.length-keep.length;
+}
+let finEv=null,finRest=[];
+function offerFinish(ev){
+  const rest=restParts(ev);if(!rest.length)return;
+  finEv=ev;finRest=rest;
+  const n=rest.length;
+  $('#finTxt').textContent=ev.unit?`Covered the next one too (${rest[0].sub||rest[0].title})?`:`Finished the whole topic (${n} more part${n===1?'':'s'}) already?`;
+  $('#fin').classList.add('show');clearTimeout(window._finT);window._finT=setTimeout(()=>$('#fin').classList.remove('show'),12000);
+}
+$('#fin').addEventListener('click',e=>{
+  if(e.target.closest('[data-no]')){$('#fin').classList.remove('show');return}
+  if(!e.target.closest('[data-yes]')||!finEv)return;
+  snapAct('finish',finEv.date);
+  const n=finRest.length;pullUp(finEv,finRest);saveCS();
+  $('#fin').classList.remove('show');
+  renderRoutine();renderRings();renderBars();renderCal();try{renderWeek()}catch(err){}
+  if($('#daySheet').classList.contains('show'))showDaySheet($('#daySheet').dataset.k);
+  undoToast(`Nice. Every later ${SUBJ[finEv.subj]} class moved up ${n===1?'one slot':n+' slots'}.`);
+  if(typeof hop==='function'){hop();say('Ahead of schedule! 🚀',3000)}
+  finEv=null;
+});
 
 renderRoutine();renderRings();renderBars();renderCal();fShow();
 const HASHP={'#calendar':'Calendar','#report':'Report','#papers':'Papers','#focus':'Focus','#library':'Library'};
