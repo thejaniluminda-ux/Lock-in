@@ -1274,76 +1274,83 @@ function buildPlan(){
     const study=(s,e,subj,title,sub,tag,rec)=>add(s,e,subj,'study',{title,sub,tag,rec});
     const def=(subj)=>{const l=last[subj];if(l){const u=UNIT_BY[l.unit];return{title:`${u.si}: සටහන් සහ ප්‍රශ්න`,sub:`${u.en}: notes and topic questions`,tag:u.tag,rec:l.rec}}return{title:subj==='phy'?'භෞතික විද්‍යාව: සටහන් සහ ප්‍රශ්න':'රසායන විද්‍යාව: සටහන් සහ ප්‍රශ්න',sub:'Notes and topic questions',tag:'',rec:''}};
     const mathsPractice={title:'සංයුක්ත ගණිතය: ප්‍රශ්න පුහුණුව',sub:'Combined Maths: practice on this week’s topics',tag:'',rec:''};
-    const slotClass=(s,cap,names,allowDay)=>{
-      if(buffer){const sj=['phy','chem'][rot++%2];add(s,s+Math.min(cap,3)*60,sj,'study',{title:'Buffer: catch up or revise',sub:'Buffer week. Finish anything skipped, or redo your weakest unit.',tag:'Buffer week'});return null}
+    /* fe: latest end for a filler block (a real class may run past it, e.g. a 3 h recording to 17:15) */
+    let slotEnd=0;
+    const slotClass=(s,cap,names,allowDay,fe)=>{
+      const fill=Math.min(s+Math.min(cap,3)*60,fe||1e9);
+      if(buffer){const sj=['phy','chem'][rot++%2];add(s,fill,sj,'study',{title:'Buffer: catch up or revise',sub:'Buffer week. Finish anything skipped, or redo your weakest unit.',tag:'Buffer week'});slotEnd=fill;return null}
       const it=take(names,cap,allowDay);
-      if(!it){const sj=['phy','chem'][rot++%2],c=allEmpty()?{title:'ඒකක පසුගිය ප්‍රශ්න: දුර්වල ඒකක',sub:'All classes done. Past-paper questions on your weakest units.',tag:'Revision'}:def(sj);add(s,s+Math.min(cap,3)*60,sj,'study',c);return null}
-      if(it.day){add(s,s+300,it.subj,'class',it);add(840,840+Math.round((it.h-5)*60),it.subj,'class',{title:it.title,sub:it.sub+' (part 2)',tag:it.tag,rec:it.rec,unit:it.unit});return it}
-      add(s,s+Math.round(it.h*60),it.subj,'class',it);return it;
+      if(!it){const sj=['phy','chem'][rot++%2],c=allEmpty()?{title:'ඒකක පසුගිය ප්‍රශ්න: දුර්වල ඒකක',sub:'All classes done. Past-paper questions on your weakest units.',tag:'Revision'}:def(sj);add(s,fill,sj,'study',c);slotEnd=fill;return null}
+      if(it.day){add(s,s+300,it.subj,'class',it);slotEnd=855+Math.round((it.h-5)*60);add(855,slotEnd,it.subj,'class',{title:it.title,sub:it.sub+' (part 2)',tag:it.tag,rec:it.rec,unit:it.unit});return it}
+      slotEnd=s+Math.round(it.h*60);add(s,slotEnd,it.subj,'class',it);return it;
     };
+    /* 19:00 to 22:30 evening study */
     const evening=()=>{
-      if(mcu.length&&!july){add(1140,1290,'maths','class',mcu.shift());return}
-      const r=rot++%3;if(r===0)add(1140,1290,'maths','study',mathsPractice);else add(1140,1290,r===1?'phy':'chem','study',def(r===1?'phy':'chem'));
+      if(mcu.length&&!july){add(1140,1290,'maths','class',mcu.shift());study(1290,1350,'maths',mathsPractice.title,'Combined Maths: questions on this class','');return}
+      const r=rot++%3;if(r===0)add(1140,1350,'maths','study',mathsPractice);else add(1140,1350,r===1?'phy':'chem','study',def(r===1?'phy':'chem'));
     };
+    /* workout, shower, then free time and dinner until 19:00 */
+    const afternoonOff=t=>{L(t,t+30,'Workout');L(t+30,t+60,'Shower');L(t+60,1140,'Free time and dinner')};
+    const night=()=>{L(1350,1365,'Review and check tomorrow',{kind:'review'});L(1365,1380,'Screens off, sleep')};
     const paperOr=(s,e,subj)=>{const i=papers.findIndex(x=>!subj||x.subj===subj);const p=i>=0?papers.splice(i,1)[0]:(papers.length?papers.shift():null);if(p)add(s,e,p.subj,'study',p);else{const sj=subj||'phy';add(s,e,sj,'study',def(sj))}};
-    L(300,330,'Exercise and stretch');L(330,360,'Shower');
+    /* 06:00 to 23:00 frame. Brother and sister use the bathroom until 07:30, so study in your room first */
+    L(360,375,'Wake, water, stretch',{sub:'10-minute stretch in your room'});
+    const paperDay=sj=>{/* one ~5 h paper, then ~3 h checking */
+      add(495,795,sj[0],'paper',{title:`සම්පූර්ණ ප්‍රශ්න පත්‍රය: ${sj[2]}`,sub:`Full ${sj[1]} paper, exam conditions`,tag:'Paper day'});L(795,855,'Lunch');
+      add(855,1035,sj[0],'paper',{title:'ප්‍රශ්න පත්‍රය පරීක්ෂා කිරීම',sub:'Check the paper, log marks and weak spots',tag:'Paper day'});
+      L(1035,1065,'Workout');L(1065,1080,'Shower');L(1080,1140,'Free time and dinner')};
+    const PSUB=[['phy','Physics','භෞතික විද්‍යාව'],['chem','Chemistry','රසායන විද්‍යාව'],['maths','Combined Maths','සංයුක්ත ගණිතය']];
     if(july){
       /* July: full papers most days */
-      if(w===0){study(360,480,'maths','සංයුක්ත ගණිතය: දුර්වල තැන්','Fix this week’s weakest paper questions','');L(480,510,'Breakfast');study(510,750,'phy','සතියේ ප්‍රශ්න පත්‍ර සමාලෝචනය','Review this week’s papers and update your weak-spot radar','');L(750,810,'Lunch');study(810,1020,'chem','දුර්වල ඒකක ප්‍රතිශෝධනය','Revise the weakest units from the radar','');L(1020,1050,'Workout');L(1050,1290,'Off duty',{sub:'Sunday evening is yours'})}
-      else if(w===3){study(360,480,'maths',mathsPractice.title,'Combined Maths: practice','');L(480,510,'Breakfast');study(510,750,'phy','දුර්වල ඒකක ප්‍රතිශෝධනය: භෞතික විද්‍යාව','Weak-spot revision from the radar','');L(750,810,'Lunch');study(810,1020,'chem','දුර්වල ඒකක ප්‍රතිශෝධනය: රසායන විද්‍යාව','Weak-spot revision from the radar','');L(1020,1050,'Workout');L(1050,1080,'Shower');L(1080,1140,'Free time and dinner');study(1140,1290,'maths','දුර්වල ඒකක ප්‍රතිශෝධනය: සංයුක්ත ගණිතය','Weak-spot revision from the radar','')}
-      else{const sj=[['phy','Physics','භෞතික විද්‍යාව'],['chem','Chemistry','රසායන විද්‍යාව'],['maths','Combined Maths','සංයුක්ත ගණිතය']][pr++%3];
-        study(360,480,sj[0],`${sj[2]}: සූත්‍ර සහ ඉක්මන් සමාලෝචනය`,`${sj[1]}: formula sheet and quick review before the paper`,'');L(480,510,'Breakfast');
-        add(510,810,sj[0],'paper',{title:`සම්පූර්ණ ප්‍රශ්න පත්‍රය: ${sj[2]}`,sub:`Full ${sj[1]} paper, exam conditions`,tag:'Paper day'});L(810,870,'Lunch');
-        add(870,1050,sj[0],'paper',{title:'ප්‍රශ්න පත්‍රය පරීක්ෂා කිරීම',sub:'Check the paper, log marks and weak spots',tag:'Paper day'});L(1050,1080,'Workout');L(1080,1140,'Free time and dinner');
-        study(1140,1260,sj[0],'වැරදි ප්‍රශ්න නැවත කිරීම','Redo the questions you got wrong','')}
-      L(1290,1300,'Review and check tomorrow',{kind:'review'});L(1320,1325,'Screens off, sleep');
+      if(w===0){study(375,450,'maths','සංයුක්ත ගණිතය: දුර්වල තැන්','Fix this week’s weakest paper questions','');L(450,465,'Shower');L(465,495,'Breakfast');study(495,750,'phy','සතියේ ප්‍රශ්න පත්‍ර සමාලෝචනය','Review this week’s papers and update your weak-spot radar','');L(750,810,'Lunch');study(810,1020,'chem','දුර්වල ඒකක ප්‍රතිශෝධනය','Revise the weakest units from the radar','');L(1020,1050,'Workout');L(1050,1350,'Off duty',{sub:'Sunday evening is yours'})}
+      else if(w===3){study(375,450,'maths',mathsPractice.title,'Combined Maths: practice','');L(450,465,'Shower');L(465,495,'Breakfast');study(495,750,'phy','දුර්වල ඒකක ප්‍රතිශෝධනය: භෞතික විද්‍යාව','Weak-spot revision from the radar','');L(750,810,'Lunch');study(810,1020,'chem','දුර්වල ඒකක ප්‍රතිශෝධනය: රසායන විද්‍යාව','Weak-spot revision from the radar','');afternoonOff(1020);study(1140,1350,'maths','දුර්වල ඒකක ප්‍රතිශෝධනය: සංයුක්ත ගණිතය','Weak-spot revision from the radar','')}
+      else{const sj=PSUB[pr++%3];
+        study(375,450,sj[0],`${sj[2]}: සූත්‍ර සහ ඉක්මන් සමාලෝචනය`,`${sj[1]}: formula sheet and quick review before the paper`,'');L(450,465,'Shower');L(465,495,'Breakfast');
+        paperDay(sj);
+        study(1140,1290,sj[0],'වැරදි ප්‍රශ්න නැවත කිරීම','Redo the questions you got wrong','')}
+      night();
     }else if(w===1||w===3||w===4){
-      study(360,465,w===3?'phy':'chem',def(w===3?'phy':'chem').title,def(w===3?'phy':'chem').sub,def(w===3?'phy':'chem').tag,def(w===3?'phy':'chem').rec);
-      L(465,480,'Get ready');
-      const a=slotClass(480,5,['phyA','chemA'],true);
-      L(780,840,'Lunch');
-      if(!(a&&a.day))slotClass(840,3,['phyB','chemB'],false);
-      L(1020,1050,'Workout');L(1050,1080,'Shower');L(1080,1140,'Free time and dinner');
-      evening();
-      L(1290,1300,'Review and check tomorrow',{kind:'review'});L(1320,1325,'Screens off, sleep');
+      const c=def(w===3?'phy':'chem');study(375,450,w===3?'phy':'chem',c.title,c.sub,c.tag,c.rec);
+      L(450,465,'Shower');L(465,495,'Breakfast');
+      const a=slotClass(495,5,['phyA','chemA'],true);
+      L(795,855,'Lunch');
+      if(!(a&&a.day))slotClass(855,3,['phyB','chemB'],false,1020);
+      afternoonOff(Math.max(1020,slotEnd));
+      evening();night();
     }else if(w===2){
-      const c=def('chem');study(360,480,'chem',c.title,c.sub,c.tag,c.rec);L(480,510,'Breakfast');
-      slotClass(510,3.5,['phyB','chemB'],false);
-      L(720,750,'Workout');L(750,810,'Lunch');
-      study(810,885,'maths','අද පන්තියට සූදානම් වීම','Read ahead for today’s Maths class','');L(885,900,'Get ready');
+      const c=def('chem');study(375,450,'chem',c.title,c.sub,c.tag,c.rec);L(450,465,'Shower');L(465,495,'Breakfast');
+      slotClass(495,3.5,['phyB','chemB'],false,705);
+      L(705,735,'Workout');L(735,780,'Lunch');
+      study(780,885,'maths','අද පන්තියට සූදානම් වීම','Read ahead for today’s Maths class','');L(885,900,'Get ready');
       add(900,1200,'maths','class',{title:'සංයුක්ත ගණිතය: සජීවී පන්තිය',sub:'Combined Maths live class',tag:'Live · 2027',rec:d<new Date(2026,11,1)?REC.mNov:''},{fixed:true});
-      L(1200,1245,'Shower and dinner');
-      study(1245,1290,'maths','අද පන්තියේ සටහන් සමාලෝචනය','Review today’s Maths class notes','');
-      L(1290,1300,'Review and check tomorrow',{kind:'review'});L(1320,1325,'Screens off, sleep');
+      L(1200,1260,'Shower and dinner');
+      study(1260,1350,'maths','අද පන්තියේ සටහන් සමාලෝචනය','Review today’s Maths class notes','');
+      night();
     }else if(w===5){
-      const c=def('phy');study(360,465,'phy',c.title,c.sub,c.tag,c.rec);L(465,480,'Get ready');
+      const c=def('phy');study(375,450,'phy',c.title,c.sub,c.tag,c.rec);L(450,465,'Shower');L(465,480,'Quick breakfast at your desk');
       add(480,780,'maths','class',{title:'සංයුක්ත ගණිතය: සජීවී පන්තිය',sub:'Combined Maths live class',tag:'Live · 2027',rec:d<new Date(2026,11,1)?REC.mNov:''},{fixed:true});
       L(780,840,'Lunch');
       study(840,1020,'maths','ගණිත පන්තියේ සටහන් සහ ප්‍රශ්න','Maths class notes and questions','');
-      L(1020,1050,'Workout');L(1050,1080,'Shower');L(1080,1140,'Free time and dinner');
-      evening();
-      L(1290,1300,'Review and check tomorrow',{kind:'review'});L(1320,1325,'Screens off, sleep');
+      afternoonOff(1020);
+      evening();night();
     }else if(w===6){
       if(d>=new Date(2027,0,1)){
-        const sj=[['phy','Physics','භෞතික විද්‍යාව'],['chem','Chemistry','රසායන විද්‍යාව'],['maths','Combined Maths','සංයුක්ත ගණිතය']][pr++%3];
-        study(360,480,sj[0],`${sj[2]}: සූත්‍ර සහ ඉක්මන් සමාලෝචනය`,`${sj[1]}: quick review before the paper`,'');L(480,510,'Breakfast');
-        add(510,810,sj[0],'paper',{title:`සම්පූර්ණ ප්‍රශ්න පත්‍රය: ${sj[2]}`,sub:`Full ${sj[1]} paper, exam conditions`,tag:'Paper day'});L(810,870,'Lunch');
-        add(870,1050,sj[0],'paper',{title:'ප්‍රශ්න පත්‍රය පරීක්ෂා කිරීම',sub:'Check the paper, log marks and weak spots',tag:'Paper day'});
-        L(1050,1080,'Workout');L(1080,1140,'Free time and dinner');
+        const sj=PSUB[pr++%3];
+        study(375,450,sj[0],`${sj[2]}: සූත්‍ර සහ ඉක්මන් සමාලෝචනය`,`${sj[1]}: quick review before the paper`,'');L(450,465,'Shower');L(465,495,'Breakfast');
+        paperDay(sj);
       }else{
-        study(360,465,'maths',mathsPractice.title,mathsPractice.sub,'');L(465,480,'Get ready');
-        slotClass(480,5,['phyA','chemA'],false);
-        L(780,840,'Lunch');paperOr(840,1020);
-        L(1020,1050,'Workout');L(1050,1080,'Shower');L(1080,1140,'Free time and dinner');
+        study(375,450,'maths',mathsPractice.title,mathsPractice.sub,'');L(450,465,'Shower');L(465,495,'Breakfast');
+        slotClass(495,5,['phyA','chemA'],false);
+        L(795,855,'Lunch');paperOr(855,1020);
+        afternoonOff(1020);
       }
-      evening();
-      L(1290,1300,'Review and check tomorrow',{kind:'review'});L(1320,1325,'Screens off, sleep');
+      evening();night();
     }else{
-      study(360,480,'maths',mathsPractice.title,mathsPractice.sub,'');L(480,510,'Breakfast');
-      if(!measDone){measDone=true;study(510,750,'phy','මිනුම්: ස්වයං අධ්‍යයනය','Measurement: self-study day (units, dimensions, errors, instruments)','~5% of paper');L(750,810,'Lunch');study(810,870,'phy','මිනුම්: පසුගිය ප්‍රශ්න','Measurement: past-paper questions','~5% of paper');paperOr(870,1020,'chem')}
-      else{paperOr(510,750,'phy');L(750,810,'Lunch');paperOr(810,1020,'chem')}
-      L(1020,1050,'Workout');L(1050,1290,'Off duty',{sub:'Sunday evening is yours. Skipped blocks land here first.'});
-      L(1290,1300,'Review and check tomorrow',{kind:'review'});L(1320,1325,'Screens off, sleep');
+      study(375,450,'maths',mathsPractice.title,mathsPractice.sub,'');L(450,465,'Shower');L(465,495,'Breakfast');
+      if(!measDone){measDone=true;study(495,750,'phy','මිනුම්: ස්වයං අධ්‍යයනය','Measurement: self-study day (units, dimensions, errors, instruments)','~5% of paper');L(750,810,'Lunch');study(810,870,'phy','මිනුම්: පසුගිය ප්‍රශ්න','Measurement: past-paper questions','~5% of paper');paperOr(870,1020,'chem')}
+      else{paperOr(495,750,'phy');L(750,810,'Lunch');paperOr(810,1020,'chem')}
+      L(1020,1050,'Workout');L(1050,1350,'Off duty',{sub:'Sunday evening is yours. Skipped blocks land here first.'});
+      night();
     }
     if(!classesEnd&&allEmpty())classesEnd=k;
     days[k]=ev.map((e,i)=>Object.assign({id:k+'-'+i,date:k},e));
@@ -1354,8 +1361,8 @@ function buildPlan(){
 /* the plan lives in the browser; it is built once from the data above */
 const CKEY='lockin-plan-v2';
 let CS=null;
-try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&(s.v===2||s.v===3))CS=s}catch(e){}
-if(!CS)CS={v:2,days:buildPlan().days,off:{}};
+try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&(s.v===2||s.v===3||s.v===4))CS=s}catch(e){}
+if(!CS)CS={v:4,days:buildPlan().days,off:{},fresh:true};
 const saveCS=()=>{try{localStorage.setItem(CKEY,JSON.stringify(CS))}catch(e){}};
 
 /* ---------- Date + countdown ---------- */
@@ -1441,7 +1448,7 @@ function nightNudge(){
   const rev=dayEvents().find(e=>e.kind==='review');if(preview||!rev||rev.done)return;
   nudgeOn=true;renderRoutine();if(!document.body.classList.contains('page-cal')&&!document.body.classList.contains('page-rep'))leoNudge();
 }
-setInterval(()=>{const n=new Date(),m=n.getHours()*60+n.getMinutes();if(!autoNudged&&m>=1290&&m<1380){autoNudged=true;nightNudge()}},30000);
+setInterval(()=>{const n=new Date(),m=n.getHours()*60+n.getMinutes();if(!autoNudged&&m>=1350&&m<1440){autoNudged=true;nightNudge()}},30000);
 
 /* ---------- Real progress: rings, week bars, streak ---------- */
 function renderRings(){
@@ -1617,7 +1624,7 @@ const LSIT={"w":102,"h":114,"a":"data:image/webp;base64,UklGRg4kAABXRUJQVlA4WAoA
 
 
 /* ================= Calendar ================= */
-const HH=64,D0=300,D1=1320;
+const HH=64,D0=360,D1=1380;/* calendar shows 06:00 to 23:00 */
 const p2=n=>String(n).padStart(2,'0');
 const kOf=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
 const dOf=k=>{const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
@@ -1672,7 +1679,7 @@ function renderWeek(){
   $('#cTitle').textContent=a.getMonth()===b.getMonth()?`${MON[a.getMonth()]} ${a.getFullYear()}`:`${M3(a.getMonth())} to ${M3(b.getMonth())} ${b.getFullYear()}`;
   $('#cRange').textContent=`${a.getDate()} ${M3(a.getMonth())} to ${b.getDate()} ${M3(b.getMonth())}`;
   cHead.innerHTML='<div></div>'+ds.map((d,i)=>{const k=curKeys[i];return `<button class="dh${k===tk?' today':''}${CS.off[k]?' off':''}" data-k="${k}" aria-label="${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}, day options"><span>${DOW[d.getDay()].toUpperCase()}${CS.off[k]?' · OFF':''}</span><b>${d.getDate()}</b></button>`}).join('');
-  let g='<div class="gut">';for(let h=5;h<22;h++)g+=`<div>${p2(h)}:00</div>`;g+='</div>';
+  let g='<div class="gut">';for(let h=D0/60;h<D1/60;h++)g+=`<div>${p2(h)}:00</div>`;g+='</div>';
   cBody.innerHTML=g+curKeys.map(k=>`<div class="col${CS.off[k]?' off':''}${k===tk?' today':''}" data-k="${k}">${evHtml(k)}${CS.off[k]?'<div class="offlbl">Day off</div>':''}${k===tk?nowLine():''}</div>`).join('');
   $('#cPrev').disabled=wk<=WMIN;$('#cNext').disabled=wk>=WMAX;
 }
@@ -1739,7 +1746,7 @@ function saveForm(){
   const t=$('#fTitle').value.trim()||'Untitled',k=$('#fDate').value,s=toMin($('#fS').value||'x:x'),en=toMin($('#fE').value||'x:x'),tag=$('#fTag').value.trim(),err=$('#fErr');
   if(!/^\d{4}-\d{2}-\d{2}$/.test(k)||isNaN(s)||isNaN(en)){err.textContent='Pick a day and both times.';return}
   if(en<=s){err.textContent='The end has to be after the start.';return}
-  if(s<D0||en>D1){err.textContent='Keep it between 05:00 and 22:00.';return}
+  if(s<D0||en>D1){err.textContent='Keep it between 06:00 and 23:00.';return}
   snapAct(formNew?'add':'edit');
   const kind=fSubj==='life'?'life':fSubj==='paper'?'paper':(formEv.kind==='class'?'class':'study');
   if(formNew){(CS.days[k]||(CS.days[k]=[])).push({id:'u'+Date.now(),date:k,s,e:en,title:t,sub:'',tag,subj:fSubj,kind,user:true})}
@@ -1818,7 +1825,7 @@ $('#mNext').addEventListener('click',()=>{miniM=new Date(miniM.getFullYear(),min
 $('#mGrid').addEventListener('click',e=>{const b=e.target.closest('.md');if(!b)return;viewD=dOf(b.dataset.k);renderWeek();renderMini()});
 document.querySelectorAll('[data-f]').forEach(c=>c.addEventListener('change',()=>{filt[c.dataset.f]=c.checked;renderWeek()}));
 $('#cCreate').addEventListener('click',e=>{const tk=kOf(today0),k=curKeys.includes(tk)?tk:curKeys[0];openForm({date:k,s:1140,e:1200,title:'',sub:'',subj:'phy',tag:''},true,e.currentTarget.getBoundingClientRect())});
-$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:3,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
+$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:4,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
 /* ================= Report: weak-spot radar ================= */
 const UNITS={
   phy:[['Mechanics','Mechanics',16],['Waves','Waves',15],['Current electricity','Current el.',15],['Thermal physics','Thermal',14],['Light','Light',8],['Magnetic fields','Magnetism',8],['Electronics','Electronics',6],['Electrostatics','Electrostatics',5],['Matter and radiation','Matter & rad.',5],['Measurement','Measurement',5],['Mechanical properties','Mech. properties',4],['Gravitation','Gravitation',3]],
@@ -1979,13 +1986,59 @@ function applyBlueprint(days){
   for(const k in days){const a=days[k];for(let i=a.length-1;i>0;i--){const x=a[i],p=a[i-1];if(x.kind==='life'&&p.kind==='life'&&x.title==='Off duty'&&p.title==='Off duty'&&p.e===x.s&&!x.done&&!p.done){p.e=x.e;p.sub='Rest day. Sunday evening is yours.';a.splice(i,1)}}}
   return days;
 }
-/* move saved plans to v3 (unit keys, blueprint, Sunday rest), keeping ticks and your own blocks */
+/* v3 to v4: move today and later days from the old 05:00-22:00 frame to 06:00-23:00.
+   Blocks keep their contents (ticks, finish-early moves, days off); only the times change.
+   Past days and your own blocks stay as they are. Blocks you dragged to an odd time keep that time. */
+function retimeDay(k,a){
+  const d=new Date(k+'T00:00'),w=d.getDay(),july=d>=JULY,paperSat=!july&&w===6&&d>=new Date(2027,0,1);
+  const type=july?(w===0?'sun':w===3?'jwed':'paper'):w===0?'sun':w===2?'tue':w===5?'fri':paperSat?'paper':'class';
+  const keep=null;/* keep the old length */
+  const M={/* old start: [new start, new end or keep] */
+    sun:{360:[375,450],480:[465,495],510:[495,750],1020:[1020,1350],1050:[1050,1350]},
+    jwed:{360:[375,450],480:[465,495],510:[495,750],1140:[1140,1350]},
+    paper:{360:[375,450],480:[465,495],510:[495,795],810:[795,855],870:[855,1035],1050:[1035,1065],1080:[1080,1140],1140:july?[1140,1290]:'eve'},
+    class:{360:[375,450],465:[465,495],480:[495,keep],780:[795,855],840:[855,keep],1140:'eve'},
+    tue:{360:[375,450],480:[465,495],510:[495,keep],720:[705,735],750:[735,780],810:[780,885],1200:[1200,1260],1245:[1260,1350]},
+    fri:{360:[375,450],465:[465,480],1140:'eve'}
+  }[type];
+  const add=[],orig=a.slice();
+  for(const e of orig){
+    if(e.user)continue;
+    if(e.s===300&&e.title==='Exercise and stretch'){Object.assign(e,{s:360,e:375,title:'Wake, water, stretch',sub:'10-minute stretch in your room'});continue}
+    if(e.s===330&&e.title==='Shower'){Object.assign(e,{s:450,e:465});continue}
+    if(e.s===1290&&e.kind==='review'){e.s=1350;e.e=1365;continue}
+    if(e.s===1320&&e.title==='Screens off, sleep'){e.s=1365;e.e=1380;continue}
+    const m=M[e.s];if(!m)continue;
+    if(m==='eve'){
+      if(e.kind==='class'&&e.subj==='maths'){e.s=1140;e.e=1290;add.push({s:1290,e:1350,subj:'maths',kind:'study',title:'සංයුක්ත ගණිතය: ප්‍රශ්න පුහුණුව',sub:'Combined Maths: questions on this class',tag:'',rec:''})}
+      else{e.s=1140;e.e=1350}
+      continue}
+    const len=e.e-e.s;e.s=m[0];e.e=m[1]==null?m[0]+len:m[1];
+    if(type==='class'&&e.s===855&&e.kind!=='class')e.e=Math.min(e.e,1020);/* only a real class may run to 17:15 */
+    if(e.kind==='life'&&(e.title==='Get ready'))e.title=type==='fri'?'Quick breakfast at your desk':'Breakfast';
+  }
+  /* afternoon: workout, shower, free time start after the second class (17:00, or 17:15 after a 3 h recording) */
+  if(type==='class'){
+    const end=Math.max(1020,...a.filter(e=>!e.user&&e.kind!=='life'&&e.s>=855&&e.s<1020).map(e=>e.e));
+    for(const e of a){if(e.user||e.kind!=='life')continue;
+      if(e.s===1020&&e.title==='Workout'){e.s=end;e.e=end+30}
+      else if(e.s===1050&&e.title==='Shower'){e.s=end+30;e.e=end+60}
+      else if(e.s===1080&&e.title==='Free time and dinner'){e.s=end+60;e.e=1140}}
+  }
+  if(type==='paper'&&!a.some(e=>e.s===1065&&e.title==='Shower'))add.push({s:1065,e:1080,subj:'life',kind:'life',title:'Shower',sub:'',tag:''});
+  add.forEach((x,i)=>a.push(Object.assign({id:k+'-n'+i,date:k},x)));
+}
 (function migrate(){
-  if(CS.v===3){applyBlueprint(CS.days);saveCS();return}
-  const old=CS,fresh={v:3,days:applyBlueprint(buildPlan().days),off:old.off||{}};
+  if(CS.fresh){delete CS.fresh;applyBlueprint(CS.days);saveCS();return}
+  if(CS.v===4){applyBlueprint(CS.days);saveCS();return}
+  if(CS.v===3){
+    const tk=dkey(new Date());
+    for(const k in CS.days)if(k>=tk)retimeDay(k,CS.days[k]);
+    CS.v=4;applyBlueprint(CS.days);saveCS();return}
+  const old=CS,fresh={v:4,days:applyBlueprint(buildPlan().days),off:old.off||{}};
   for(const k in old.days)for(const e of old.days[k]){
     if(e.user){(fresh.days[k]||(fresh.days[k]=[])).push(e);continue}
-    if(e.done){const m=(fresh.days[k]||[]).find(x=>x.title===e.title&&x.s===e.s);if(m)m.done=true}
+    if(e.done){const m=(fresh.days[k]||[]).find(x=>x.title===e.title&&!x.done);if(m)m.done=true}
   }
   CS=fresh;saveCS();
 })();
@@ -2188,7 +2241,7 @@ function alerts(){
   if(t.getDate()<=3)out.push({id:'month-'+tk.slice(0,7),ic:'🗓️',t:'New month',s:`This month in Maths: ${(BP.find(b=>b.m===tk.slice(0,7))||{t:[]}).t.map(x=>x[1]).join(', ')||'papers and revision'}. Check the teacher’s timetable.`,go:'Library'});
   const lb=localStorage.getItem('lockin-lastbackup'),age=lb?Math.round((today0-new Date(lb+'T00:00'))/864e5):99,started=today0>=START;
   if(started&&age>=7)out.push({id:'bk-'+tk,ic:'💾',t:'Back up your progress',s:lb?`Last backup ${age} days ago.`:'You haven’t backed up yet. It takes one click.',act:'backup'});
-  if(!started){const d=Math.round((START-today0)/864e5);out.push({id:'start',ic:'🔒',t:d===1?'Lock In starts tomorrow':`Lock In starts in ${d} days`,s:'Alarm for 5:00. First block is exercise and stretch.'})}
+  if(!started){const d=Math.round((START-today0)/864e5);out.push({id:'start',ic:'🔒',t:d===1?'Lock In starts tomorrow':`Lock In starts in ${d} days`,s:'Alarm for 6:00. First block is wake, water, stretch.'})}
   return out;
 }
 function renderBell(){
