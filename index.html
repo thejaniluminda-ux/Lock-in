@@ -601,6 +601,14 @@ b,.n,.lb-meta,.fo-nums b{font-variant-numeric:tabular-nums}
 .at-k{display:flex;gap:10px;align-items:flex-start;padding:5px 0;font-size:12.5px;line-height:1.55;color:var(--ink-2);cursor:pointer}
 .at-k input{margin-top:3px;accent-color:#5fe08a;width:15px;height:15px;flex:none}
 .at-k.ok span{color:var(--ink-3);text-decoration:line-through}
+.at-hot{display:inline-block;margin-left:8px;font-size:10.5px;font-weight:500;padding:1px 7px;border-radius:999px;background:rgba(255,159,67,.12);color:#ffb26b;border:1px solid rgba(255,159,67,.3);vertical-align:1px}
+.at-hot.big{background:rgba(255,110,80,.2);color:#ff9a7a;border-color:rgba(255,110,80,.5)}
+.at-hotbox{margin:0 0 12px;padding:10px 14px;border-radius:14px;background:rgba(255,140,80,.06);border:1px solid rgba(255,140,80,.22);font-size:12.5px;color:var(--ink-2)}
+.at-hotbox b{font-weight:500;color:var(--ink)}
+.at-hotbox ol{margin:6px 0 4px;padding-left:0;list-style:none;display:flex;flex-direction:column;gap:4px}
+.at-hotbox li{line-height:1.5}
+.at-hotbox li .at-hot{margin:0 8px 0 0;min-width:34px;text-align:center}
+.at-hotbox small{color:var(--ink-3);font-size:11px}
 .at-src{margin:10px 0 0;font-size:11px;color:var(--ink-3)}
 .lb-dep{display:flex;flex-direction:column;gap:2px;margin-top:8px;font-size:11px;color:var(--ink-3);text-align:left}
 .lb-dep span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2511,10 +2519,14 @@ function atomHtml(){
   const S=window.ATOM_STORY;if(!S)return '<p class="at-src">Story file did not load. Check your connection once, then it works offline.</p>';
   const all=S.scenes.flatMap((s,i)=>s.keys.map((k,j)=>({id:i+'.'+j,k,s:i}))),dn=all.filter(x=>AT.ok.includes(x.id)).length;
   const tabs=`<div class="seg at-seg" role="group" aria-label="Atomic structure view"><button data-at="story" aria-pressed="${atTab==='story'}">කතාව</button><button data-at="points" aria-pressed="${atTab==='points'}">ප්‍රධාන කරුණු <small>${dn}/${all.length}</small></button></div>`;
+  /* most-asked marks from past papers: scene index -> highest count */
+  const H=S.hot,heat={};if(H)for(const h of H.list)for(const s of [].concat(h.s))heat[s]=Math.max(heat[s]||0,h.n);
+  const badge=i=>heat[i]?`<span class="at-hot${heat[i]>=4?' big':''}" title="Asked in ${heat[i]} of ${H.total} papers (${H.years})">🔥 ${heat[i]}/${H.total}</span>`:'';
+  const hotBox=H?`<div class="at-hotbox"><b>🔥 නිතර අහන දේ (${H.years} Paper I)</b><ol>${H.list.map(h=>`<li><span class="at-hot${h.n>=4?' big':''}">${h.n}/${H.total}</span>${esc(h.q)}</li>`).join('')}</ol><small>${esc(H.src)}</small></div>`:'';
   const body=atTab==='story'
-    ?S.scenes.map(s=>`<section class="at-sc"><h4><span>${s.ic}</span>${esc(s.t)}</h4><p>${esc(s.story)}</p><ul>${s.keys.map(k=>`<li>${esc(k)}</li>`).join('')}</ul></section>`).join('')
-    :S.scenes.map((s,i)=>`<section class="at-pt"><h4>${s.ic} ${esc(s.t.replace(/^\d+\.\s*/,''))}</h4>${s.keys.map((k,j)=>{const id=i+'.'+j,on=AT.ok.includes(id);return `<label class="at-k${on?' ok':''}"><input type="checkbox" data-atk="${id}" ${on?'checked':''}><span>${esc(k)}</span></label>`}).join('')}</section>`).join('');
-  return `<div class="at">${tabs}<div class="at-b">${body}</div><p class="at-src">${esc(S.src)}</p></div>`}
+    ?S.scenes.map((s,i)=>`<section class="at-sc"><h4><span>${s.ic}</span>${esc(s.t)}${badge(i)}</h4><p>${esc(s.story)}</p><ul>${s.keys.map(k=>`<li>${esc(k)}</li>`).join('')}</ul></section>`).join('')
+    :S.scenes.map((s,i)=>`<section class="at-pt"><h4>${s.ic} ${esc(s.t.replace(/^\d+\.\s*/,''))}${badge(i)}</h4>${s.keys.map((k,j)=>{const id=i+'.'+j,on=AT.ok.includes(id);return `<label class="at-k${on?' ok':''}"><input type="checkbox" data-atk="${id}" ${on?'checked':''}><span>${esc(k)}</span></label>`}).join('')}</section>`).join('');
+  return `<div class="at">${tabs}${hotBox}<div class="at-b">${body}</div><p class="at-src">${esc(S.src)}</p></div>`}
 $('#lbList').addEventListener('click',e=>{const t=e.target.closest('[data-at]');if(!t)return;atTab=t.dataset.at;renderLibrary()});
 $('#lbList').addEventListener('change',e=>{const c=e.target.closest('[data-atk]');if(!c)return;const id=c.dataset.atk;AT.ok=AT.ok.filter(x=>x!==id);if(c.checked)AT.ok.push(id);lsSet(ATKEY,AT);renderLibrary()});
 
