@@ -76,7 +76,22 @@ main{margin-left:104px;padding:28px 32px 56px 16px}
 .streak{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--edge);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);font-size:13px;color:var(--ink-2)}
 .streak b{font-weight:500;color:var(--ink);font-size:15px}
 
-.grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);grid-template-areas:"routine cal" "routine rings" "week week";gap:16px}
+.grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);grid-template-areas:"routine cal" "routine rings" "routine cu" "week week";gap:16px}
+.cu{grid-area:cu;border-color:rgba(255,120,100,.28)}
+.cu[hidden]{display:none}
+.cu-owe{font-size:30px;font-weight:300;letter-spacing:-.02em;color:#ff9a8a;line-height:1;text-align:right;white-space:nowrap}
+.cu-owe small{font-size:12px;color:var(--ink-3);letter-spacing:0}
+.cu-r{display:grid;grid-template-columns:8px auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.05)}
+.cu-r i{width:8px;height:8px;border-radius:50%}
+.cu-d{color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cu-t{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cu-h{color:var(--ink-3);font-size:11.5px}
+.cu-r.late .cu-d{color:#ff8a7a}
+.cu-more{font-size:11.5px;color:var(--ink-3);padding-top:6px}
+.cu-cost{margin:10px 0 0;font-size:12px;color:#ffb1a5;line-height:1.5}
+.cu-cost b{font-weight:500}
+.cu-warn{margin:8px 0 0;font-size:11.5px;color:#ff8a7a}
+.cp-grid.bz{grid-template-columns:1fr 1fr}
 .card{background:var(--glass);border:1px solid var(--edge);border-radius:24px;padding:18px 20px;-webkit-backdrop-filter:blur(20px) saturate(130%);backdrop-filter:blur(20px) saturate(130%)}
 .card h2{margin:0;font-size:15px;font-weight:500}
 .card .sub{margin:3px 0 0;font-size:12.5px;color:var(--ink-3)}
@@ -454,7 +469,7 @@ body.page-pap #papPage{display:block}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
 @media (max-width:1080px){
-  .grid{grid-template-columns:1fr 1fr;grid-template-areas:"routine routine" "cal rings" "week week"}
+  .grid{grid-template-columns:1fr 1fr;grid-template-areas:"routine routine" "cu cu" "cal rings" "week week"}
 }
 @media (max-width:760px){
   .rail{left:50%;top:auto;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);flex-direction:row;gap:8px}
@@ -463,7 +478,7 @@ body.page-pap #papPage{display:block}
   .nb{width:42px;height:42px}
   .nb .tip{display:none}
   main{margin-left:0;padding:20px 16px 110px}
-  .grid{grid-template-columns:1fr;grid-template-areas:"routine" "cal" "rings" "week"}
+  .grid{grid-template-columns:1fr;grid-template-areas:"routine" "cu" "cal" "rings" "week"}
   .top{flex-direction:column}
   .corner{align-self:stretch;justify-content:space-between}
   .count{text-align:left}
@@ -985,6 +1000,12 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
         </div>
         <div class="bars" id="bars"></div>
       </section>
+
+      <section class="card cu" id="cuCard" aria-labelledby="cuT" hidden>
+        <div class="head"><div><h2 id="cuT">Catch-up</h2><p class="sub" id="cuSub"></p></div><div class="cu-owe" id="cuOwe"></div></div>
+        <div id="cuList"></div>
+        <p class="cu-cost" id="cuCost"></p>
+      </section>
     </div>
 
     <section id="focPage" aria-label="Focus">
@@ -1372,7 +1393,7 @@ $('#fsBtn').addEventListener('click',async()=>{
 const dkey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const addDays=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
 /* ================= Lock In data + scheduler ================= */
-const START=new Date(2026,10,11),EXAM=new Date(2027,7,3),CLASSES_BY=new Date(2027,5,27),JULY=new Date(2027,6,1);
+const START=new Date(2026,10,15)/* restarted from Sun 15 Nov 2026 (no classes were done 11-13 Nov) */,EXAM=new Date(2027,7,3),CLASSES_BY=new Date(2027,5,27),JULY=new Date(2027,6,1);
 const REC={mech:'https://t.me/Sci_Link/1007',therm:'https://t.me/Sci_Link/876',cur:'https://t.me/Sci_Link/1094',wave:'https://t.me/Sci_Link/1184',light:'https://t.me/Sci_Link/1214',mag:'https://t.me/Sci_Link/1207',elec:'https://t.me/Sci_Link/1255',matter:'https://t.me/Sci_Link/1354',estat:'https://t.me/Sci_Link/1448',mprop:'https://t.me/Sci_Link/1524',grav:'https://t.me/Sci_Link/1645',
   calc:'https://t.me/Sci_Link/855',redox:'https://www.youtube.com/live/Swwr_vNYU5s',bond:'https://t.me/Sci_Link/884',sblock:'https://youtu.be/G23RPKI--MY',pblock:'https://t.me/Sci_Link/865',dblock:'https://t.me/Sci_Link/865',period:'https://t.me/Sci_Link/858',kin:'https://t.me/Sci_Link/937',ener:'https://t.me/Sci_Link/1040',gas:'https://t.me/Sci_Link/1113',org:'https://t.me/Sci_Link/2194',isom:'https://youtu.be/upeffNyWyPA',guna:'https://youtube.com/live/Ibfn2DWZHog',equil:'https://t.me/Sci_Link/1331',echem:'https://t.me/Sci_Link/1498',ind:'https://t.me/Sci_Link/1227',
   mSep:'https://t.me/Vikumlk/213',mOct:'https://t.me/Vikumlk/214',mNov:'https://t.me/Vikumlk/234',mPure26:'https://t.me/Vikumlk/117',mApp26:'https://t.me/Vikumlk/119'};
@@ -1545,8 +1566,8 @@ function buildPlan(){
 /* the plan lives in the browser; it is built once from the data above */
 const CKEY='lockin-plan-v2';
 let CS=null;
-try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&(s.v===2||s.v===3||s.v===4))CS=s}catch(e){}
-if(!CS)CS={v:4,days:buildPlan().days,off:{},fresh:true};
+try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=5)CS=s}catch(e){}
+if(!CS)CS={v:5,days:buildPlan().days,off:{},fresh:true};
 const saveCS=()=>{try{localStorage.setItem(CKEY,JSON.stringify(CS))}catch(e){}};
 
 /* ---------- Date + countdown ---------- */
@@ -1592,8 +1613,8 @@ function nrHtml(){
   const study=dayEvents().filter(isStudy),hrs=study.filter(e=>e.done).reduce((a,e)=>a+(e.e-e.s)/60,0),skipped=study.filter(e=>!e.done);
   return `<div class="nr" id="nr"><div class="nr-h"><b>Night review</b><span>about a minute</span></div>`+
     `<label class="nr-f">Hours studied today<input type="number" id="nrH" min="0" max="16" step="0.25" value="${Math.round(hrs*4)/4}"></label>`+
-    `<div class="nr-f"><span>What got skipped? Ticked ones slide forward to the next slot for that subject.</span>`+
-    (skipped.length?skipped.map(e=>`<label class="nr-c"><input type="checkbox" ${e.fixed?'disabled':'checked'} data-id="${e.id}"><i style="background:var(--${e.subj})"></i>${esc(e.title)}${e.fixed?' (live class, can’t move)':''}</label>`).join(''):'<em>Nothing. Every study block is ticked. 🔥</em>')+`</div>`+
+    `<div class="nr-f"><span>What got skipped? Ticked classes and papers go to catch-up within 14 days. Ticked practice blocks are dropped.</span>`+
+    (skipped.length?skipped.map(e=>`<label class="nr-c"><input type="checkbox" ${e.missed?'disabled':'checked'} data-id="${e.id}"><i style="background:var(--${e.subj})"></i>${esc(e.title)}${e.fixed?(e.missed?' (recording already queued)':' (live class: watch the recording)'):e.cu?' (catch-up, due '+fmtD(e.cu.due)+')':cuQueueable(e)?'':' (practice, dropped)'}</label>`).join(''):'<em>Nothing. Every study block is ticked. 🔥</em>')+`</div>`+
     `<label class="nr-f">One thing I learned today<input type="text" id="nrL" placeholder="For example: range is greatest at 45°"></label>`+
     `<div class="nr-b"><button class="pri" id="nrSave">Done for today</button><button id="nrLater">Later</button></div></div>`;
 }
@@ -1602,10 +1623,10 @@ function saveReview(){
   const ids=[...document.querySelectorAll('.nr-c input:checked')].map(c=>c.dataset.id);
   try{localStorage.setItem('lockin-review-'+viewKey,JSON.stringify({h:parseFloat($('#nrH').value)||0,learned:$('#nrL').value.trim(),skipped:ids.length}))}catch(e){}
   snapAct('night review');
-  ids.forEach(id=>{const e=(CS.days[viewKey]||[]).find(x=>x.id===id);if(e&&!e.user)cascade(e.date,e.s,e.subj,new Set([e.id]))});
-  rev.done=true;saveCS();nrOpen=false;nudgeOn=false;renderRoutine();renderRings();renderBars();
+  const res=ids.map(id=>{const e=(CS.days[viewKey]||[]).find(x=>x.id===id);return e&&!e.user?skipToCU(e):'none'});
+  rev.done=true;saveCS();nrOpen=false;nudgeOn=false;renderRoutine();renderRings();renderBars();renderCU();
   const all=updateProg(),m=ids.length;
-  toast(m?`Saved. ${m} skipped block${m===1?'':'s'} slid forward in your plan.`:'Saved. Nothing skipped today.');
+  toast(m?`Saved. Skipped: ${cuSummary(res)}.`:'Saved. Nothing skipped today.');
   if(all){setMood('dance',7000);say('Whole day done! 🎉',3500)}else{setMood('cheer',2200);say('Good night, Theja 🌙',2600)}
 }
 $('#rows').addEventListener('click',e=>{
@@ -1885,28 +1906,103 @@ function setEm(el,s,e){const m=el.querySelector('.em');if(m)m.textContent=el.cla
 function cascade(fromK,fromS,subj,removed){
   const list=[];
   for(let d=dOf(fromK);d<=EXAM;d=addD(d,1)){const k=kOf(d);
-    list.push(...(CS.days[k]||[]).filter(x=>x.subj===subj&&x.kind!=='life'&&!x.fixed&&!x.done&&!x.user&&(k!==fromK||x.s>=fromS)).sort((a,b)=>a.s-b.s))}
+    list.push(...(CS.days[k]||[]).filter(x=>x.subj===subj&&x.kind!=='life'&&!x.fixed&&!x.done&&!x.user&&(!x.cu||removed.has(x.id))&&(k!==fromK||x.s>=fromS)).sort((a,b)=>a.s-b.s))}
   const contents=list.map(x=>({title:x.title,sub:x.sub,tag:x.tag,kind:x.kind,rec:x.rec||''}));
   const slots=list.filter(x=>!removed.has(x.id));
   slots.forEach((sl,i)=>Object.assign(sl,contents[i]));
   for(const x of list)if(removed.has(x.id)){const a=CS.days[x.date];a.splice(a.indexOf(x),1)}
 }
+
+/* ================= Catch-up: skipped work is paid back within 14 days =================
+   Whole blocks only (never split). Earliest free slot first:
+   a buffer-week slot, Sunday 17:00-22:30 (replaces Off duty), or a weekday 19:00 practice evening.
+   At most 1 catch-up block a day and 3 catch-up days a week. If nothing fits by the deadline, it slides forward. */
+const CU_DAYS=14,CU_WEEK=3,CU_END=1350;/* catch-up must end by 22:30, the night review */
+/* notes/practice fillers repeat every day, so a skipped one is dropped instead of queued */
+const cuQueueable=e=>e.cu||e.kind==='class'||e.kind==='paper'||/past-paper|self-study/i.test(e.sub||'');
+function cuWeekCount(k){const m=monOf(dOf(k));let n=0;for(let i=0;i<7;i++){const kk=kOf(addD(m,i));if((CS.days[kk]||[]).some(x=>x.cu))n++}return n}
+function cuSlotCap(a,x){let nx=CU_END;for(const y of a)if(y!==x&&y.s>x.s&&y.s<nx&&y.kind!=='review')nx=y.s;return Math.min(nx,CU_END)-x.s}
+function cuSlots(k){
+  const a=CS.days[k]||[],out=[],w=dOf(k).getDay();
+  a.filter(x=>x.tag==='Buffer week'&&!x.done&&!x.cu&&!x.user).forEach(x=>out.push(['buffer',x]));
+  if(w===0){const o=a.find(x=>x.kind==='life'&&x.title==='Off duty'&&!x.done);if(o)out.push(['sunday',o])}
+  const ev=a.find(x=>x.s===1140&&x.kind==='study'&&!x.done&&!x.fixed&&!x.user&&!x.cu&&x.tag!=='Buffer week');if(ev)out.push(['evening',ev]);
+  return out;
+}
+/* put one item into the earliest slot that fits; returns the new block or null */
+function cuPlace(it){
+  const tom=kOf(addD(today0,1)),st=[kOf(addD(dOf(it.from),1)),tom,kOf(START)].sort().pop();
+  for(let d=dOf(st);kOf(d)<=it.due&&d<=EXAM;d=addD(d,1)){
+    const k=kOf(d),a=CS.days[k];if(!a||CS.off[k]||a.some(x=>x.cu)||cuWeekCount(k)>=CU_WEEK)continue;
+    for(const[type,x]of cuSlots(k)){
+      if(cuSlotCap(a,x)<it.dur)continue;
+      const s=x.s,e=s+it.dur;
+      const ne={id:k+'-cu'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),date:k,s,e,subj:it.subj,kind:it.kind,title:it.title,
+        sub:`${it.sub||''}${it.sub?' · ':''}catch-up from ${fmtD(it.from)}, due ${fmtD(it.due)}`,tag:'Catch-up',rec:it.rec||'',unit:it.unit||'',cu:{from:it.from,due:it.due,type}};
+      if(it.bp)ne.bp=it.bp;
+      const rest=x.e-e;
+      if(type==='sunday'){a.splice(a.indexOf(x),1);if(rest>=30)a.push({id:k+'-cf'+Date.now().toString(36),date:k,s:e,e:x.e,title:'Free time',sub:'Catch-up Sunday. What is left of your evening.',tag:'',subj:'life',kind:'life'})}
+      else if(rest>=45)x.s=e;else a.splice(a.indexOf(x),1);
+      a.push(ne);return ne;
+    }
+  }
+  return null;
+}
+function cuItem(ev){
+  const from=ev.cu?ev.cu.from:ev.date,due=ev.cu?ev.cu.due:kOf(addD(dOf(ev.date),CU_DAYS));
+  const sub=ev.fixed?'Live class missed. Watch the recording':String(ev.sub||'').replace(/ · catch-up from .*$/,'');
+  return {title:ev.title,sub,subj:ev.subj,kind:ev.kind==='paper'?'paper':ev.kind==='class'?'class':'study',unit:ev.unit||'',rec:ev.rec||'',bp:ev.bp,dur:ev.e-ev.s,from,due};
+}
+/* skip one block. Returns 'placed', 'recording', 'dropped', 'slid' or 'none' */
+function skipToCU(ev){
+  if(ev.done||ev.user)return 'none';
+  const a=CS.days[ev.date]||[];
+  if(ev.fixed){/* a live class can't move: keep it, mark it missed, and queue its recording */
+    if(ev.missed)return 'none';ev.missed=true;const p=cuPlace(cuItem(ev));
+    if(!p){(CS.slid||(CS.slid=[])).push({id:ev.id,t:ev.title,d:kOf(today0),why:'recording'});return 'norec'}return 'recording'}
+  if(!cuQueueable(ev)){a.splice(a.indexOf(ev),1);return 'dropped'}
+  const p=cuPlace(cuItem(ev));
+  if(p){a.splice(a.indexOf(ev),1);return 'placed'}
+  cascade(ev.date,ev.s,ev.subj,new Set([ev.id]));
+  (CS.slid||(CS.slid=[])).push({id:ev.id,t:ev.title,d:kOf(today0)});CS.slid=CS.slid.slice(-10);
+  return 'slid';
+}
+/* Home card: what you owe and what skipping cost you */
+function renderCU(){
+  const card=$('#cuCard');if(!card)return;
+  const tk=kOf(today0>=START?today0:START),all=[];for(const k in CS.days)for(const e of CS.days[k])if(e.cu)all.push(e);
+  const owe=all.filter(e=>!e.done).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.s-b.s);
+  const late=owe.filter(e=>e.date<kOf(today0));
+  const slid=(CS.slid||[]).filter(x=>x.d>=kOf(addD(today0,-14)));
+  /* weeks in a row (this week backwards) that had any catch-up */
+  let run=0;for(let m=monOf(today0>=START?today0:START);m>=monOf(START);m=addD(m,-7)){let has=false;for(let i=0;i<7;i++)if((CS.days[kOf(addD(m,i))]||[]).some(x=>x.cu))has=true;if(!has)break;run++}
+  card.hidden=!owe.length&&!slid.length;if(card.hidden)return;
+  const h=owe.reduce((a,e)=>a+(e.e-e.s),0)/60,due=owe.map(e=>e.cu.due).sort()[0];
+  $('#cuOwe').innerHTML=owe.length?`${h%1?h.toFixed(1):h}<small> h owed</small>`:'0<small> h owed</small>';
+  $('#cuSub').textContent=owe.length?`Due by ${fmtD(due)}${run>1?` · ${run} weeks in a row with catch-up`:''}`:'All paid back';
+  const sun=new Set(owe.filter(e=>e.cu.type==='sunday').map(e=>e.date)).size,eve=owe.filter(e=>e.cu.type==='evening').length,buf=owe.filter(e=>e.cu.type==='buffer').length;
+  const cost=[sun?`${sun} Sunday Off duty`:'',eve?`${eve} practice evening${eve>1?'s':''}`:'',buf?`${buf} buffer slot${buf>1?'s':''}`:'',slid.length?`${slid.length} block${slid.length>1?'s':''} pushed your whole plan back`:''].filter(Boolean);
+  $('#cuCost').innerHTML=cost.length?`<b>Cost of skipping:</b> ${cost.join(' · ')}`:'';
+  $('#cuList').innerHTML=owe.slice(0,5).map(e=>`<div class="cu-r${e.date<tk?' late':''}"><i style="background:var(--${e.subj})"></i><span class="cu-d">${e.date<tk?'Missed · ':''}${fmtD(e.date)} ${hm(e.s)}</span><span class="cu-t">${esc(e.title)}</span><span class="cu-h">${+((e.e-e.s)/60).toFixed(1)} h</span></div>`).join('')+(owe.length>5?`<div class="cu-more">+${owe.length-5} more</div>`:'')+(late.length?`<p class="cu-warn">${late.length} catch-up block${late.length>1?'s are':' is'} overdue. Skip it in the Calendar to move it again.</p>`:'');
+}
+function cuSummary(r){const c=k=>r.filter(x=>x===k).length,p=[];
+  if(c('placed')+c('recording'))p.push(`${c('placed')+c('recording')} to catch-up`);if(c('slid'))p.push(`${c('slid')} slid forward (no room in 14 days)`);if(c('dropped'))p.push(`${c('dropped')} practice block${c('dropped')===1?'':'s'} dropped`);if(c('norec'))p.push(`no room for ${c('norec')} live-class recording${c('norec')===1?'':'s'}, watch it when you can`);
+  return p.join(', ')||'nothing to move'}
 function snapAct(label,key){lastAct={label,key,snap:JSON.stringify({days:CS.days,off:CS.off})}}
-function undoAct(){if(!lastAct)return;const o=JSON.parse(lastAct.snap);CS.days=o.days;CS.off=o.off;lastAct=null;saveCS();closePop();hideUT();renderWeek();renderMini()}
+function undoAct(){if(!lastAct)return;const o=JSON.parse(lastAct.snap);CS.days=o.days;CS.off=o.off;lastAct=null;saveCS();closePop();hideUT();renderWeek();renderMini();try{renderRoutine();renderCU()}catch(e){}}
 let utT;function undoToast(t){ut.querySelector('span').textContent=t;ut.classList.add('show');clearTimeout(utT);utT=setTimeout(hideUT,7000)}
 function hideUT(){ut.classList.remove('show')}
 ut.querySelector('button').addEventListener('click',undoAct);
 
 function takeOff(k){
   snapAct('day off',k);
-  const movable=(CS.days[k]||[]).filter(x=>x.kind!=='life'&&!x.fixed&&!x.done&&!x.user);
-  const by={};movable.forEach(x=>(by[x.subj]||(by[x.subj]=new Set())).add(x.id));
+  const movable=(CS.days[k]||[]).filter(x=>x.kind!=='life'&&x.kind!=='review'&&!x.fixed&&!x.done&&!x.user).sort((a,b)=>a.s-b.s);
   CS.off[k]=true;
-  for(const sj in by)cascade(k,0,sj,by[sj]);
+  const r=movable.map(skipToCU);
   CS.days[k]=(CS.days[k]||[]).filter(x=>x.fixed||x.user);
-  saveCS();closePop();renderWeek();renderMini();renderRoutine();renderRings();
+  saveCS();closePop();renderWeek();renderMini();renderRoutine();renderRings();renderCU();
   const live=CS.days[k].some(x=>x.fixed);
-  undoToast(`Day off. ${movable.length} study block${movable.length===1?'':'s'} slid into the next days.${live?' Your live Maths class is still on.':''}`);
+  undoToast(`Day off: ${cuSummary(r)}.${live?' Your live Maths class is still on.':''}`);
 }
 
 /* ---- popover: block editor ---- */
@@ -1944,7 +2040,7 @@ function openDay(k,r){
   formEv=null;pop.dataset.k=k;
   pop.innerHTML=`<div class="cp-top"><b class="cp-day">${DOW[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}</b><button class="cp-x" data-a="close" aria-label="Close">×</button></div>`+
     (off?`<p class="cp-p">This is a day off.</p>`+(lastAct&&lastAct.key===k?'<div class="cp-btns"><button class="pri" data-a="undo">Undo day off</button></div>':'<p class="cp-hint">Reset the demo calendar to bring it back.</p>')
-    :inPlan?'<div class="cp-btns"><button class="pri" data-a="routine">See this day’s routine</button></div><p class="cp-p">Taking it off slides every study block on it into the next days. Live Maths classes stay where they are.</p><div class="cp-btns"><button data-a="off">Take this day off</button><button data-a="add">Add a block</button></div>'
+    :inPlan?'<div class="cp-btns"><button class="pri" data-a="routine">See this day’s routine</button></div><p class="cp-p">Busy for part of it? Blocks in that time go to catch-up within 14 days. A live class becomes “watch the recording”.</p><div class="cp-grid bz"><label>From<input type="time" id="bzS" step="900" value="14:00"></label><label>To<input type="time" id="bzE" step="900" value="18:00"></label></div><div class="cp-err" id="bzErr"></div><div class="cp-btns"><button data-a="busy">I’m busy then</button></div><p class="cp-p">Taking the whole day off sends its classes to catch-up too.</p><div class="cp-btns"><button data-a="off">Take this day off</button><button data-a="add">Add a block</button></div>'
     :'<p class="cp-p">This day is outside your plan.</p><div class="cp-btns"><button data-a="add">Add a block</button></div>');
   showPop(r);
 }
@@ -1955,7 +2051,16 @@ pop.addEventListener('click',e=>{
   if(a==='close')return closePop();
   if(a==='save')return saveForm();
   if(a==='done'){snapAct('done');const fe=formEv;fe.done=!fe.done;saveCS();closePop();renderWeek();renderRoutine();renderRings();if(fe.done)offerFinish(fe);return}
-  if(a==='skip'){const ev=formEv;snapAct('skip');cascade(ev.date,ev.s,ev.subj,new Set([ev.id]));saveCS();closePop();renderWeek();undoToast(`Skipped. Every later ${SUBJ[ev.subj]} block slid forward one slot.`);return}
+  if(a==='skip'){const ev=formEv;snapAct('skip');const r=skipToCU(ev);saveCS();closePop();renderWeek();renderRoutine();renderCU();
+    const nb=r==='placed'||r==='recording'?Object.values(CS.days).flat().filter(x=>x.cu&&x.title===ev.title).sort((a,b)=>a.date<b.date?1:-1)[0]:null;
+    undoToast(r==='placed'||r==='recording'?`Skipped. Catch-up on ${fmtD(nb.date)} at ${hm(nb.s)}.`:r==='dropped'?'Skipped. Practice block dropped.':r==='slid'?`No room in 14 days, so every later ${SUBJ[ev.subj]} block slid forward.`:r==='norec'?'No room in 14 days for the recording. Watch it when you can.':'Nothing to skip.');return}
+  if(a==='busy'){const k=pop.dataset.k,s=toMin($('#bzS').value||'x:x'),en=toMin($('#bzE').value||'x:x');
+    if(isNaN(s)||isNaN(en)||en<=s){$('#bzErr').textContent='Pick a start and an end.';return}
+    snapAct('busy',k);
+    const hit=(CS.days[k]||[]).filter(x=>x.s<en&&x.e>s&&x.kind!=='life'&&x.kind!=='review'&&!x.done&&!x.user);
+    const r=hit.map(skipToCU);
+    (CS.days[k]||(CS.days[k]=[])).push({id:'u'+Date.now(),date:k,s,e:en,title:'Busy',sub:'You can’t follow the routine here',tag:'',subj:'life',kind:'life',user:true,busy:true});
+    saveCS();closePop();renderWeek();renderRoutine();renderCU();undoToast(`Busy ${hm(s)}–${hm(en)}: ${cuSummary(r)}.`);return}
   if(a==='del'){const ev=formEv;snapAct('delete');const arr=CS.days[ev.date];arr.splice(arr.indexOf(ev),1);saveCS();closePop();renderWeek();undoToast('Block deleted.');return}
   if(a==='off')return takeOff(pop.dataset.k);
   if(a==='undo')return undoAct();
@@ -2009,7 +2114,7 @@ $('#mNext').addEventListener('click',()=>{miniM=new Date(miniM.getFullYear(),min
 $('#mGrid').addEventListener('click',e=>{const b=e.target.closest('.md');if(!b)return;viewD=dOf(b.dataset.k);renderWeek();renderMini()});
 document.querySelectorAll('[data-f]').forEach(c=>c.addEventListener('change',()=>{filt[c.dataset.f]=c.checked;renderWeek()}));
 $('#cCreate').addEventListener('click',e=>{const tk=kOf(today0),k=curKeys.includes(tk)?tk:curKeys[0];openForm({date:k,s:1140,e:1200,title:'',sub:'',subj:'phy',tag:''},true,e.currentTarget.getBoundingClientRect())});
-$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:4,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
+$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:5,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
 /* ================= Report: weak-spot radar ================= */
 const UNITS={
   phy:[['Mechanics','Mechanics',16],['Waves','Waves',15],['Current electricity','Current el.',15],['Thermal physics','Thermal',14],['Light','Light',8],['Magnetic fields','Magnetism',8],['Electronics','Electronics',6],['Electrostatics','Electrostatics',5],['Matter and radiation','Matter & rad.',5],['Measurement','Measurement',5],['Mechanical properties','Mech. properties',4],['Gravitation','Gravitation',3]],
@@ -2162,7 +2267,7 @@ const BP=[
 const LIVE_T='සංයුක්ත ගණිතය: සජීවී පන්තිය';
 function applyBlueprint(days){
   for(const k in days)for(const e of days[k]){
-    if(e.subj==='maths'&&e.kind==='class'&&e.title===LIVE_T){const b=BP.find(x=>x.m===k.slice(0,7));
+    if(e.subj==='maths'&&e.kind==='class'&&e.title===LIVE_T&&!e.cu){const b=BP.find(x=>x.m===k.slice(0,7));
       if(b){e.sub='This month: '+b.t.map(t=>t[1]).join(', ');e.bp=b.m;if(b.rec&&!e.rec)e.rec=REC[b.rec]}}
     /* Sundays are a rest day from the workout */
     if(new Date(k+'T00:00').getDay()===0&&e.kind==='life'&&e.title==='Workout'){e.title='Off duty';e.sub='Rest day. No workout on Sundays.';e.rest=true}
@@ -2212,14 +2317,29 @@ function retimeDay(k,a){
   if(type==='paper'&&!a.some(e=>e.s===1065&&e.title==='Shower'))add.push({s:1065,e:1080,subj:'life',kind:'life',title:'Shower',sub:'',tag:''});
   add.forEach((x,i)=>a.push(Object.assign({id:k+'-n'+i,date:k},x)));
 }
+/* v4 to v5: restart the plan from Sun 15 Nov (nothing was done 11-13 Nov).
+   Ticked blocks and your own blocks are kept; the missed Fri 13 Nov live Maths class goes to catch-up as a recording. */
+function restartPlan(){
+  const old=CS,days=applyBlueprint(buildPlan().days),sk=kOf(START);
+  for(const k in old.days)for(const e of old.days[k]){
+    if(k<sk){if(e.done||e.user)(days[k]||(days[k]=[])).push(e);continue}
+    if(e.user){(days[k]||(days[k]=[])).push(e);continue}
+    if(e.done){const m=(days[k]||[]).find(x=>x.title===e.title&&!x.done);if(m)m.done=true}
+  }
+  const off={};for(const k in (old.off||{}))if(k>=sk)off[k]=old.off[k];
+  CS={v:5,days,off};
+  const live=(old.days['2026-11-13']||[]).find(x=>x.fixed&&x.subj==='maths');
+  if(live&&!live.done)cuPlace(cuItem(Object.assign({},live,{date:'2026-11-13'})));
+}
 (function migrate(){
   if(CS.fresh){delete CS.fresh;applyBlueprint(CS.days);saveCS();return}
-  if(CS.v===4){applyBlueprint(CS.days);saveCS();return}
+  if(CS.v===5){applyBlueprint(CS.days);saveCS();return}
   if(CS.v===3){
     const tk=dkey(new Date());
     for(const k in CS.days)if(k>=tk)retimeDay(k,CS.days[k]);
-    CS.v=4;applyBlueprint(CS.days);saveCS();return}
-  const old=CS,fresh={v:4,days:applyBlueprint(buildPlan().days),off:old.off||{}};
+    CS.v=4;}
+  if(CS.v===4){restartPlan();saveCS();return}
+  const old=CS,fresh={v:5,days:applyBlueprint(buildPlan().days),off:old.off||{}};
   for(const k in old.days)for(const e of old.days[k]){
     if(e.user){(fresh.days[k]||(fresh.days[k]=[])).push(e);continue}
     if(e.done){const m=(fresh.days[k]||[]).find(x=>x.title===e.title&&!x.done);if(m)m.done=true}
@@ -2473,6 +2593,10 @@ function doRestore(txt){
 const BKEY='lockin-bell-seen';
 function alerts(){
   const out=[],t=new Date(),tk=dkey(t),tm=dkey(addDays(t,1)),tmr=CS.days[tm]||[],td=CS.days[tk]||[];
+  /* catch-up: warn 3 days before a deadline, and when something didn't fit */
+  for(const k in CS.days)for(const e of CS.days[k])if(e.cu&&!e.done){const left=Math.round((dOf(e.cu.due)-today0)/864e5);
+    if(left<=3&&left>=0)out.push({id:'cu-'+e.id+'-'+tk,ic:'⏳',t:`Catch-up due in ${left} day${left===1?'':'s'}`,s:`${e.title} · ${fmtD(e.date)} ${hm(e.s)}`,go:'Calendar'})}
+  for(const x of (CS.slid||[]))if(x.d>=kOf(addD(today0,-7)))out.push({id:'slid-'+x.id,ic:'⚠️',t:x.why==='recording'?'No room for a recording':'No room in 14 days',s:x.why==='recording'?`${x.t}: find time to watch it yourself.`:`${x.t} slid forward. Your whole plan moved back one slot.`,go:'Calendar'});
   if(tmr.some(e=>e.kind==='paper'))out.push({id:'paper-'+tm,ic:'📝',t:'Paper day tomorrow',s:'Full paper in the morning. Sleep on time tonight.',go:'Papers'});
   if(tmr.some(e=>e.tag==='Buffer week')&&!td.some(e=>e.tag==='Buffer week'))out.push({id:'buf-'+tm,ic:'🧘',t:'Buffer week starts tomorrow',s:'Catch up anything skipped, or redo your weakest unit.',go:'Calendar'});
   if(t.getDay()===0){const open=MB.filter(m=>!m.ok).length;if(open)out.push({id:'quiz-'+tk,ic:'🐆',t:`Leo’s Sunday quiz: ${open} mistake${open===1?'':'s'}`,s:'Redo them in your Off duty slot, or any time today.',act:'quiz'})}
@@ -2560,7 +2684,7 @@ function restParts(ev){
 function pullUp(ev,rest){
   const removed=new Set(rest.map(x=>x.id)),list=[];
   for(let d=new Date(ev.date+'T00:00');d<=EXAM;d=addDays(d,1)){const k=dkey(d);
-    list.push(...(CS.days[k]||[]).filter(x=>x.subj===ev.subj&&x.kind==='class'&&!x.free&&!x.fixed&&!x.done&&!x.user&&(k!==ev.date||x.s>ev.s)).sort((a,b)=>a.s-b.s))}
+    list.push(...(CS.days[k]||[]).filter(x=>x.subj===ev.subj&&x.kind==='class'&&!x.free&&!x.fixed&&!x.done&&!x.user&&!x.cu&&(k!==ev.date||x.s>ev.s)).sort((a,b)=>a.s-b.s))}
   ev.sub=(ev.sub||'')+` · also covered: ${rest.map(x=>(x.sub||x.title).replace(/^.*?\(|\)$/g,'')).join(', ')}`;
   const keep=list.filter(x=>!removed.has(x.id)).map(x=>({title:x.title,sub:x.sub,tag:x.tag,kind:x.kind,rec:x.rec||'',unit:x.unit||'',bp:x.bp}));
   list.forEach((sl,i)=>{
@@ -3190,7 +3314,7 @@ if(synth)synth.getVoices();
 return renderAll;
 })();
 
-renderRoutine();renderRings();renderBars();renderCal();fShow();
+renderRoutine();renderRings();renderBars();renderCal();fShow();renderCU();
 const HASHP={'#calendar':'Calendar','#report':'Report','#papers':'Papers','#focus':'Focus','#library':'Library','#workout':'Workout'};
 if(HASHP[location.hash])go(HASHP[location.hash]);
 addEventListener('hashchange',()=>go(HASHP[location.hash]||'Home'));
