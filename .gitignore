@@ -1,0 +1,5 @@
+# Private notes for Claude Code: never publish
+CLAUDE.md
+.claude/
+# Reference demo only, not part of the live app
+workout-demo.html

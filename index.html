@@ -689,6 +689,103 @@ body.cal-fs .cmain{height:100%}
 .pose.newsit .pbody{-webkit-mask-image:none;mask-image:none}
 .pose.newsit .sv.b{opacity:0;transition:opacity .45s ease}
 .pose.newsit.look .sv.b{opacity:1}
+
+/* =================== WORKOUT =================== */
+#woPage{display:none}
+body.page-wo .top,body.page-wo .grid,body.page-wo .demo{display:none}
+body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1)}
+.wo-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,.8fr);grid-auto-rows:auto;gap:16px}
+.wo-today{grid-column:1;grid-row:1/3;padding:22px 24px;display:flex;flex-direction:column;gap:12px}
+.wo-map{grid-column:2;grid-row:1/3}
+.wo-stats{grid-column:3;grid-row:1/3;display:grid;grid-template-rows:repeat(3,1fr);gap:16px}
+.wo-30{grid-column:1/3}.wo-kg{grid-column:3}.wo-best{grid-column:1/3}.wo-week{grid-column:3}
+.wt-k{font-size:13px;color:var(--ink-3)}
+.wt-name{align-self:flex-start;font-size:clamp(40px,4.6vw,60px);font-weight:600;letter-spacing:-.03em;line-height:1;padding:12px 22px 14px;border:2px dashed rgba(255,255,255,.35);border-radius:22px;color:#fff}
+.wt-sub{font-size:13px;color:var(--ink-3)}
+.wt-chips{display:flex;gap:8px;flex-wrap:wrap}
+.wt-chips span{font-size:13px;color:var(--ink-2);padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.06)}
+.wt-lv{font-size:12.5px;color:#ffd76a;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.wt-start{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px 20px;border-radius:999px;background:#f4f1ec;color:#141312;font-size:16px;font-weight:600;transition:transform .15s ease,background .2s ease;margin-top:auto}
+.wt-start:hover{background:#fff}.wt-start:active{transform:scale(.98)}
+.wt-start .pl{display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:#141312;color:#fff;font-size:11px}
+.wt-start.sm{width:auto;padding:12px 26px;font-size:14px;margin:0}
+.wt-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.wd{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;border-radius:14px;background:rgba(255,255,255,.04);font-size:11px;color:var(--ink-3)}
+.wd b{font-size:14px;font-weight:500;color:var(--ink-2)}
+.wd.rest{background:transparent;border:1px dashed rgba(255,255,255,.14)}
+.wd.dn{background:#e9e5df}.wd.dn span,.wd.dn b{color:#141312}
+.wd.td{box-shadow:inset 0 0 0 2px var(--lav)}
+#woMap{display:grid;place-items:center;padding:6px 0}
+.mm-svg{width:min(100%,230px);height:auto}
+.mm-body{fill:#1c1b1a;stroke:rgba(255,255,255,.08);stroke-width:1}
+.mm-m{fill:#33302d;stroke:rgba(0,0,0,.35);stroke-width:.6;transition:fill .3s}
+.mm-m.on{fill:#b9a8ff}
+.mm-glow .mm-m{fill:none;stroke:none}.mm-glow .mm-m.on{fill:#b9a8ff;opacity:.7}
+.wo-mus{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.wo-mus span{font-size:11.5px;padding:4px 10px;border-radius:999px;background:rgba(185,168,255,.12);color:var(--lav)}
+.ws{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:14px}
+.ws b{font-size:34px;font-weight:600;letter-spacing:-.02em}
+.ws span{font-size:12px;color:var(--ink-3)}
+.ws .ws-d{position:absolute;top:10px;right:12px;color:var(--green);font-size:11.5px}
+.w30{display:grid;grid-template-columns:repeat(10,1fr);gap:8px;margin-top:12px}
+.w30 i{height:24px;border-radius:999px;background:transparent;border:1.5px solid rgba(255,255,255,.12)}
+.w30 i.on{background:#e9e5df;border-color:#e9e5df}
+.w30 i.rest{border-style:dashed;border-color:rgba(255,255,255,.22)}
+.w30 i.td{border-color:var(--lav);box-shadow:0 0 0 1px var(--lav),0 0 12px rgba(185,168,255,.4)}
+.wo-big{font-size:28px;font-weight:600;letter-spacing:-.02em;margin-top:8px}
+.wo-big small{font-size:13px;font-weight:400;color:var(--ink-3)}
+.wo-kgc,.wo-chart{margin-top:10px;height:90px}
+.wo-chart{height:130px}
+.wo-kgc svg,.wo-chart svg{width:100%;height:100%;overflow:visible}
+.wo-chart .gl{stroke:rgba(255,255,255,.06);stroke-width:1}
+.l1{fill:none;stroke:#e9e5df;stroke-width:2;vector-effect:non-scaling-stroke}
+.l2{fill:none;stroke:#8a847c;stroke-width:2;stroke-dasharray:5 4;vector-effect:non-scaling-stroke}
+.a1{fill:url(#none);fill:rgba(233,229,223,.08)}
+.k1,.k2{display:inline-block;width:14px;height:2px;margin:0 6px 3px 0;background:#e9e5df;vertical-align:middle}.k2{background:repeating-linear-gradient(90deg,#8a847c 0 5px,transparent 5px 8px);margin-left:10px}
+.wo-dash{height:100%;border-bottom:1px dashed rgba(255,255,255,.18)}
+.wbars{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;height:120px;margin-top:10px}
+.wb{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}
+.wb em{font-style:normal;font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.wb i{width:100%;max-width:40px;border-radius:10px;background:#d9d4cc}
+.wb i.z{background:repeating-linear-gradient(135deg,rgba(255,255,255,.12) 0 2px,transparent 2px 6px);border:1px solid rgba(255,255,255,.1)}
+.wb.td i{background:#fff;box-shadow:0 0 14px rgba(255,255,255,.25)}
+.wb span{font-size:11px;color:var(--ink-3)}
+/* session */
+.wsp{width:min(94vw,680px);max-height:90vh;display:flex;flex-direction:column;border-radius:26px;background:#1d1c1a;border:1px solid var(--edge);box-shadow:0 30px 80px rgba(0,0,0,.6);overflow:hidden}
+.wsp-h{display:flex;align-items:center;gap:14px;padding:20px 22px 10px}
+.wsp-k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--lav)}
+.wsp-h h2{margin:4px 0 0;font-size:22px;font-weight:500}
+.wsp-clock{margin-left:auto;font-size:22px;font-weight:300;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.wsp-prog{height:4px;margin:0 22px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}
+.wsp-prog i{display:block;height:100%;background:#e9e5df;transition:width .3s ease}
+.wsp-n{margin:6px 22px 0;font-size:11.5px;color:var(--ink-3)}
+.wsp-b{flex:1;overflow:auto;padding:8px 22px 16px}
+.wsp-b section{padding:12px 0;border-bottom:1px solid var(--edge)}
+.wsp-b h3{display:flex;align-items:center;gap:10px;margin:0 0 10px;font-size:14px;font-weight:500}
+.wsp-b h3 i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.08);font-style:normal;font-size:11px}
+.wsp-b h3 small{font-weight:400;color:var(--ink-3)}
+.ws-c{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;color:var(--ink-2);cursor:pointer}
+.ws-c input{accent-color:#b9a8ff;width:16px;height:16px}
+.ws-c input:checked+span{color:var(--ink-3);text-decoration:line-through}
+.ws-ex{padding:8px 0}
+.ws-h{display:flex;justify-content:space-between;gap:10px;font-size:13.5px}
+.ws-h b{font-weight:500}.ws-h span{color:var(--ink-3);font-size:12.5px;white-space:nowrap}
+.ws-sets{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.sp{width:52px;height:38px;border-radius:999px;border:1.5px dashed rgba(255,255,255,.2);color:var(--ink-3);font:inherit;font-size:13px;text-align:center;background:transparent}
+.sp:hover{border-color:rgba(255,255,255,.4);color:var(--ink)}
+input.sp.dn{border:none;background:#e9e5df;color:#141312;font-weight:600;-moz-appearance:textfield}
+input.sp.dn::-webkit-inner-spin-button{display:none}
+.ws-u{font-size:11.5px;color:var(--ink-3)}
+.wsp-f{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:14px 22px;border-top:1px solid var(--edge);font-size:12px;color:var(--ink-3)}
+#woRest{position:fixed;left:50%;bottom:28px;z-index:70;display:flex;align-items:center;gap:12px;padding:12px 14px 12px 20px;border-radius:24px;background:rgba(20,19,18,.96);border:1px solid var(--edge);box-shadow:0 20px 60px rgba(0,0,0,.6);transform:translate(-50%,160%);opacity:0;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s;pointer-events:none}
+#woRest.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+.rs-k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--lav)}
+.rs-clock .pt-card{width:40px;height:56px;font-size:38px;border-radius:9px}
+.rs-clock .pt-col{font-size:28px}
+@media (max-width:1100px){.wo-grid{grid-template-columns:1fr 1fr}.wo-today{grid-column:1/3;grid-row:auto}.wo-map{grid-column:1;grid-row:auto}.wo-stats{grid-column:2;grid-row:auto}.wo-30,.wo-best{grid-column:1/3}.wo-kg,.wo-week{grid-column:auto}}
+.wsp-h .ds-x{margin-left:0}
+#woRest{bottom:104px}
+
 </style>
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#1a1918"></head>
 <body>
@@ -710,6 +807,7 @@ body.cal-fs .cmain{height:100%}
       <button class="nb" data-go="Focus" aria-label="Focus"><svg viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 2M9.5 2.8h5"/></svg><span class="tip">Focus</span></button>
       <button class="nb" data-go="Papers" aria-label="Papers"><svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M9.5 13h6M9.5 17h6"/></svg><span class="tip">Papers</span></button>
       <button class="nb" data-go="Library" aria-label="Library"><svg viewBox="0 0 24 24"><path d="M4.5 4.5h4v15h-4zM10 4.5h4v15h-4z"/><path d="m15.6 5.2 3.8-1 3.1 14.6-3.8 1z"/></svg><span class="tip">Library</span></button>
+      <button class="nb" data-go="Workout" aria-label="Workout"><svg viewBox="0 0 24 24"><path d="M6.5 7v10M3.5 9.5v5M17.5 7v10M20.5 9.5v5M6.5 12h11"/></svg><span class="tip">Workout</span></button>
       <button class="nb" data-go="Report" aria-label="Report"><svg viewBox="0 0 24 24"><path d="M3.5 20.5h17M7 17v-5M12 17V6M17 17v-8"/></svg><span class="tip">Report</span></button>
     </div>
     <div class="pill">
@@ -794,7 +892,22 @@ body.cal-fs .cmain{height:100%}
       </div>
     </section>
 
-    <section id="libPage" aria-label="Library">
+    <section id="woPage" aria-label="Workout">
+      <div class="pp-top">
+        <div><h1 class="rp-h">Workout</h1><p class="sub lb-sub" id="woSub"></p></div>
+      </div>
+      <div class="wo-grid">
+        <section class="card wo-today" id="woToday"></section>
+        <section class="card wo-map"><div class="head"><div><h2>Target muscles</h2><p class="sub">What today’s session works</p></div><div class="seg" id="woSide" role="group" aria-label="Side"><button data-s="front">Front</button><button data-s="back">Back</button></div></div><div id="woMap"></div><div class="wo-mus" id="woMus"></div></section>
+        <div class="wo-stats" id="woStats"></div>
+        <section class="card wo-30"><div class="head"><h2>Last 30 days</h2><span class="sub" id="wo30n"></span></div><div class="w30" id="wo30"></div></section>
+        <section class="card wo-kg"><div class="head"><div><h2>Body weight</h2></div><div><button class="tbtn2" id="woGoal">Goal</button> <button class="tbtn2" id="woKgAdd">+ Log</button></div></div><div class="wo-big" id="woKg"></div><p class="sub" id="woKgS"></p><div class="wo-kgc" id="woKgC"></div></section>
+        <section class="card wo-best"><div class="head"><div><h2>Best set, last 8 weeks</h2><p class="sub"><i class="k1"></i>Push-ups <i class="k2"></i>Pull-ups</p></div></div><div class="wo-big" id="woBestN"></div><div class="wo-chart" id="woBest"></div></section>
+        <section class="card wo-week"><div class="head"><div><h2>This week</h2><p class="sub">Reps per day</p></div></div><div class="wo-big" id="woWeekN"></div><div class="wbars" id="woWeek"></div></section>
+      </div>
+    </section>
+
+<section id="libPage" aria-label="Library">
       <div class="pp-top">
         <div><h1 class="rp-h">Library</h1><p class="sub lb-sub" id="lbSub"></p></div>
         <div class="seg" id="lbSeg" role="group" aria-label="Subject"><button data-s="phy" aria-pressed="true">Physics</button><button data-s="chem" aria-pressed="false">Chemistry</button><button data-s="maths" aria-pressed="false">Combined Maths</button></div>
@@ -891,7 +1004,7 @@ body.cal-fs .cmain{height:100%}
       </div>
     </section>
 
-    <div class="demo"><span>Lock In · build 3.1</span>
+    <div class="demo"><span>Lock In · build 4</span>
 
 <button id="replay">Replay intro</button><button id="sndBtn" aria-pressed="true">Intro sound: on</button></div>
   </main>
@@ -899,6 +1012,13 @@ body.cal-fs .cmain{height:100%}
 <div class="toast" id="toast" role="status"></div>
 <aside id="daySheet" aria-label="Day routine"><div class="ds-h"><div><h2 id="dsTitle"></h2><p id="dsSub"></p></div><button class="ds-x" data-x aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div id="dsRows"></div><div class="ds-f"><button class="tbtn2" id="dsHome">Open on Home</button></div></aside>
 <div id="fin" role="status"><span id="finTxt"></span><button class="pbtn" data-no>No</button><button class="pbtn pri" data-yes>Yes, move my plan up</button></div>
+<div class="ovl" id="woSess" role="dialog" aria-label="Workout session"><div class="wsp">
+  <div class="wsp-h"><div><span class="wsp-k">Workout</span><h2 id="wsTitle"></h2></div><span class="wsp-clock" id="wsClock">0:00</span><button class="ds-x" id="wsX" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="wsp-prog"><i id="wsProg"></i></div><p class="wsp-n" id="wsCount"></p>
+  <div class="wsp-b" id="wsBody"></div>
+  <div class="wsp-f"><span>Tap a set when it’s done. Change the number if you did more.</span><button class="wt-start sm" id="wsFinish">Finish workout</button></div>
+</div></div>
+<div id="woRest" role="status"><span class="rs-k">Rest</span><div class="pt-clock rs-clock" id="rsClock"><div class="pt-pair"><div class="pt-card"><span>0</span></div><div class="pt-card"><span>1</span></div></div><span class="pt-col">:</span><div class="pt-pair"><div class="pt-card"><span>1</span></div><div class="pt-card"><span>5</span></div></div></div><button class="pbtn" id="rsPlus">+15 s</button><button class="pbtn" id="rsSkip">Skip</button></div>
 <div class="ovl" id="quiz" role="dialog" aria-label="Sunday quiz"><div class="qz" id="qzBody"></div></div>
 <div class="ovl" id="hall" role="dialog" aria-label="Exam hall"><div class="h-in"><div class="h-for" id="hFor"></div><div id="hTime">0:00:00</div><p class="h-note">Exam-hall mode. No notes, no phone, no switching. Just you and the paper.</p><button class="pbtn" id="hEnd">Leave exam hall</button></div></div>
 <div id="calPop" role="dialog" aria-label="Block details"></div>
@@ -1043,15 +1163,16 @@ let toastT;function toast(t){const el=$('#toast');el.textContent=t;el.classList.
 /* ---------- Toolbar ---------- */
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
 function go(p){
-  if(!['Home','Calendar','Report','Papers','Focus','Library'].includes(p)){toast(`${p} is coming soon.`);return}
+  if(!['Home','Calendar','Report','Papers','Focus','Library','Workout'].includes(p)){toast(`${p} is coming soon.`);return}
   document.querySelectorAll('[data-go]').forEach(x=>{if(x.dataset.go===p)x.setAttribute('aria-current','page');else x.removeAttribute('aria-current')});
-  document.body.classList.toggle('page-cal',p==='Calendar');document.body.classList.toggle('page-rep',p==='Report');document.body.classList.toggle('page-pap',p==='Papers');document.body.classList.toggle('page-foc',p==='Focus');document.body.classList.toggle('page-lib',p==='Library');closePop();
+  document.body.classList.toggle('page-cal',p==='Calendar');document.body.classList.toggle('page-rep',p==='Report');document.body.classList.toggle('page-pap',p==='Papers');document.body.classList.toggle('page-foc',p==='Focus');document.body.classList.toggle('page-lib',p==='Library');document.body.classList.toggle('page-wo',p==='Workout');closePop();
   try{history.replaceState(null,'',p==='Home'?location.pathname+location.search:'#'+p.toLowerCase())}catch(e){}
   if(p==='Calendar'){renderWeek();renderMini()}
   if(p==='Report')renderReport();
   if(p==='Papers')renderLib();
   if(p==='Focus')fShow();
   if(p==='Library')renderLibrary();
+  if(p==='Workout')renderWorkout();
   if(p==='Home'){renderRoutine();renderRings();renderBars();renderCal()}
   moveInd();
 }
@@ -1261,7 +1382,7 @@ function renderRoutine(){
   $('#rows').innerHTML=evs.length?evs.map(e=>{
     const rev=e.kind==='review',cls=rev?'review':e.kind==='paper'?'paper':e.subj,isNow=!preview&&viewKey===todayKey&&nowM>=e.s&&nowM<e.e;
     const rl=e.rec||recFor(e.title);
-    const second=[e.tag?`<span class="qt">${esc(e.tag)}</span>`:'',e.fixed?'<span class="qt live">LIVE</span>':'',e.sub?`<span>${esc(e.sub)}</span>`:'',rev?'<span>Night review, about a minute</span>':'',rl?`<a class="rec" href="${rl}" target="_blank" rel="noopener">▶ Recordings</a>`:''].filter(Boolean).join('');
+    const second=[e.tag?`<span class="qt">${esc(e.tag)}</span>`:'',e.fixed?'<span class="qt live">LIVE</span>':'',e.sub?`<span>${esc(e.sub)}</span>`:'',rev?'<span>Night review, about a minute</span>':'',rl?`<a class="rec" href="${rl}" target="_blank" rel="noopener">▶ Recordings</a>`:'',e.title==='Workout'&&viewKey===todayKey?'<a class="rec" href="#" onclick="go(\'Workout\');return false">▶ Open workout</a>':''].filter(Boolean).join('');
     return `<div class="r ${cls}${e.done?' done':''}${isNow?' now':''}${rev&&nudgeOn&&!e.done?' pulse':''}" data-id="${e.id}">`+
       `<span class="t">${e.e-e.s<=5?fm(e.s):fm(e.s)+'–'+fm(e.e)}</span><span class="bar"></span>`+
       `<span class="w"><span class="ti">${esc(e.title)}</span>${second?`<span class="si">${second}</span>`:''}</span>`+
@@ -2178,8 +2299,208 @@ $('#fin').addEventListener('click',e=>{
   finEv=null;
 });
 
+/* =================== WORKOUT =================== */
+const WKEY='lockin-workout-v1';
+let WO=lsGet(WKEY,{log:{},lvl:{},weight:[],goal:null});
+const saveWO=()=>lsSet(WKEY,WO);
+/* exercises: each level = [name, low, high, unit] */
+const WEX={
+  pull:{m:'Pull',lv:[['Neutral pull-ups',4,6],['Pull-ups',5,8],['Wide pull-ups',5,8],['Archer pull-ups',3,5]]},
+  push:{m:'Push',lv:[['Push-ups',12,15],['Decline push-ups',10,15],['Archer push-ups',6,10],['Pseudo planche push-ups',6,10]]},
+  pike:{lv:[['Pike push-ups',8,10],['Elevated pike push-ups',6,10],['Wall handstand hold',20,40,'s']]},
+  chin:{lv:[['Negative chin-ups, 3 s down',3,5],['Chin-ups',4,8],['Close-grip chin-ups',5,8]]},
+  diamond:{lv:[['Diamond push-ups',8,12],['Decline diamond push-ups',8,12]]},
+  squat:{lv:[['Squats',20,25],['Jump squats',12,15],['Bulgarian split squats, each leg',8,12],['Shrimp squats, each leg',5,8]]},
+  lunge:{lv:[['Reverse lunges, each leg',10,12],['Walking lunges, each leg',12,15],['Jump lunges, each leg',8,12]]},
+  bridge:{lv:[['Glute bridges',15,20],['Single-leg glute bridges, each leg',10,15]]},
+  knee:{lv:[['Hanging knee raises',8,12],['Hanging leg raises',6,10],['Toes to bar',4,8]]},
+  plank:{lv:[['Plank',40,60,'s'],['Long-lever plank',30,45,'s']]},
+  rope:{lv:[['Rope intervals, 30 s fast and 30 s easy',12,12,'min']]},
+  circuit:{lv:[['Circuit: 10 push-ups, 15 squats, 4 pull-ups',1,1,'round']]},
+  side:{lv:[['Side plank, each side',30,45,'s']]}
+};
+const WDAY={
+  upper:{n:'Upper',full:'Upper body',mu:['chest','delts','biceps','triceps','lats','traps'],
+    warm:['Arm circles, 30 s each way','Scapula pull-ups ×8','10 easy push-ups'],
+    main:[['pull',4],['push',4],['pike',3]],acc:[['chin',3],['diamond',2]],
+    cool:['Chest stretch in a doorway, 30 s','Lat stretch hanging from the bar, 30 s','Slow breathing, 1 min']},
+  legs:{n:'Legs',full:'Legs and core',mu:['quads','glutes','hams','abs','calves'],
+    warm:['Leg swings ×10 each leg','1 min rope or bike','10 easy squats'],
+    main:[['squat',4],['lunge',3],['bridge',3]],acc:[['knee',3],['plank',2]],
+    cool:['Hip flexor stretch, 30 s each side','Hamstring stretch, 30 s each side','Slow breathing, 1 min']},
+  cond:{n:'Conditioning',full:'Conditioning',mu:['calves','quads','abs','chest','delts'],
+    warm:['3 min easy on the bike'],
+    main:[['rope',1],['circuit',2]],acc:[['side',2]],
+    cool:['Full-body stretch, 2 min']},
+  maint:{n:'Maintain',full:'Exam maintenance',mu:['chest','lats','quads','abs'],
+    warm:['Arm circles and leg swings, 2 min'],
+    main:[['pull',3],['push',3],['squat',3]],acc:[['plank',2]],
+    cool:['Light stretch, 2 min']}
+};
+const WPH=[{to:'2026-12-31',n:'Phase 1 · Foundation',s:'Learn the movements, build the habit'},
+  {to:'2027-04-30',n:'Phase 2 · Build',s:'Harder versions, more sets close to failure'},
+  {to:'2027-06-30',n:'Phase 3 · Build, cut only if needed',s:'Keep building. Short cut only if fat crept on'},
+  {to:'2027-08-31',n:'Exam maintenance',s:'Three short sessions a week'}];
+const wPhase=k=>WPH.find(p=>k<=p.to)||WPH[WPH.length-1];
+function wDayType(d){const k=dkey(d),w=d.getDay();
+  if(k>'2027-06-30')return [1,3,5].includes(w)?'maint':null;
+  return w===0?null:[null,'upper','legs','cond','upper','legs','cond'][w];}
+const wLv=k=>Math.min(WO.lvl[k]||0,WEX[k].lv.length-1);
+const wCur=k=>WEX[k].lv[wLv(k)];
+const wUnit=u=>u==='s'?'s':u==='min'?'min':u==='round'?'round':'reps';
+const wRange=l=>l[1]===l[2]?`${l[1]} ${wUnit(l[3])}`:`${l[1]}–${l[2]}${l[3]==='s'?' s':''}`;
+function wExList(t){const D=WDAY[t];return [...D.main.map(x=>[...x,'main']),...D.acc.map(x=>[...x,'acc'])]}
+function wSession(k){return WO.log[k]}
+function wNewSession(k,t){return WO.log[k]={t,start:Date.now(),done:false,min:0,warm:[],cool:[],sets:Object.fromEntries(wExList(t).map(([e,n])=>[e,Array(n).fill(null)])),lv:Object.fromEntries(wExList(t).map(([e])=>[e,wLv(e)]))}}
+/* history helpers */
+function wDays(){return Object.keys(WO.log).filter(k=>WO.log[k].done).sort()}
+function wSetsReps(k){const s=WO.log[k];let sets=0,reps=0;if(!s)return[0,0];for(const e in s.sets)for(const v of s.sets[e])if(v!=null){sets++;const u=WEX[e].lv[s.lv[e]||0][3];if(!u)reps+=v}return[sets,reps]}
+function wReady(e){/* level up when the last 2 sessions with this exercise hit the top of the range on every set */
+  const L=WEX[e].lv;if(wLv(e)>=L.length-1)return false;const top=L[wLv(e)][2];
+  const hist=wDays().filter(k=>WO.log[k].sets[e]&&(WO.log[k].lv[e]||0)===wLv(e)).slice(-2);
+  return hist.length===2&&hist.every(k=>WO.log[k].sets[e].every(v=>v!=null&&v>=top));}
+/* ---------- muscle map ---------- */
+let wSide='front';
+function wMap(mu){
+  const on=m=>mu.includes(m)?'on':'';
+  const front=`
+    <ellipse class="mm-m ${on('delts')}" cx="62" cy="88" rx="15" ry="13"/><ellipse class="mm-m ${on('delts')}" cx="138" cy="88" rx="15" ry="13"/>
+    <path class="mm-m ${on('chest')}" d="M72 84 Q99 76 99 84 L99 112 Q86 120 72 110 Z"/><path class="mm-m ${on('chest')}" d="M128 84 Q101 76 101 84 L101 112 Q114 120 128 110 Z"/>
+    <ellipse class="mm-m ${on('biceps')}" cx="53" cy="122" rx="9" ry="19"/><ellipse class="mm-m ${on('biceps')}" cx="147" cy="122" rx="9" ry="19"/>
+    <ellipse class="mm-m" cx="47" cy="166" rx="7" ry="20"/><ellipse class="mm-m" cx="153" cy="166" rx="7" ry="20"/>
+    ${[0,1,2].map(r=>`<rect class="mm-m ${on('abs')}" x="86" y="${120+r*20}" width="13" height="17" rx="5"/><rect class="mm-m ${on('abs')}" x="101" y="${120+r*20}" width="13" height="17" rx="5"/>`).join('')}
+    <path class="mm-m ${on('abs')}" d="M74 120 Q80 150 84 176 L78 176 Q70 150 72 120Z"/><path class="mm-m ${on('abs')}" d="M126 120 Q120 150 116 176 L122 176 Q130 150 128 120Z"/>
+    <path class="mm-m ${on('quads')}" d="M78 196 Q74 236 82 268 L97 268 Q100 236 98 200 Z"/><path class="mm-m ${on('quads')}" d="M122 196 Q126 236 118 268 L103 268 Q100 236 102 200 Z"/>
+    <ellipse class="mm-m ${on('calves')}" cx="86" cy="308" rx="8" ry="22"/><ellipse class="mm-m ${on('calves')}" cx="114" cy="308" rx="8" ry="22"/>`;
+  const back=`
+    <path class="mm-m ${on('traps')}" d="M82 74 Q100 64 118 74 L112 96 Q100 104 88 96 Z"/>
+    <ellipse class="mm-m ${on('delts')}" cx="62" cy="88" rx="15" ry="13"/><ellipse class="mm-m ${on('delts')}" cx="138" cy="88" rx="15" ry="13"/>
+    <path class="mm-m ${on('lats')}" d="M74 96 Q88 100 98 104 L98 150 Q84 146 78 132 Q72 114 74 96Z"/><path class="mm-m ${on('lats')}" d="M126 96 Q112 100 102 104 L102 150 Q116 146 122 132 Q128 114 126 96Z"/>
+    <ellipse class="mm-m ${on('triceps')}" cx="53" cy="122" rx="9" ry="19"/><ellipse class="mm-m ${on('triceps')}" cx="147" cy="122" rx="9" ry="19"/>
+    <ellipse class="mm-m" cx="47" cy="166" rx="7" ry="20"/><ellipse class="mm-m" cx="153" cy="166" rx="7" ry="20"/>
+    <rect class="mm-m" x="86" y="154" width="28" height="22" rx="8"/>
+    <ellipse class="mm-m ${on('glutes')}" cx="88" cy="194" rx="13" ry="14"/><ellipse class="mm-m ${on('glutes')}" cx="112" cy="194" rx="13" ry="14"/>
+    <path class="mm-m ${on('hams')}" d="M78 212 Q76 242 84 268 L97 268 Q99 240 98 214 Z"/><path class="mm-m ${on('hams')}" d="M122 212 Q124 242 116 268 L103 268 Q101 240 102 214 Z"/>
+    <ellipse class="mm-m ${on('calves')}" cx="86" cy="304" rx="10" ry="24"/><ellipse class="mm-m ${on('calves')}" cx="114" cy="304" rx="10" ry="24"/>`;
+  return `<svg viewBox="0 0 200 350" class="mm-svg" aria-hidden="true"><defs><filter id="mmGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter></defs>
+    <path class="mm-body" d="M100 12 a20 23 0 1 1 -0.1 0Z M88 56 L112 56 L114 70 Q140 72 152 84 Q164 98 162 140 L160 190 L152 192 L148 146 L140 112 L132 180 Q128 196 124 200 L122 270 L126 336 L108 338 L104 276 L100 210 L96 276 L92 338 L74 336 L78 270 L76 200 Q72 196 68 180 L60 112 L52 146 L48 192 L40 190 L38 140 Q36 98 48 84 Q60 72 86 70Z"/>
+    <g class="mm-glow" filter="url(#mmGlow)">${wSide==='front'?front:back}</g><g>${wSide==='front'?front:back}</g></svg>`;
+}
+const MUN={chest:'Chest',delts:'Shoulders',biceps:'Biceps',triceps:'Triceps',lats:'Lats',traps:'Traps',quads:'Quads',glutes:'Glutes',hams:'Hamstrings',abs:'Core',calves:'Calves'};
+/* ---------- render page ---------- */
+function renderWorkout(){
+  const d=new Date(),k=dkey(d),t=wDayType(d),ph=wPhase(k),s=wSession(k);
+  $('#woSub').textContent=`${ph.n}. ${ph.s}.`;
+  /* today card */
+  const D=t&&WDAY[t];
+  const exs=t?wExList(t):[];
+  const lvlUp=exs.map(x=>x[0]).filter(wReady);
+  const wk=[1,2,3,4,5,6,0].map(i=>{const dd=addDays(d,(i===0?7:i)-((d.getDay()+6)%7+1)),kk=dkey(dd),tt=wDayType(dd),lg=WO.log[kk];
+    return `<div class="wd${kk===k?' td':''}${lg&&lg.done?' dn':''}${!tt?' rest':''}"><span>${DOW[dd.getDay()].slice(0,1)}</span><b>${tt?WDAY[tt].n.slice(0,1):'·'}</b></div>`}).join('');
+  $('#woToday').innerHTML=t?`
+    <div class="wt-k">Today</div>
+    <div class="wt-name">${D.n}</div>
+    <div class="wt-sub">${D.full} · Upper, Legs, Conditioning</div>
+    <div class="wt-chips"><span>◷ ~30 min</span><span>${exs.length} exercises</span><span>${exs.reduce((a,x)=>a+x[1],0)} sets</span></div>
+    ${lvlUp.length?`<div class="wt-lv">⬆ Ready to level up: ${lvlUp.map(e=>`<button class="tbtn2" data-lv="${e}">${esc(wCur(e)[0])} → ${esc(WEX[e].lv[wLv(e)+1][0])}</button>`).join(' ')}</div>`:''}
+    <button class="wt-start" id="woStart">${s&&s.done?'✓ Done today · Open again':s?'▶ Continue workout':'<span class="pl">▶</span> Start Workout'}</button>
+    <div class="wt-week">${wk}</div>`
+   :`<div class="wt-k">Today</div><div class="wt-name">Rest</div><div class="wt-sub">${d.getDay()===0?'Sunday is your rest day. Muscles grow while you recover.':'No session planned today.'}</div><div class="wt-week">${wk}</div>`;
+  /* muscles */
+  $('#woMap').innerHTML=wMap(D?D.mu:[]);
+  document.querySelectorAll('#woSide button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===wSide));
+  $('#woMus').innerHTML=D?D.mu.map(m=>`<span>${MUN[m]}</span>`).join(''):'<span>Recovery</span>';
+  /* stat tiles: this month vs last */
+  const mk=k.slice(0,7),pm=dkey(new Date(d.getFullYear(),d.getMonth()-1,1)).slice(0,7);
+  const agg=pre=>{let w=0,st=0,r=0;for(const kk of wDays())if(kk.startsWith(pre)){w++;const[a,b]=wSetsReps(kk);st+=a;r+=b}return[w,st,r]};
+  const A=agg(mk),B=agg(pm),pct=(a,b)=>b?`${a>=b?'+':''}${Math.round((a-b)/b*100)}%`:'';
+  $('#woStats').innerHTML=[['Workouts',A[0],B[0]],['Sets',A[1],B[1]],['Reps',A[2],B[2]]].map(([n,a,b])=>`<div class="ws card"><span class="ws-d">${pct(a,b)}</span><b>${a}</b><span>${n} this month</span></div>`).join('');
+  /* last 30 days */
+  let cells='',done30=0;
+  for(let i=29;i>=0;i--){const dd=addDays(d,-i),kk=dkey(dd),lg=WO.log[kk],tt=wDayType(dd);if(lg&&lg.done)done30++;
+    cells+=`<i class="${lg&&lg.done?'on':''}${!tt?' rest':''}${i===0?' td':''}" title="${fmtD(kk)}${lg&&lg.done?' · done':!tt?' · rest':''}"></i>`}
+  $('#wo30').innerHTML=cells;$('#wo30n').textContent=`${done30} · goal 6/wk`;
+  /* this week reps */
+  const mon=addDays(d,-((d.getDay()+6)%7));let mx=1;const wr=[0,1,2,3,4,5].map(i=>{const r=wSetsReps(dkey(addDays(mon,i)))[1];mx=Math.max(mx,r);return r});
+  const tot=wr.reduce((a,b)=>a+b,0);
+  $('#woWeekN').innerHTML=`${tot} <small>reps</small>`;
+  $('#woWeek').innerHTML=wr.map((r,i)=>`<div class="wb${dkey(addDays(mon,i))===k?' td':''}"><em>${r||''}</em><i style="height:${Math.max(6,r/mx*100)}%" class="${r?'':'z'}"></i><span>${'MTWTFS'[i]}</span></div>`).join('');
+  /* best reps, 8 weeks */
+  const wks=[...Array(8)].map((_,i)=>addDays(mon,-7*(7-i)));
+  const best=e=>wks.map(w=>{let b=0;for(let j=0;j<7;j++){const lg=WO.log[dkey(addDays(w,j))];if(lg&&lg.sets[e])for(const v of lg.sets[e])if(v!=null)b=Math.max(b,v)}return b});
+  const P=best('push'),Q=best('pull'),top=Math.max(5,...P,...Q);
+  const line=(arr,cls)=>{const pts=arr.map((v,i)=>[i/7*300,110-v/top*95]);return `<path class="${cls}" d="M${pts.map(p=>p.join(' ')).join(' L')}"/>`+(cls==='l1'?`<path class="a1" d="M0 110 L${pts.map(p=>p.join(' ')).join(' L')} L300 110Z"/>`:'')};
+  $('#woBest').innerHTML=`<svg viewBox="0 0 300 120" preserveAspectRatio="none">${[0,1,2,3].map(i=>`<line x1="0" x2="300" y1="${15+i*31.6}" y2="${15+i*31.6}" class="gl"/>`).join('')}${line(P,'l1')}${line(Q,'l2')}</svg>`;
+  $('#woBestN').innerHTML=`${P[7]} <small>push-ups</small> · ${Q[7]} <small>pull-ups</small>`;
+  /* weight */
+  const W=WO.weight.slice().sort((a,b)=>a.d<b.d?-1:1),lw=W[W.length-1];
+  $('#woKg').innerHTML=lw?`${lw.kg.toFixed(1)} <small>kg</small>`:'<small>No weigh-in yet</small>';
+  $('#woKgS').textContent=W.length>1?`${(lw.kg-W[0].kg>=0?'+':'')}${(lw.kg-W[0].kg).toFixed(1)} kg since ${fmtD(W[0].d)}${WO.goal?` · goal ${WO.goal} kg`:''}`:WO.goal?`Goal ${WO.goal} kg`:'Weigh in once a week, same time of day.';
+  if(W.length>1){const lo=Math.min(...W.map(x=>x.kg))-.5,hi=Math.max(...W.map(x=>x.kg))+.5;
+    $('#woKgC').innerHTML=`<svg viewBox="0 0 300 70" preserveAspectRatio="none"><path class="l1" d="M${W.map((x,i)=>`${i/(W.length-1)*300} ${66-(x.kg-lo)/(hi-lo)*60}`).join(' L')}"/></svg>`}
+  else $('#woKgC').innerHTML='<div class="wo-dash"></div>';
+}
+/* ---------- session ---------- */
+let wsK=null,wsI=null;
+function openSession(){
+  const k=dkey(new Date()),t=wDayType(new Date());if(!t)return;
+  wsK=k;if(!WO.log[k])wNewSession(k,t);saveWO();
+  $('#woSess').classList.add('show');renderSession();clearInterval(wsI);wsI=setInterval(sessClock,1000);sessClock();
+}
+function sessClock(){const s=WO.log[wsK];if(!s)return;const m=Math.floor((Date.now()-s.start)/1000);$('#wsClock').textContent=s.done?`${s.min} min`:`${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}`}
+function renderSession(){
+  const s=WO.log[wsK],D=WDAY[s.t];
+  $('#wsTitle').textContent=`${D.n} · ${D.full}`;
+  const chk=(arr,key)=>arr.map((x,i)=>`<label class="ws-c"><input type="checkbox" data-c="${key}" data-i="${i}" ${s[key].includes(i)?'checked':''}><span>${esc(x)}</span></label>`).join('');
+  const ex=(list,ph)=>list.map(([e,n])=>{const l=WEX[e].lv[s.lv[e]||0],u=l[3];
+    return `<div class="ws-ex"><div class="ws-h"><b>${esc(l[0])}</b><span>${n} × ${wRange(l)}</span></div><div class="ws-sets">${s.sets[e].map((v,i)=>v==null?`<button class="sp" data-e="${e}" data-i="${i}" data-ph="${ph}" aria-label="Set ${i+1}">${i+1}</button>`:`<input class="sp dn" type="number" min="0" max="999" value="${v}" data-e="${e}" data-i="${i}" aria-label="Set ${i+1} ${wUnit(u)}">`).join('')}<span class="ws-u">${wUnit(u)}</span></div></div>`}).join('');
+  $('#wsBody').innerHTML=`
+    <section><h3><i>1</i>Warm-up <small>3 min</small></h3>${chk(D.warm,'warm')}</section>
+    <section><h3><i>2</i>Main work <small>15–18 min</small></h3>${ex(D.main,'main')}</section>
+    <section><h3><i>3</i>Accessory <small>6–8 min</small></h3>${ex(D.acc,'acc')}</section>
+    <section><h3><i>4</i>Cool-down <small>2–3 min</small></h3>${chk(D.cool,'cool')}</section>`;
+  const all=Object.values(s.sets).flat(),dn=all.filter(v=>v!=null).length;
+  $('#wsProg').style.width=(dn/all.length*100)+'%';$('#wsCount').textContent=`${dn} of ${all.length} sets`;
+  $('#wsFinish').textContent=s.done?'Close':'Finish workout';
+}
+$('#wsBody').addEventListener('change',e=>{const s=WO.log[wsK];
+  const c=e.target.closest('[data-c]');if(c){const a=s[c.dataset.c],i=+c.dataset.i;c.checked?a.includes(i)||a.push(i):a.splice(a.indexOf(i),1);saveWO();return}
+  const p=e.target.closest('input.sp');if(p){const v=p.value.trim();s.sets[p.dataset.e][+p.dataset.i]=v===''?null:Math.max(0,Math.round(+v));saveWO();renderSession()}});
+$('#wsBody').addEventListener('click',e=>{const b=e.target.closest('button.sp');if(!b)return;const s=WO.log[wsK],ex=b.dataset.e,i=+b.dataset.i;
+  /* log the set at last session's value, or the bottom of the range; edit the number if you did more */
+  const prev=wDays().filter(k=>k!==wsK&&WO.log[k].sets[ex]&&(WO.log[k].lv[ex]||0)===(s.lv[ex]||0)).pop();
+  const l=WEX[ex].lv[s.lv[ex]||0];s.sets[ex][i]=prev&&WO.log[prev].sets[ex][i]!=null?WO.log[prev].sets[ex][i]:l[1];saveWO();renderSession();
+  const left=s.sets[ex].some(v=>v==null)||Object.values(s.sets).flat().some(v=>v==null);
+  if(left&&!l[3])startRest(b.dataset.ph==='main'?75:60);});
+$('#wsFinish').addEventListener('click',()=>{const s=WO.log[wsK];
+  if(!s.done){const all=Object.values(s.sets).flat();if(all.filter(v=>v!=null).length<all.length/2&&!confirm('Less than half your sets are logged. Finish anyway?'))return;
+    s.done=true;s.min=Math.max(1,Math.round((Date.now()-s.start)/60000));saveWO();
+    const r=(CS.days[wsK]||[]).find(x=>x.kind==='life'&&x.title==='Workout');if(r&&!r.done){r.done=true;saveCS();renderRoutine()}
+    toast(`Workout done in ${s.min} min. 💪`);if(typeof hop==='function'){hop();say('Strong work! 💪',2600)}}
+  closeSession();});
+$('#wsX').addEventListener('click',closeSession);
+function closeSession(){$('#woSess').classList.remove('show');clearInterval(wsI);stopRest();renderWorkout()}
+/* rest timer */
+let rsEnd=0,rsI=null,rsPrev='';
+function startRest(sec){rsEnd=Date.now()+sec*1000;$('#woRest').classList.add('show');clearInterval(rsI);rsI=setInterval(restTick,200);restTick()}
+function stopRest(){clearInterval(rsI);$('#woRest').classList.remove('show')}
+function restTick(){const left=Math.max(0,Math.ceil((rsEnd-Date.now())/1000)),d=String(Math.floor(left/60)).padStart(2,'0')+String(left%60).padStart(2,'0');
+  document.querySelectorAll('#rsClock .pt-card span').forEach((c,i)=>{if(rsPrev[i]!==d[i]){c.textContent=d[i];const p=c.parentNode;p.classList.remove('flip');void p.offsetWidth;if(rsPrev)p.classList.add('flip')}});rsPrev=d;
+  if(left<=0){stopRest();chime();toast('Rest over. Next set.')}}
+$('#rsPlus').addEventListener('click',()=>{rsEnd+=15000;restTick()});
+$('#rsSkip').addEventListener('click',stopRest);
+/* page events */
+$('#woPage').addEventListener('click',e=>{
+  if(e.target.closest('#woStart'))return openSession();
+  const lv=e.target.closest('[data-lv]');if(lv){const k=lv.dataset.lv;WO.lvl[k]=wLv(k)+1;saveWO();toast(`Levelled up: ${wCur(k)[0]}. Start at the bottom of the range.`);renderWorkout();return}
+  const sd=e.target.closest('#woSide button');if(sd){wSide=sd.dataset.s;renderWorkout();return}
+  if(e.target.closest('#woKgAdd')){const v=parseFloat(prompt('Your weight today, in kg:',(WO.weight.at(-1)||{kg:64.5}).kg));if(!v||v<30||v>200)return;
+    const k=dkey(new Date());WO.weight=WO.weight.filter(x=>x.d!==k);WO.weight.push({d:k,kg:Math.round(v*10)/10});saveWO();renderWorkout();return}
+  if(e.target.closest('#woGoal')){const v=parseFloat(prompt('Goal weight in kg (leave empty to clear):',WO.goal||''));WO.goal=v>30&&v<200?Math.round(v*10)/10:null;saveWO();renderWorkout()}
+});
+
 renderRoutine();renderRings();renderBars();renderCal();fShow();
-const HASHP={'#calendar':'Calendar','#report':'Report','#papers':'Papers','#focus':'Focus','#library':'Library'};
+const HASHP={'#calendar':'Calendar','#report':'Report','#papers':'Papers','#focus':'Focus','#library':'Library','#workout':'Workout'};
 if(HASHP[location.hash])go(HASHP[location.hash]);
 addEventListener('hashchange',()=>go(HASHP[location.hash]||'Home'));
 
