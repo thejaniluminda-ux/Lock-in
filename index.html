@@ -1922,19 +1922,25 @@ const CU_DAYS=14,CU_WEEK=3,CU_END=1350;/* catch-up must end by 22:30, the night 
 const cuQueueable=e=>e.cu||e.kind==='class'||e.kind==='paper'||/past-paper|self-study/i.test(e.sub||'');
 function cuWeekCount(k){const m=monOf(dOf(k));let n=0;for(let i=0;i<7;i++){const kk=kOf(addD(m,i));if((CS.days[kk]||[]).some(x=>x.cu))n++}return n}
 function cuSlotCap(a,x){let nx=CU_END;for(const y of a)if(y!==x&&y.s>x.s&&y.s<nx&&y.kind!=='review')nx=y.s;return Math.min(nx,CU_END)-x.s}
-function cuSlots(k){
+function cuSlots(k,pay){
   const a=CS.days[k]||[],out=[],w=dOf(k).getDay();
   a.filter(x=>x.tag==='Buffer week'&&!x.done&&!x.cu&&!x.user).forEach(x=>out.push(['buffer',x]));
   if(w===0){const o=a.find(x=>x.kind==='life'&&x.title==='Off duty'&&!x.done);if(o)out.push(['sunday',o])}
   const ev=a.find(x=>x.s===1140&&x.kind==='study'&&!x.done&&!x.fixed&&!x.user&&!x.cu&&x.tag!=='Buffer week');if(ev)out.push(['evening',ev]);
+  /* pay-back mode: when nothing else fits, catch-up eats your notes and practice blocks too (morning, Saturday and Sunday daytime) */
+  if(pay)a.filter(x=>x.kind==='study'&&x!==ev&&!x.done&&!x.fixed&&!x.user&&!x.cu&&x.tag!=='Buffer week'&&!cuQueueable(x)).sort((p,q)=>q.e-q.s-(p.e-p.s)).forEach(x=>out.push(['filler',x]));
   return out;
 }
-/* put one item into the earliest slot that fits; returns the new block or null */
-function cuPlace(it){
+/* put one item into the earliest slot that fits; returns the new block or null.
+   First pass: normal slots, 1 a day. Pay-back pass: also notes/practice blocks, and a Sunday can take 2. Only then does it slide. */
+function cuPlace(it){return cuTry(it,false)||cuTry(it,true)}
+function cuTry(it,pay){
   const tom=kOf(addD(today0,1)),st=[kOf(addD(dOf(it.from),1)),tom,kOf(START)].sort().pop();
   for(let d=dOf(st);kOf(d)<=it.due&&d<=EXAM;d=addD(d,1)){
-    const k=kOf(d),a=CS.days[k];if(!a||CS.off[k]||a.some(x=>x.cu)||cuWeekCount(k)>=CU_WEEK)continue;
-    for(const[type,x]of cuSlots(k)){
+    const k=kOf(d),a=CS.days[k];if(!a||CS.off[k])continue;
+    const onDay=a.filter(x=>x.cu).length,maxDay=pay&&d.getDay()===0?2:1;
+    if(onDay>=maxDay||(!onDay&&cuWeekCount(k)>=CU_WEEK))continue;
+    for(const[type,x]of cuSlots(k,pay)){
       if(cuSlotCap(a,x)<it.dur)continue;
       const s=x.s,e=s+it.dur;
       const ne={id:k+'-cu'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),date:k,s,e,subj:it.subj,kind:it.kind,title:it.title,
@@ -1980,8 +1986,8 @@ function renderCU(){
   const h=owe.reduce((a,e)=>a+(e.e-e.s),0)/60,due=owe.map(e=>e.cu.due).sort()[0];
   $('#cuOwe').innerHTML=owe.length?`${h%1?h.toFixed(1):h}<small> h owed</small>`:'0<small> h owed</small>';
   $('#cuSub').textContent=owe.length?`Due by ${fmtD(due)}${run>1?` · ${run} weeks in a row with catch-up`:''}`:'All paid back';
-  const sun=new Set(owe.filter(e=>e.cu.type==='sunday').map(e=>e.date)).size,eve=owe.filter(e=>e.cu.type==='evening').length,buf=owe.filter(e=>e.cu.type==='buffer').length;
-  const cost=[sun?`${sun} Sunday Off duty`:'',eve?`${eve} practice evening${eve>1?'s':''}`:'',buf?`${buf} buffer slot${buf>1?'s':''}`:'',slid.length?`${slid.length} block${slid.length>1?'s':''} pushed your whole plan back`:''].filter(Boolean);
+  const sun=new Set(owe.filter(e=>e.cu.type==='sunday').map(e=>e.date)).size,eve=owe.filter(e=>e.cu.type==='evening').length,buf=owe.filter(e=>e.cu.type==='buffer').length,fil=owe.filter(e=>e.cu.type==='filler').length;
+  const cost=[sun?`${sun} Sunday Off duty`:'',eve?`${eve} practice evening${eve>1?'s':''}`:'',fil?`${fil} notes/practice block${fil>1?'s':''}`:'',buf?`${buf} buffer slot${buf>1?'s':''}`:'',slid.length?`${slid.length} block${slid.length>1?'s':''} pushed your whole plan back`:''].filter(Boolean);
   $('#cuCost').innerHTML=cost.length?`<b>Cost of skipping:</b> ${cost.join(' · ')}`:'';
   $('#cuList').innerHTML=owe.slice(0,5).map(e=>`<div class="cu-r${e.date<tk?' late':''}"><i style="background:var(--${e.subj})"></i><span class="cu-d">${e.date<tk?'Missed · ':''}${fmtD(e.date)} ${hm(e.s)}</span><span class="cu-t">${esc(e.title)}</span><span class="cu-h">${+((e.e-e.s)/60).toFixed(1)} h</span></div>`).join('')+(owe.length>5?`<div class="cu-more">+${owe.length-5} more</div>`:'')+(late.length?`<p class="cu-warn">${late.length} catch-up block${late.length>1?'s are':' is'} overdue. Skip it in the Calendar to move it again.</p>`:'');
 }
