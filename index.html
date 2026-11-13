@@ -588,6 +588,20 @@ b,.n,.lb-meta,.fo-nums b{font-variant-numeric:tabular-nums}
 .lb-rec{position:absolute;top:14px;right:14px;font-size:11.5px;color:var(--lav);text-decoration:none;padding:4px 8px;border-radius:999px;background:rgba(185,168,255,.08)}
 .lb-rec:hover{background:rgba(185,168,255,.18)}
 .lb-main[data-u] .lb-t{padding-right:96px}
+.lb-card.open.atomc{grid-column:1/-1}
+.at{padding:10px 18px 14px 20px;border-top:1px solid var(--edge)}
+.at-seg{width:max-content;margin-bottom:10px}
+.at-seg small{color:var(--ink-3);font-size:10.5px}
+.at-b{max-height:460px;overflow:auto;padding-right:4px}
+.at-sc{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.at-sc h4,.at-pt h4{display:flex;gap:8px;align-items:center;margin:0 0 6px;font-size:13px;font-weight:500;color:var(--ink)}
+.at-sc p{margin:0 0 8px;font-size:13px;line-height:1.75;color:var(--ink-2)}
+.at-sc ul{margin:0;padding-left:18px;font-size:12px;line-height:1.7;color:var(--lav)}
+.at-pt{padding:8px 0}
+.at-k{display:flex;gap:10px;align-items:flex-start;padding:5px 0;font-size:12.5px;line-height:1.55;color:var(--ink-2);cursor:pointer}
+.at-k input{margin-top:3px;accent-color:#5fe08a;width:15px;height:15px;flex:none}
+.at-k.ok span{color:var(--ink-3);text-decoration:line-through}
+.at-src{margin:10px 0 0;font-size:11px;color:var(--ink-3)}
 .lb-dep{display:flex;flex-direction:column;gap:2px;margin-top:8px;font-size:11px;color:var(--ink-3);text-align:left}
 .lb-dep span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lb-days{list-style:none;margin:0;padding:4px 18px 14px 20px;border-top:1px solid var(--edge);max-height:320px;overflow:auto}
@@ -1231,6 +1245,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
 <div id="calPop" role="dialog" aria-label="Block details"></div>
 <div id="calToast" role="status"><span></span><button>Undo</button></div>
 
+<script src="atom-story.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 const app=$('#app'),intro=$('#intro');
@@ -2448,7 +2463,7 @@ function renderLibrary(){
     const nx=bl.find(e=>!e.done&&e.date>=tk),pc=bl.length?d/bl.length:0,rec=REC[u.rec||u.k]||'',ex=/x$/.test(u.k);
     const st=pc>=1?'Finished':nx?`Next: ${fmtD(nx.date)}`:bl.length?'Overdue':'Not in plan';
     const open=lbOpen===u.k;
-    return `<article class="lb-card${pc>=1?' fin':''}${open?' open':''}" style="--sub:var(--${u.subj})">
+    return `<article class="lb-card${pc>=1?' fin':''}${open?' open':''}${u.k==='atom'?' atomc':''}" style="--sub:var(--${u.subj})">
       <button class="lb-main" data-u="${u.k}" aria-expanded="${open}">
         <div class="lb-t"><span class="si">${esc(u.si)}${ex?' <em>extras</em>':''}</span><span class="en">${esc(u.en)}</span></div>
         <div class="lb-meta">${u.tag?`<span class="qt">${esc(u.tag)}</span>`:''}${cfOpen(u.k)?`<span class="qt cfq">? ${cfOpen(u.k)} open</span>`:''}<span>${d} of ${bl.length} days</span><span class="lb-st">${st}</span></div>
@@ -2459,6 +2474,7 @@ function renderLibrary(){
       </button>
       ${rec?`<a class="lb-rec" href="${rec}" target="_blank" rel="noopener">▶ Recordings</a>`:''}
       ${open?cfList(u.k):''}
+      ${open&&u.k==='atom'?atomHtml():''}
       ${open?`<ol class="lb-days">${bl.map(e=>`<li class="${e.done?'dn':''}"><span class="dd">${fmtD(e.date)}</span><span class="dt">${esc(e.title)}</span><span class="ds">${e.done?'Done':e.date<tk?'Missed':''}</span></li>`).join('')||'<li><span class="dt">No days for this unit in the plan.</span></li>'}</ol>`:''}
     </article>`}).join('');
   $('#lbSub').textContent=`${us.length} units · ${dn} of ${tot} class days done`;
@@ -2489,6 +2505,18 @@ function renderMathsLib(box,tk){
 }
 $('#lbSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;lbS=b.dataset.s;lbOpen=null;renderLibrary()});
 $('#lbList').addEventListener('click',e=>{const b=e.target.closest('.lb-main[data-u]');if(!b)return;lbOpen=lbOpen===b.dataset.u?null:b.dataset.u;renderLibrary()});
+/* Atomic structure: story tab and tickable key points (ticks saved in lockin-atom-v1) */
+let atTab='story';const ATKEY='lockin-atom-v1';let AT=lsGet(ATKEY,{ok:[]});
+function atomHtml(){
+  const S=window.ATOM_STORY;if(!S)return '<p class="at-src">Story file did not load. Check your connection once, then it works offline.</p>';
+  const all=S.scenes.flatMap((s,i)=>s.keys.map((k,j)=>({id:i+'.'+j,k,s:i}))),dn=all.filter(x=>AT.ok.includes(x.id)).length;
+  const tabs=`<div class="seg at-seg" role="group" aria-label="Atomic structure view"><button data-at="story" aria-pressed="${atTab==='story'}">කතාව</button><button data-at="points" aria-pressed="${atTab==='points'}">ප්‍රධාන කරුණු <small>${dn}/${all.length}</small></button></div>`;
+  const body=atTab==='story'
+    ?S.scenes.map(s=>`<section class="at-sc"><h4><span>${s.ic}</span>${esc(s.t)}</h4><p>${esc(s.story)}</p><ul>${s.keys.map(k=>`<li>${esc(k)}</li>`).join('')}</ul></section>`).join('')
+    :S.scenes.map((s,i)=>`<section class="at-pt"><h4>${s.ic} ${esc(s.t.replace(/^\d+\.\s*/,''))}</h4>${s.keys.map((k,j)=>{const id=i+'.'+j,on=AT.ok.includes(id);return `<label class="at-k${on?' ok':''}"><input type="checkbox" data-atk="${id}" ${on?'checked':''}><span>${esc(k)}</span></label>`}).join('')}</section>`).join('');
+  return `<div class="at">${tabs}<div class="at-b">${body}</div><p class="at-src">${esc(S.src)}</p></div>`}
+$('#lbList').addEventListener('click',e=>{const t=e.target.closest('[data-at]');if(!t)return;atTab=t.dataset.at;renderLibrary()});
+$('#lbList').addEventListener('change',e=>{const c=e.target.closest('[data-atk]');if(!c)return;const id=c.dataset.atk;AT.ok=AT.ok.filter(x=>x!==id);if(c.checked)AT.ok.push(id);lsSet(ATKEY,AT);renderLibrary()});
 
 /* ---------- Focus mode ---------- */
 const FKEY='lockin-focus-v1';
