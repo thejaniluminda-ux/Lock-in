@@ -2279,7 +2279,9 @@ const DRIVE='https://drive.google.com/file/d/',PZ='https://paperzone.lk/al-strea
  LIB.phy['2025'].m.push(['Marking scheme',W+'39724/2025-a-l-marking/105207/2025-al-physics-marking-sm-past-papers-wiki.pdf']);
  LIB.maths['1998']=LIB.maths['1998']||{p:[],m:[],g:[]};
  LIB.maths['1998'].p.push(['Full paper',W+'24233/1998-a-l/61732/1998-a-l-combined-mathematics-past-paper-sinhala-medium.pdf']);
- for(const s of ['phy','chem','maths'])LIB[s]['2026']=LIB[s]['2026']||{p:[],m:[],g:[]};}
+ for(const s of ['phy','chem','maths'])LIB[s]['2026']=LIB[s]['2026']||{p:[],m:[],g:[]};
+ /* 2026 papers live in Theja's own Drive folder "Lock In papers" (1iE4FlaVfGsZv1yTbT9qHhADSuTWk1JQa) */
+ LIB.phy['2026'].p.push(['Paper I (MCQ)','1WvUkMvfKzfOASLGFUylnEYl13Vd8e-rY']);}
 const PKEY='lockin-papers-v1';
 let PP=(()=>{try{return JSON.parse(localStorage.getItem(PKEY)||'null')}catch(e){return null}})()||{done:{},score:{},log:[]};
 const savePP=()=>{try{localStorage.setItem(PKEY,JSON.stringify(PP))}catch(e){}};
