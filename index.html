@@ -588,6 +588,8 @@ b,.n,.lb-meta,.fo-nums b{font-variant-numeric:tabular-nums}
 .lb-rec{position:absolute;top:14px;right:14px;font-size:11.5px;color:var(--lav);text-decoration:none;padding:4px 8px;border-radius:999px;background:rgba(185,168,255,.08)}
 .lb-rec:hover{background:rgba(185,168,255,.18)}
 .lb-main[data-u] .lb-t{padding-right:96px}
+.lb-dep{display:flex;flex-direction:column;gap:2px;margin-top:8px;font-size:11px;color:var(--ink-3);text-align:left}
+.lb-dep span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lb-days{list-style:none;margin:0;padding:4px 18px 14px 20px;border-top:1px solid var(--edge);max-height:320px;overflow:auto}
 .lb-days li{display:grid;grid-template-columns:86px 1fr auto;gap:10px;padding:7px 0;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.04)}
 .lb-days .dd{color:var(--ink-3);font-variant-numeric:tabular-nums}
@@ -989,7 +991,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
       </section>
 
       <section class="card rings" aria-labelledby="ringTitle">
-        <div class="head"><div><h2 id="ringTitle">Classes finished</h2><p class="sub">Ticked class blocks, out of your whole plan</p></div></div>
+        <div class="head"><div><h2 id="ringTitle">Classes finished</h2><p class="sub" id="ringSub">Ticked class blocks, out of your whole plan</p></div></div>
         <div class="rw" id="ringWrap"></div>
       </section>
 
@@ -1437,35 +1439,78 @@ const CLASSES=[
 ];
 /* Missed Maths classes (5 h each, done as two evening parts) */
 const MCU=[['මාපාංක ශ්‍රිත','Modulus functions','Pure A','mSep'],['ගම්‍යතාව සහ ආවේගය','Momentum and impulse','Applied A','mSep'],['ද්විපද ප්‍රසාරණය','Binomial expansion','Pure A','mSep'],['ප්‍රක්ෂිප්ත','Projectiles','Applied A','mSep'],['ගණිත අභ්‍යුහන මූලධර්මය','Mathematical induction','Pure A','mSep'],['ප්‍රවේග-කාල ප්‍රස්තාර','Velocity-time graphs','Applied B Q11','mSep'],['වර්ග සමීකරණ','Quadratic equations','Pure B Q11','mOct'],['සාපේක්ෂ ප්‍රවේගය','Relative velocity','Applied B Q11','mOct'],['බහුපද ශ්‍රිත','Polynomials','Pure B Q11','mOct'],['කාර්යය, ශක්තිය සහ ක්ෂමතාව','Work, energy and power','Applied A','mOct']];
+/* ===== Blueprint order (agreed 14 Nov 2026) =====
+   Every class item has an id "unit:day" and a list of items it needs first. The scheduler only takes an item once
+   everything it needs is already scheduled. w = priority: big, exam-heavy units go first once their foundations are done.
+   Chemistry: Atomic structure → Calculations (+ Redox) → Bonding → Periodicity → Inorganic (s, p, d) and Organic side by side
+   → Gas, Energetics, Kinetics, Equilibrium → Electrochemistry → Industrial. Extras sit right after the lesson they belong to. */
+CLASSES.unshift({k:'atom',subj:'chem',track:'A',h:5,en:'Atomic Structure',si:'පරමාණුක ව්‍යුහය',tag:'P1 MCQs',self:true,days:['පරමාණුක ව්‍යුහය: ස්වයං අධ්‍යයනය (කතාව සහ ප්‍රධාන කරුණු)']});
+const ORDER={
+  /* Physics: Mechanics first, then the big four, foundations before what uses them */
+  mech:{w:17},wave:{w:15},cur:{w:15},therm:{w:14},light:{w:8,after:['wave']},estat:{w:6,after:['mech']},grav:{w:4,after:['mech']},
+  mag:{w:6,after:['cur']},elec:{w:6,after:['cur']},matter:{w:5,after:['light']},mprop:{w:5,after:['mech']},
+  /* Chemistry */
+  atom:{w:40},calc:{w:30,after:['atom']},bond:{w:29,after:['atom']},redox:{w:26,after:['calc']},period:{w:28,after:['bond']},
+  org:{w:24,after:['bond']},sblock:{w:26,after:['period']},pblock:{w:26,after:['period']},dblock:{w:25,after:['pblock','sblock']},
+  isom:{w:21,after:['org']},guna:{w:21,after:['org','isom']},
+  gas:{w:12,after:['calc']},ener:{w:12,after:['calc']},kin:{w:11,after:['calc']},equil:{w:14,after:['calc','gas']},
+  echem:{w:10,after:['equil','redox']},ind:{w:8,after:['echem','org','dblock']},
+  /* extras: each item right after the lesson it belongs to (item-level "at") */
+  calcx:{at:['calc:3','calc:3','redox:1']},gasx:{at:['gas:3']},enerx:{at:['ener:3']},orgx:{at:['org:12','org:12']},
+  equilx:{at:['equil:3','equil:8','equil:10']},dblockx:{at:['dblock:3']}
+};
+for(const u of CLASSES){const o=ORDER[u.k]||{};u.w=o.w;u.deps=o.after||(o.at?[]:(u.after?[u.after]:[]));u.at=o.at||null;if(o.after||o.at)delete u.after}
 const UNIT_BY=Object.fromEntries(CLASSES.map(u=>[u.k,u]));
+for(const u of CLASSES)if(u.at){const p=UNIT_BY[u.at[0].split(':')[0]];u.w=(p&&p.w||10)+1}
+const unitLen=u=>typeof u.days==='number'?u.days:u.days.length;
+/* which units need this one / which this one needs (for the Library unlock view) */
+function unitNeeds(k){const u=UNIT_BY[k];return [...new Set([...(u.deps||[]),...(u.at||[]).map(x=>x.split(':')[0])])]}
+function unitUnlocks(k){return CLASSES.filter(u=>unitNeeds(u.k).includes(k)).map(u=>u.k)}
 
 function buildPlan(){
   const p2=n=>String(n).padStart(2,'0'),kOf=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`,addD=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
   /* expand units into class items, grouped into four queues */
-  const Q={phyA:[],phyB:[],chemA:[],chemB:[]},left={},done=new Set();
+  /* every class item knows exactly which items must come before it */
+  const Q={phyA:[],phyB:[],chemA:[],chemB:[]},left={},taken=new Set();
   for(const u of CLASSES){
     const list=typeof u.days==='number'?Array.from({length:u.days},(_,i)=>`${u.si} ${i+1}`):u.days;
     left[u.k]=list.length;
     list.forEach((dn,i)=>{const nm=Array.isArray(dn)?dn[0]:dn,h=Array.isArray(dn)?dn[1]:u.h;
-      Q[u.subj+u.track].push({unit:u.k,subj:u.subj,h,day:!!u.day,after:u.after,title:nm,sub:list.length>1?`${u.en}, ${i+1} of ${list.length}`:u.en,tag:u.tag,rec:REC[u.rec||u.k]||''})});
+      const deps=[];if(i>0)deps.push(`${u.k}:${i}`);else for(const p of u.deps)deps.push(`${p}:${unitLen(UNIT_BY[p])}`);
+      if(u.at&&u.at[Math.min(i,u.at.length-1)])deps.push(u.at[Math.min(i,u.at.length-1)]);
+      Q[u.subj+u.track].push({unit:u.k,iid:`${u.k}:${i+1}`,deps:[...new Set(deps)],w:u.w||5,x:!!u.at,subj:u.subj,h,day:!!u.day,title:nm,sub:list.length>1?`${u.en}, ${i+1} of ${list.length}`:u.en,tag:u.tag,rec:REC[u.rec||u.k]||''})});
   }
-  const hrs=q=>q.reduce((a,x)=>a+x.h,0);
-  const ok=it=>!it.after||done.has(it.after);
+  const ok=it=>it.deps.every(d=>taken.has(d));
   const papers=[];/* unit past-paper question tasks waiting for a study slot */
   const last={phy:null,chem:null};
   const lastSubj={A:'chem',B:'phy'};/* alternate Physics and Chemistry inside each track */
+  const chain={};/* the unit each track+subject is working through, so a unit runs day after day */
+  const finished={};/* unit -> day it finished (for spaced review) */
+  let today=[],prevDay=[];/* class items taken today / yesterday (for consolidation) */
   function take(names,cap,allowDay){
     const tr=names[0].slice(-1),pref=lastSubj[tr]==='phy'?'chem':'phy';
     const order=[...names].sort((a,b)=>(a.startsWith(pref)?0:1)-(b.startsWith(pref)?0:1));
-    let best=null;
-    for(const n of order){const q=Q[n],i=q.findIndex(it=>ok(it));if(i<0)continue;const it=q[i];
-      if(it.day?!allowDay:it.h>cap+.01)continue;
-      best={n,i,it};break}
+    let best=null;const cands=[];
+    for(const n of order){
+      const fits=Q[n].map((it,i)=>[it,i]).filter(([it])=>ok(it)&&(it.day?allowDay:it.h<=cap+.01));
+      if(!fits.length)continue;
+      /* 1. an extra recording that just became possible goes right after its lesson
+         2. otherwise keep going with the unit already in progress on this track
+         3. otherwise start the biggest, most exam-heavy unit whose foundations are done */
+      const ch=chain[n];
+      const pick=fits.find(([it])=>it.x)||fits.find(([it])=>it.unit===ch)||fits.slice().sort((a,b)=>b[0].w-a[0].w||a[1]-b[1])[0];
+      cands.push({n,i:pick[1],it:pick[0]})}
+    /* foundations (w 28+) jump the Physics/Chemistry turn-taking so the big units they unlock can start early */
+    best=cands.filter(c=>c.it.w>=28).sort((a,b)=>b.it.w-a.it.w)[0]||cands[0]||null;
     if(!best)return null;
-    Q[best.n].splice(best.i,1);const it=best.it;last[it.subj]=it;lastSubj[tr]=it.subj;
-    if(--left[it.unit]===0){done.add(it.unit);const u=UNIT_BY[it.unit];if(!u.day&&!/x$/.test(u.k))papers.push({subj:u.subj,title:`${u.si}: ඒකක පසුගිය ප්‍රශ්න`,sub:`${u.en}: unit past-paper questions, then log your score`,tag:u.tag,rec:''})}
+    Q[best.n].splice(best.i,1);const it=best.it;taken.add(it.iid);last[it.subj]=it;lastSubj[tr]=it.subj;if(!it.x)chain[best.n]=it.unit;
+    today.push(it);
+    if(--left[it.unit]===0){const u=UNIT_BY[it.unit];finished[it.unit]=null;if(!u.day&&!/x$/.test(u.k)&&!u.self)papers.push({subj:u.subj,title:`${u.si}: ඒකක පසුගිය ප්‍රශ්න`,sub:`${u.en}: unit past-paper questions, then log your score`,tag:u.tag,rec:''})}
     return it;
   }
+  /* spaced review: a 20-minute recap 3 days, 2 weeks and 6 weeks after a unit ends */
+  const reviews=[];
+  const mark=k=>{for(const u in finished)if(finished[u]===null){finished[u]=k;const un=UNIT_BY[u];if(un&&!/x$/.test(u)&&!un.day)[[3,'3-day'],[14,'2-week'],[42,'6-week']].forEach(([n,l])=>reviews.push({u,due:kOf(addD(new Date(k+'T00:00'),n)),l}))}};
   const mcu=[];MCU.forEach(m=>{for(let i=1;i<=2;i++)mcu.push({title:m[0],sub:`${m[1]} (missed class, part ${i} of 2)`,tag:m[2]+' · 2027',rec:REC[m[3]]})});
   const days={};let pr=0,measDone=false,rot=0;
   const allEmpty=()=>Object.values(Q).every(q=>!q.length);
@@ -1473,9 +1518,10 @@ function buildPlan(){
   for(let d=new Date(START);d<=EXAM;d=addD(d,1)){
     const k=kOf(d),w=d.getDay(),ev=[];
     const wkIdx=Math.floor((addD(d,-((w+6)%7))-new Date(2026,10,9))/6048e5);
-    const july=d>=JULY,buffer=!july&&wkIdx>0&&wkIdx%4===0&&!allEmpty();
+    const july=d>=JULY,buffer=!july&&wkIdx>0&&wkIdx%4===0&&!allEmpty()&&d<new Date(2027,5,1);/* no buffer week in June: finishing classes comes first */
     const L=(s,e,t,x)=>ev.push(Object.assign({s,e,title:t,sub:'',tag:'',subj:'life',kind:'life'},x||{}));
-    const add=(s,e,subj,kind,c,x)=>ev.push(Object.assign({s,e,subj,kind,title:c.title,sub:c.sub||'',tag:c.tag||'',rec:c.rec||'',unit:c.unit||''},x||{}));
+    const add=(s,e,subj,kind,c,x)=>ev.push(Object.assign({s,e,subj,kind,title:c.title,sub:c.sub||'',tag:c.tag||'',rec:c.rec||'',unit:c.unit||''},c.iid?{iid:c.iid,deps:c.deps}:{},x||{}));
+    prevDay=today;today=[];
     const study=(s,e,subj,title,sub,tag,rec)=>add(s,e,subj,'study',{title,sub,tag,rec});
     const def=(subj)=>{const l=last[subj];if(l){const u=UNIT_BY[l.unit];return{title:`${u.si}: සටහන් සහ ප්‍රශ්න`,sub:`${u.en}: notes and topic questions`,tag:u.tag,rec:l.rec}}return{title:subj==='phy'?'භෞතික විද්‍යාව: සටහන් සහ ප්‍රශ්න':'රසායන විද්‍යාව: සටහන් සහ ප්‍රශ්න',sub:'Notes and topic questions',tag:'',rec:''}};
     const mathsPractice={title:'සංයුක්ත ගණිතය: ප්‍රශ්න පුහුණුව',sub:'Combined Maths: practice on this week’s topics',tag:'',rec:''};
@@ -1491,7 +1537,7 @@ function buildPlan(){
     };
     /* 19:00 to 22:30 evening study */
     const evening=()=>{
-      if(mcu.length&&!july){add(1140,1290,'maths','class',mcu.shift());study(1290,1350,'maths',mathsPractice.title,'Combined Maths: questions on this class','');return}
+      if(mcu.length&&!july&&!today.some(it=>it.day)){/* keep a seminar day under about 8 h of class */add(1140,1290,'maths','class',mcu.shift());study(1290,1350,'maths',mathsPractice.title,'Combined Maths: questions on this class','');return}
       const r=rot++%3;if(r===0)add(1140,1350,'maths','study',mathsPractice);else add(1140,1350,r===1?'phy':'chem','study',def(r===1?'phy':'chem'));
     };
     /* workout, shower, then free time and dinner until 19:00 */
@@ -1545,8 +1591,8 @@ function buildPlan(){
         paperDay(sj);
       }else{
         study(375,450,'maths',mathsPractice.title,mathsPractice.sub,'');L(450,465,'Shower');L(465,495,'Breakfast');
-        slotClass(495,5,['phyA','chemA'],false);
-        L(795,855,'Lunch');paperOr(855,1020);
+        const sa=slotClass(495,5,['phyA','chemA'],true);/* Saturdays can take a full-day seminar too */
+        L(795,855,'Lunch');if(!(sa&&sa.day))paperOr(855,1020);
         afternoonOff(1020);
       }
       evening();night();
@@ -1557,6 +1603,16 @@ function buildPlan(){
       L(1020,1050,'Workout');L(1050,1350,'Off duty',{sub:'Sunday evening is yours. Skipped blocks land here first.'});
       night();
     }
+    /* 06:15 block: consolidate yesterday's class (it opens the path to that unit's next class), plus any spaced recap that is due */
+    const mo=ev.find(e=>e.s===375&&e.kind==='study');
+    if(mo&&!/සූත්‍ර සහ ඉක්මන් සමාලෝචනය/.test(mo.title)){
+      const pc=prevDay.filter(it=>!it.x);
+      const due=reviews.filter(r=>!r.done&&r.due<=k).slice(0,1);due.forEach(r=>r.done=true);
+      const rv=due.map(r=>`then 20-min recap: ${UNIT_BY[r.u].en} (${r.l} review)`).join('');
+      if(pc.length){const a=pc[0];Object.assign(mo,{subj:a.subj,title:`ඒකාබද්ධ කිරීම: ${pc.map(x=>x.title).join(' + ')}`,sub:`Consolidate yesterday’s class${pc.length>1?'es':''}: rewrite key points, 5 questions${rv?' · '+rv:''}`,tag:'Consolidate',unit:a.unit,rec:a.rec||'',cons:true})}
+      else if(due.length){const u=UNIT_BY[due[0].u];Object.assign(mo,{subj:u.subj,title:`පුනරාවර්තනය: ${u.si}`,sub:`${due[0].l} recap of ${u.en}: key points from memory, then check`,tag:'Recap',unit:u.k,rec:REC[u.rec||u.k]||''})}
+    }
+    mark(k);
     if(!classesEnd&&allEmpty())classesEnd=k;
     days[k]=ev.map((e,i)=>Object.assign({id:k+'-'+i,date:k},e));
   }
@@ -1566,8 +1622,8 @@ function buildPlan(){
 /* the plan lives in the browser; it is built once from the data above */
 const CKEY='lockin-plan-v2';
 let CS=null;
-try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=5)CS=s}catch(e){}
-if(!CS)CS={v:5,days:buildPlan().days,off:{},fresh:true};
+try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=6)CS=s}catch(e){}
+if(!CS)CS={v:6,days:buildPlan().days,off:{},fresh:true};
 const saveCS=()=>{try{localStorage.setItem(CKEY,JSON.stringify(CS))}catch(e){}};
 
 /* ---------- Date + countdown ---------- */
@@ -1664,6 +1720,9 @@ function renderRings(){
     return `<div class="ring"><svg viewBox="0 0 86 86"><circle cx="43" cy="43" r="34" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="8"/>`+
       `<circle cx="43" cy="43" r="34" fill="none" stroke="var(--${c})" stroke-width="8" stroke-linecap="round" stroke-dasharray="${C*p} ${C}" transform="rotate(-90 43 43)"/>`+
       `<text x="43" y="48" text-anchor="middle" class="pct">${Math.round(p*100)}%</text></svg><div class="lbl">${n}</div><div class="num">${d} of ${tt} classes</div></div>`}).join('');
+  /* projected finish: the last Physics/Chemistry class still in the plan */
+  let endK='';for(const k in CS.days)if(CS.days[k].some(e=>e.kind==='class'&&e.subj!=='maths'&&!e.done)&&k>endK)endK=k;
+  const sub=$('#ringSub');if(sub&&endK){const late=endK>dkey(CLASSES_BY);const ed=new Date(endK+'T00:00');sub.innerHTML=`Classes finish <b style="color:${late?'#ff8a7a':'var(--green)'};font-weight:500">${DOW[ed.getDay()]} ${ed.getDate()} ${MON[ed.getMonth()].slice(0,3)}</b>${late?' · past late June, skip less':' · on track for late June'}`}
 }
 function renderBars(){
   const wk0=addDays(today0,-((today0.getDay()+6)%7)),MAXH=12,GOAL=8,ti=(today0.getDay()+6)%7;
@@ -1907,7 +1966,7 @@ function cascade(fromK,fromS,subj,removed){
   const list=[];
   for(let d=dOf(fromK);d<=EXAM;d=addD(d,1)){const k=kOf(d);
     list.push(...(CS.days[k]||[]).filter(x=>x.subj===subj&&x.kind!=='life'&&!x.fixed&&!x.done&&!x.user&&(!x.cu||removed.has(x.id))&&(k!==fromK||x.s>=fromS)).sort((a,b)=>a.s-b.s))}
-  const contents=list.map(x=>({title:x.title,sub:x.sub,tag:x.tag,kind:x.kind,rec:x.rec||''}));
+  const contents=list.map(x=>({title:x.title,sub:x.sub,tag:x.tag,kind:x.kind,rec:x.rec||'',unit:x.unit||'',iid:x.iid,deps:x.deps,bp:x.bp}));
   const slots=list.filter(x=>!removed.has(x.id));
   slots.forEach((sl,i)=>Object.assign(sl,contents[i]));
   for(const x of list)if(removed.has(x.id)){const a=CS.days[x.date];a.splice(a.indexOf(x),1)}
@@ -1937,7 +1996,9 @@ function cuPlace(it){return cuTry(it,false)||cuTry(it,true)}
 function cuTry(it,pay){
   const tom=kOf(addD(today0,1)),st=[kOf(addD(dOf(it.from),1)),tom,kOf(START)].sort().pop();
   for(let d=dOf(st);kOf(d)<=it.due&&d<=EXAM;d=addD(d,1)){
-    const k=kOf(d),a=CS.days[k];if(!a||CS.off[k])continue;
+    const k=kOf(d),a=CS.days[k];
+    if(it.before&&k>=it.before)break;/* never after a class that needs this one */
+    if(!a||CS.off[k])continue;
     const onDay=a.filter(x=>x.cu).length,maxDay=pay&&d.getDay()===0?2:1;
     if(onDay>=maxDay||(!onDay&&cuWeekCount(k)>=CU_WEEK))continue;
     for(const[type,x]of cuSlots(k,pay)){
@@ -1945,7 +2006,7 @@ function cuTry(it,pay){
       const s=x.s,e=s+it.dur;
       const ne={id:k+'-cu'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),date:k,s,e,subj:it.subj,kind:it.kind,title:it.title,
         sub:`${it.sub||''}${it.sub?' · ':''}catch-up from ${fmtD(it.from)}, due ${fmtD(it.due)}`,tag:'Catch-up',rec:it.rec||'',unit:it.unit||'',cu:{from:it.from,due:it.due,type}};
-      if(it.bp)ne.bp=it.bp;
+      if(it.bp)ne.bp=it.bp;if(it.iid){ne.iid=it.iid;ne.deps=it.deps}
       const rest=x.e-e;
       if(type==='sunday'){a.splice(a.indexOf(x),1);if(rest>=30)a.push({id:k+'-cf'+Date.now().toString(36),date:k,s:e,e:x.e,title:'Free time',sub:'Catch-up Sunday. What is left of your evening.',tag:'',subj:'life',kind:'life'})}
       else if(rest>=45)x.s=e;else a.splice(a.indexOf(x),1);
@@ -1957,7 +2018,9 @@ function cuTry(it,pay){
 function cuItem(ev){
   const from=ev.cu?ev.cu.from:ev.date,due=ev.cu?ev.cu.due:kOf(addD(dOf(ev.date),CU_DAYS));
   const sub=ev.fixed?'Live class missed. Watch the recording':String(ev.sub||'').replace(/ · catch-up from .*$/,'');
-  return {title:ev.title,sub,subj:ev.subj,kind:ev.kind==='paper'?'paper':ev.kind==='class'?'class':'study',unit:ev.unit||'',rec:ev.rec||'',bp:ev.bp,dur:ev.e-ev.s,from,due};
+  /* the first later block that needs this item: catch-up must land before it */
+  let before=null;if(ev.iid)for(const k in CS.days)for(const x of CS.days[k])if(x!==ev&&!x.done&&x.deps&&x.deps.includes(ev.iid)&&(!before||k<before))before=k;
+  return {title:ev.title,sub,subj:ev.subj,kind:ev.kind==='paper'?'paper':ev.kind==='class'?'class':'study',unit:ev.unit||'',rec:ev.rec||'',bp:ev.bp,dur:ev.e-ev.s,from,due,iid:ev.iid,deps:ev.deps,before};
 }
 /* skip one block. Returns 'placed', 'recording', 'dropped', 'slid' or 'none' */
 function skipToCU(ev){
@@ -2120,7 +2183,7 @@ $('#mNext').addEventListener('click',()=>{miniM=new Date(miniM.getFullYear(),min
 $('#mGrid').addEventListener('click',e=>{const b=e.target.closest('.md');if(!b)return;viewD=dOf(b.dataset.k);renderWeek();renderMini()});
 document.querySelectorAll('[data-f]').forEach(c=>c.addEventListener('change',()=>{filt[c.dataset.f]=c.checked;renderWeek()}));
 $('#cCreate').addEventListener('click',e=>{const tk=kOf(today0),k=curKeys.includes(tk)?tk:curKeys[0];openForm({date:k,s:1140,e:1200,title:'',sub:'',subj:'phy',tag:''},true,e.currentTarget.getBoundingClientRect())});
-$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:5,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
+$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:6,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
 /* ================= Report: weak-spot radar ================= */
 const UNITS={
   phy:[['Mechanics','Mechanics',16],['Waves','Waves',15],['Current electricity','Current el.',15],['Thermal physics','Thermal',14],['Light','Light',8],['Magnetic fields','Magnetism',8],['Electronics','Electronics',6],['Electrostatics','Electrostatics',5],['Matter and radiation','Matter & rad.',5],['Measurement','Measurement',5],['Mechanical properties','Mech. properties',4],['Gravitation','Gravitation',3]],
@@ -2337,15 +2400,34 @@ function restartPlan(){
   const live=(old.days['2026-11-13']||[]).find(x=>x.fixed&&x.subj==='maths');
   if(live&&!live.done)cuPlace(cuItem(Object.assign({},live,{date:'2026-11-13'})));
 }
+/* v5 to v6: rebuild in blueprint order (prerequisites first, big units early, consolidation, spaced recaps).
+   Ticks follow their class (matched by unit and title), your own blocks and finished catch-ups stay,
+   unfinished catch-ups are placed again, and days off stay off. */
+function rebuildOrder(){
+  const old=CS,days=applyBlueprint(buildPlan().days),sk=kOf(START);
+  const byKey={};for(const k in days)for(const x of days[k])if(x.unit)byKey[x.unit+'|'+x.title+'|'+(x.sub||'').includes('(part 2)')]=x;
+  const redo=[];
+  for(const k in old.days)for(const e of old.days[k]){
+    if(e.user||(e.cu&&e.done)||(k<sk&&e.done)){(days[k]||(days[k]=[])).push(e);continue}
+    if(e.cu){redo.push(e);continue}
+    if(!e.done)continue;
+    const m=e.unit?byKey[e.unit+'|'+e.title+'|'+(e.sub||'').includes('(part 2)')]:(days[k]||[]).find(x=>x.title===e.title&&!x.done);
+    if(m)m.done=true;
+  }
+  CS={v:6,days,off:{},slid:old.slid||[]};
+  for(const e of redo)cuPlace(cuItem(e));
+  for(const k in (old.off||{}))if(k>=sk&&old.off[k]){CS.off[k]=true;(CS.days[k]||[]).filter(x=>x.kind!=='life'&&x.kind!=='review'&&!x.fixed&&!x.done&&!x.user).forEach(skipToCU);CS.days[k]=(CS.days[k]||[]).filter(x=>x.fixed||x.user)}
+}
 (function migrate(){
   if(CS.fresh){delete CS.fresh;applyBlueprint(CS.days);saveCS();return}
-  if(CS.v===5){applyBlueprint(CS.days);saveCS();return}
+  if(CS.v===6){applyBlueprint(CS.days);saveCS();return}
+  if(CS.v===5){rebuildOrder();saveCS();return}
   if(CS.v===3){
     const tk=dkey(new Date());
     for(const k in CS.days)if(k>=tk)retimeDay(k,CS.days[k]);
     CS.v=4;}
-  if(CS.v===4){restartPlan();saveCS();return}
-  const old=CS,fresh={v:5,days:applyBlueprint(buildPlan().days),off:old.off||{}};
+  if(CS.v===4){restartPlan();CS.v=6;saveCS();return}
+  const old=CS,fresh={v:6,days:applyBlueprint(buildPlan().days),off:old.off||{}};
   for(const k in old.days)for(const e of old.days[k]){
     if(e.user){(fresh.days[k]||(fresh.days[k]=[])).push(e);continue}
     if(e.done){const m=(fresh.days[k]||[]).find(x=>x.title===e.title&&!x.done);if(m)m.done=true}
@@ -2371,6 +2453,9 @@ function renderLibrary(){
         <div class="lb-t"><span class="si">${esc(u.si)}${ex?' <em>extras</em>':''}</span><span class="en">${esc(u.en)}</span></div>
         <div class="lb-meta">${u.tag?`<span class="qt">${esc(u.tag)}</span>`:''}${cfOpen(u.k)?`<span class="qt cfq">? ${cfOpen(u.k)} open</span>`:''}<span>${d} of ${bl.length} days</span><span class="lb-st">${st}</span></div>
         <div class="lb-bar"><i style="width:${(pc*100).toFixed(1)}%"></i></div>
+        ${(()=>{const nd=unitNeeds(u.k),ul=unitUnlocks(u.k);if(!nd.length&&!ul.length)return '';
+          const ok=k=>{const b=unitBlocks(k);return b.length&&b.every(e=>e.done)};
+          return `<div class="lb-dep">${nd.length?`<span>Needs: ${nd.map(k=>`${esc(UNIT_BY[k].en)}${ok(k)?' ✓':''}`).join(', ')}</span>`:''}${ul.length?`<span>Unlocks: ${ul.map(k=>esc(UNIT_BY[k].en)).join(', ')}</span>`:''}</div>`})()}
       </button>
       ${rec?`<a class="lb-rec" href="${rec}" target="_blank" rel="noopener">▶ Recordings</a>`:''}
       ${open?cfList(u.k):''}
@@ -2692,10 +2777,10 @@ function pullUp(ev,rest){
   for(let d=new Date(ev.date+'T00:00');d<=EXAM;d=addDays(d,1)){const k=dkey(d);
     list.push(...(CS.days[k]||[]).filter(x=>x.subj===ev.subj&&x.kind==='class'&&!x.free&&!x.fixed&&!x.done&&!x.user&&!x.cu&&(k!==ev.date||x.s>ev.s)).sort((a,b)=>a.s-b.s))}
   ev.sub=(ev.sub||'')+` · also covered: ${rest.map(x=>(x.sub||x.title).replace(/^.*?\(|\)$/g,'')).join(', ')}`;
-  const keep=list.filter(x=>!removed.has(x.id)).map(x=>({title:x.title,sub:x.sub,tag:x.tag,kind:x.kind,rec:x.rec||'',unit:x.unit||'',bp:x.bp}));
+  const keep=list.filter(x=>!removed.has(x.id)).map(x=>({title:x.title,sub:x.sub,tag:x.tag,kind:x.kind,rec:x.rec||'',unit:x.unit||'',bp:x.bp,iid:x.iid,deps:x.deps}));
   list.forEach((sl,i)=>{
     if(i<keep.length)Object.assign(sl,keep[i]);
-    else Object.assign(sl,{title:'Free revision slot',sub:'Time you won back by finishing early. Use it for weak spots or past-paper questions.',tag:'',kind:'class',rec:'',unit:'',bp:undefined,free:true});
+    else Object.assign(sl,{title:'Free revision slot',sub:'Time you won back by finishing early. Use it for weak spots or past-paper questions.',tag:'',kind:'class',rec:'',unit:'',bp:undefined,iid:undefined,deps:undefined,free:true});
   });
   return list.length-keep.length;
 }
