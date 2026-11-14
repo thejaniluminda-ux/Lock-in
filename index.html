@@ -246,7 +246,21 @@ body.page-rep #repPage{display:block}
 .rp-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:18px}
 .rp-h{font-size:clamp(44px,6vw,80px);font-weight:200;letter-spacing:-.04em;margin:0;line-height:.9}
 .rp-top .sub{margin:8px 0 0;font-size:13px;color:var(--ink-3)}
-.rp-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);grid-template-areas:"radar fix" "radar log";gap:16px}
+.rp-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);grid-template-areas:"ck ck" "radar fix" "radar log";gap:16px}
+.rp-ck{grid-area:ck}
+.ck-rows{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+.ck-s{border-radius:18px;border:1px solid var(--edge);background:rgba(0,0,0,.18);padding:14px 16px;border-top:3px solid var(--sub)}
+.ck-s h3{margin:0 0 2px;font-size:14px;font-weight:500}
+.ck-s .big{font:200 34px/1.1 Sora,sans-serif;margin:6px 0 2px}
+.ck-s .big small{font-size:13px;color:var(--ink-3);font-weight:300}
+.ck-s p{margin:2px 0;font-size:12.5px;color:var(--ink-2)}
+.ck-st{display:inline-block;font-size:11.5px;border-radius:999px;padding:2px 9px;margin-top:6px}
+.ck-st.ok{background:rgba(95,224,138,.15);color:#7fe9a3}.ck-st.mid{background:rgba(255,190,90,.14);color:#ffc977}.ck-st.low{background:rgba(255,120,100,.14);color:#ff9a88}.ck-st.na{background:rgba(255,255,255,.06);color:var(--ink-2)}
+.ck-tb{width:100%;border-collapse:collapse;margin-top:12px;font-size:12.5px;color:var(--ink-2)}
+.ck-tb th,.ck-tb td{padding:6px 8px;border-top:1px solid var(--edge);text-align:left}
+.ck-tb th{font-weight:500;color:var(--ink)}
+.ck-tb .now{color:var(--ink);background:rgba(185,168,255,.08)}
+@media(max-width:900px){.ck-rows{grid-template-columns:1fr}}
 .rp-radar{grid-area:radar}.rp-fix{grid-area:fix}.rp-log{grid-area:log}
 #radar svg{width:100%;max-width:640px;display:block;margin:6px auto 0}
 .rl{fill:var(--ink-2);font-size:12px;font-family:var(--font)}
@@ -271,7 +285,7 @@ body.page-rep #repPage{display:block}
 .lg select,.lg input{background:rgba(255,255,255,.06);border:1px solid var(--edge);border-radius:10px;color:var(--ink);padding:8px 10px;font:inherit;font-size:13px;color-scheme:dark;min-width:0}
 .lg .pri-btn{margin-top:0}
 @media (max-width:900px){
-  .rp-grid{grid-template-columns:1fr;grid-template-areas:"radar" "fix" "log"}
+  .rp-grid{grid-template-columns:1fr;grid-template-areas:"ck" "radar" "fix" "log"}
   .rp-top{flex-direction:column;align-items:flex-start}
 }
 @media (max-width:760px){
@@ -1217,6 +1231,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
         <div class="seg" id="rpSeg" role="group" aria-label="Subject"><button data-s="phy" aria-pressed="true">Physics</button><button data-s="chem" aria-pressed="false">Chemistry</button><button data-s="maths" aria-pressed="false">Combined Maths</button></div>
       </div>
       <div class="rp-grid">
+        <section class="card rp-ck" aria-labelledby="ckT"><div class="head"><div><h2 id="ckT">On track?</h2><p class="sub" id="ckSub"></p></div></div><div id="ckBox"></div></section>
         <section class="card rp-radar" aria-labelledby="rdT"><div class="head"><div><h2 id="rdT">Weak-spot radar</h2><p class="sub" id="rpRS"></p></div></div><div id="radar"></div></section>
         <section class="card rp-fix" aria-labelledby="fxT"><div class="head"><div><h2 id="fxT">Fix these first</h2><p class="sub">Low score multiplied by how much of the paper the unit is worth</p></div></div>
           <ol id="fixList"></ol>
@@ -2311,7 +2326,25 @@ if(!SC)SC={phy:{},chem:{},maths:{}};
 const saveSC=()=>{try{localStorage.setItem(SKEY,JSON.stringify(SC))}catch(e){}};
 let rpS='phy',fixNow=[];
 const scoreOf=(sj,u)=>{const a=(SC[sj]||{})[u];if(!a||!a.length)return null;const l=a.slice(-3);return Math.round(l.reduce((x,y)=>x+y,0)/l.length)};
+/* Checkpoints: are your marks where they need to be? Targets are reasoned estimates (A ≥ 75 is the commonly quoted boundary, not verified).
+   Until January it uses your unit past-paper scores; from February, your last five full-paper marks. */
+const CKP=[['Jan','2027-01-31',65,75],['Apr','2027-04-30',65,80],['Jun','2027-06-30',72,85],['Jul','2027-08-31',78,89]];
+function renderCheck(){
+  const tk=dkey(today0),ci=Math.max(0,CKP.findIndex(c=>tk<=c[1])),cp=CKP[ci],full=tk>'2027-01-31';
+  const avg=a=>Math.round(a.reduce((x,y)=>x+y,0)/a.length);
+  const rows=['phy','chem','maths'].map(sj=>{
+    let v=null,what='';
+    const fp=PP.log.filter(x=>x.s===sj).slice(-5).map(x=>x.v),us=UNITS[sj].map(u=>scoreOf(sj,u[0])).filter(x=>x!=null);
+    if((full||!us.length)&&fp.length){v=avg(fp);what=`average of your last ${fp.length} full paper${fp.length>1?'s':''}`}
+    else if(us.length){v=avg(us);what=`average of the ${us.length} unit${us.length>1?'s':''} you've logged`}
+    const st=v==null?['na','No marks yet']:v>=cp[3]?['ok','Top-100 pace']:v>=cp[2]?['mid','On track for an A']:['low','Below the A track'];
+    return `<div class="ck-s" style="--sub:var(--${sj})"><h3>${sj==='maths'?'Combined Maths':SUBJ[sj]}</h3><div class="big">${v==null?'–':v+'<small>%</small>'}</div><p>${v==null?'Log a unit past-paper score below, or a full-paper mark on the Papers page.':esc(what)}</p><p>${cp[0]} target: A track ${cp[2]}% · top-100 pace ${cp[3]}%</p><span class="ck-st ${st[0]}">${st[1]}</span></div>`}).join('');
+  $('#ckSub').textContent=full?'Your last five full-paper marks against the next checkpoint':'Until January: your unit past-paper scores against the January checkpoint';
+  const cells=i=>CKP.map((c,j)=>`<td class="${j===ci?'now':''}">${c[i]}%</td>`).join('');
+  $('#ckBox').innerHTML=`<div class="ck-rows">${rows}</div><table class="ck-tb"><tr><th>Checkpoint</th>${CKP.map((c,j)=>`<th class="${j===ci?'now':''}">${c[0]}</th>`).join('')}</tr><tr><td>A track (3 A's)</td>${cells(2)}</tr><tr><td>Top-100 pace</td>${cells(3)}</tr></table><p class="hint2">These targets are estimates. The A boundary of 75 is widely quoted but not officially confirmed, and Z-scores depend on how everyone else does. Jan = unit papers on finished units; Apr onwards = full papers; Jul = average of your last five.</p>`;
+}
 function renderReport(){
+  renderCheck();
   document.querySelectorAll('#rpSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===rpS));
   const U=UNITS[rpS],N=U.length,R0=128,col=`var(--${rpS})`;
   const ang=i=>-Math.PI/2+i*2*Math.PI/N,pt=(i,r)=>[Math.cos(ang(i))*r,Math.sin(ang(i))*r],f=n=>n.toFixed(1);
@@ -2414,7 +2447,7 @@ $('#libList').addEventListener('click',e=>{
 });
 $('#libList').addEventListener('change',e=>{
   const i=e.target.closest('[data-score]');if(!i)return;const k=i.dataset.score,v=parseInt(i.value,10);
-  if(isNaN(v)){delete PP.score[k];PP.log=PP.log.filter(x=>x.k!==k)}else{const c=Math.max(0,Math.min(100,v));PP.score[k]=c;PP.log=PP.log.filter(x=>x.k!==k);PP.log.push({k,s:ppS,y:k.split('-')[1],v:c});PP.done[k]=true}
+  if(isNaN(v)){delete PP.score[k];PP.log=PP.log.filter(x=>x.k!==k)}else{const c=Math.max(0,Math.min(100,v));PP.score[k]=c;PP.log=PP.log.filter(x=>x.k!==k);PP.log.push({k,s:ppS,y:k.split('-')[1],v:c,t:dkey(today0)});PP.done[k]=true}
   savePP();renderLib();
 });
 $('#ppZone').addEventListener('click',()=>window.open(PZ,'_blank','noopener'));
