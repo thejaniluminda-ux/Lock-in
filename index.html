@@ -589,6 +589,41 @@ b,.n,.lb-meta,.fo-nums b{font-variant-numeric:tabular-nums}
 .lb-rec:hover{background:rgba(185,168,255,.18)}
 .lb-main[data-u] .lb-t{padding-right:96px}
 .lb-card.open.atomc{grid-column:1/-1}
+/* Library map: units as isometric tiles wired by what they need */
+.lb-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.lm{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+@media(max-width:1100px){.lm{grid-template-columns:1fr}}
+.lm-stage{border-radius:24px;background:var(--glass);border:1px solid var(--edge);padding:8px 8px 4px;overflow:auto}
+.lm-stage svg{display:block;width:100%;height:auto}
+.lm-leg{display:flex;gap:16px;flex-wrap:wrap;color:var(--t2);font-size:12px;padding:4px 12px 8px}
+.lm-leg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.lm-side{border-radius:24px;background:var(--glass);border:1px solid var(--edge);padding:18px;position:sticky;top:16px}
+.lm-side h3{margin:0;font:500 19px/1.3 'Noto Sans Sinhala',Sora,sans-serif}
+.lm-side .en{color:var(--t2);margin-bottom:10px}
+.lm-side .rw{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--edge);padding:7px 0;color:var(--t2);font-size:13px}
+.lm-side .rw b{color:var(--t1);font-weight:400;text-align:right}
+.lm-side .hd{margin-top:10px;color:var(--t3);font-size:11px;letter-spacing:.06em}
+.lm-chip{display:inline-block;font-size:12px;border:1px solid var(--edge);border-radius:999px;padding:2px 10px;margin:3px 4px 0 0;cursor:pointer;color:var(--t1);background:none;font-family:inherit}
+.lm-chip:hover{border-color:var(--lav)}
+.lm-st{display:inline-block;font-size:12px;border-radius:999px;padding:2px 10px;margin-bottom:8px}
+.lm-go{display:block;width:100%;margin-top:14px;padding:10px;border-radius:14px;border:1px solid var(--edge);background:rgba(185,168,255,.14);color:var(--t1);font:inherit;cursor:pointer}
+.lm-go:hover{background:rgba(185,168,255,.24)}
+.lm-tile{cursor:pointer;transition:opacity .25s}
+.lm-tile .lm-top{transition:filter .25s}
+.lm-tile:hover .lm-top,.lm-tile.sel .lm-top{filter:brightness(1.3)}
+.lm-dim .lm-tile,.lm-dim .lm-wire,.lm-dim .lm-x{opacity:.13}
+.lm-dim .hl{opacity:1!important}
+.lm-wire{transition:opacity .25s}
+.lm-l1{font:500 13px 'Noto Sans Sinhala',Sora,sans-serif;fill:#eeeae4}
+.lm-l2{font:400 11px Sora,sans-serif;fill:#b4ada4}
+.lm-l3{font:400 10.5px Sora,sans-serif;fill:#7f7972}
+.lm-now .lm-top{animation:lmPulse 2.2s ease-in-out infinite}
+@keyframes lmPulse{50%{filter:brightness(1.5) drop-shadow(0 0 10px var(--c))}}
+.lm-flow{animation:lmFlow 1.2s linear infinite}
+@keyframes lmFlow{to{stroke-dashoffset:-16}}
+@media(prefers-reduced-motion:reduce){.lm-now .lm-top,.lm-flow{animation:none}}
+.lb-card.lm-flash{animation:lmFlash 1.6s ease}
+@keyframes lmFlash{0%,60%{box-shadow:0 0 0 2px var(--lav),0 0 30px -4px var(--lav)}}
 .at{padding:10px 18px 14px 20px;border-top:1px solid var(--edge)}
 .at-seg{width:max-content;margin-bottom:10px}
 .at-seg small{color:var(--ink-3);font-size:10.5px}
@@ -1128,7 +1163,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
 <section id="libPage" aria-label="Library">
       <div class="pp-top">
         <div><h1 class="rp-h">Library</h1><p class="sub lb-sub" id="lbSub"></p></div>
-        <div class="seg" id="lbSeg" role="group" aria-label="Subject"><button data-s="phy" aria-pressed="true">Physics</button><button data-s="chem" aria-pressed="false">Chemistry</button><button data-s="maths" aria-pressed="false">Combined Maths</button></div>
+        <div class="lb-tools"><div class="seg" id="lbSeg" role="group" aria-label="Subject"><button data-s="phy" aria-pressed="true">Physics</button><button data-s="chem" aria-pressed="false">Chemistry</button><button data-s="maths" aria-pressed="false">Combined Maths</button></div><div class="seg" id="lbView" role="group" aria-label="View"><button data-v="cards" aria-pressed="true">Cards</button><button data-v="map" aria-pressed="false">Map</button></div></div>
       </div>
       <div id="lbList"></div>
     </section>
@@ -2513,6 +2548,8 @@ function unitBlocks(k){const out=[];for(const d in CS.days)for(const e of CS.day
 function renderLibrary(){
   document.querySelectorAll('#lbSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===lbS));
   const box=$('#lbList'),tk=dkey(today0);
+  document.querySelectorAll('#lbView button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===lbV));
+  if(lbV==='map'){renderLibMap(box,tk);return}
   if(lbS==='maths'){renderMathsLib(box,tk);return}
   const us=CLASSES.filter(u=>u.subj===lbS);
   let tot=0,dn=0;
@@ -2520,7 +2557,7 @@ function renderLibrary(){
     const nx=bl.find(e=>!e.done&&e.date>=tk),pc=bl.length?d/bl.length:0,rec=REC[u.rec||u.k]||'',ex=/x$/.test(u.k);
     const st=pc>=1?'Finished':nx?`Next: ${fmtD(nx.date)}`:bl.length?'Overdue':'Not in plan';
     const open=lbOpen===u.k;
-    return `<article class="lb-card${pc>=1?' fin':''}${open?' open':''}${u.k==='atom'?' atomc':''}" style="--sub:var(--${u.subj})">
+    return `<article id="lb-${u.k}" class="lb-card${pc>=1?' fin':''}${open?' open':''}${u.k==='atom'?' atomc':''}" style="--sub:var(--${u.subj})">
       <button class="lb-main" data-u="${u.k}" aria-expanded="${open}">
         <div class="lb-t"><span class="si">${esc(u.si)}${ex?' <em>extras</em>':''}</span><span class="en">${esc(u.en)}</span></div>
         <div class="lb-meta">${u.tag?`<span class="qt">${esc(u.tag)}</span>`:''}${cfOpen(u.k)?`<span class="qt cfq">? ${cfOpen(u.k)} open</span>`:''}<span>${d} of ${bl.length} days</span><span class="lb-st">${st}</span></div>
@@ -2547,7 +2584,7 @@ function renderMathsLib(box,tk){
     if(b.m==='2026-09'||b.m==='2026-10'){const mine=mcuBl.filter(e=>(b.m==='2026-09'?['mSep']:['mOct']).some(r=>e.rec===REC[r]));bl=mine;note='Missed. Catching up from recordings in the evenings.'}
     const d=bl.filter(e=>e.done).length;tot+=bl.length;dn+=d;
     const marks=b.t.reduce((a,t)=>a+(t[2]||0),0);
-    return `<article class="lb-card mm${now?' now':''}${past&&!note?' past':''}" style="--sub:var(--maths)">
+    return `<article id="lb-m-${b.m}" class="lb-card mm${now?' now':''}${past&&!note?' past':''}" style="--sub:var(--maths)">
       <div class="lb-main static">
         <div class="lb-t"><span class="si">${b.n}</span><span class="en">${now?'<b class="nowb">This month</b> · ':''}${marks} paper marks</span></div>
         <ul class="bp-t">${b.t.map(t=>`<li><span class="si">${esc(t[0])}</span><span class="en">${esc(t[1])}</span><span class="mk">${t[2]??'·'}</span></li>`).join('')}</ul>
@@ -2560,7 +2597,114 @@ function renderMathsLib(box,tk){
   $('#lbSub').textContent=`Vikum Harshana’s 2027 revision plan · ${dn} of ${tot} classes done`;
   box.innerHTML=`<div class="lb-note"><span class="qt c26">2026 revision</span> Older recordings if a topic needs a second go: <a href="${REC.mPure26}" target="_blank" rel="noopener">Pure ↗</a> <a href="${REC.mApp26}" target="_blank" rel="noopener">Applied ↗</a></div><div class="lb-grid">${cards}</div>`;
 }
-$('#lbSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;lbS=b.dataset.s;lbOpen=null;renderLibrary()});
+/* ---------- Library map: every unit as a tile, wired by what it needs (finish this to start that) ---------- */
+const LVKEY='lockin-lib-view';let lbV=lsGet(LVKEY,'cards')==='map'?'map':'cards',lmSel=null;
+const lmCol=s=>getComputedStyle(document.documentElement).getPropertyValue('--'+s).trim()||'#b9a8ff';
+const lmX=u=>/x$/.test(u.k)&&u.k!=='redox';
+function lmUnits(s){
+  if(s==='maths'){
+    const mcuBl=[];for(const d in CS.days)for(const e of CS.days[d])if(e.subj==='maths'&&e.kind==='class'&&/missed class/.test(e.sub))mcuBl.push(e);
+    return BP.map((b,i)=>{let bl=[];for(const d in CS.days)if(d.startsWith(b.m))for(const e of CS.days[d])if(e.bp===b.m)bl.push(e);
+      const miss=b.m==='2026-09'||b.m==='2026-10';if(miss)bl=mcuBl.filter(e=>e.rec===REC[b.m==='2026-09'?'mSep':'mOct']);
+      bl.sort((a,c)=>a.date<c.date?-1:a.date>c.date?1:a.s-c.s);
+      /* Sep/Oct recordings run alongside the November live classes, so November doesn't wait for them */
+      const d=i===0||b.m==='2026-11'?[]:['m:'+BP[i-1].m];
+      return{k:'m:'+b.m,si:b.n,en:miss?'Missed: catch-up recordings':'Live classes Tue/Fri',d,bl,topics:b.t,n:b.t.length*2,tag:b.t.reduce((a,t)=>a+(t[2]||0),0)+' paper marks'}});
+  }
+  const L=CLASSES.filter(u=>u.subj===s);
+  const main=L.filter(u=>!lmX(u)).map(u=>({k:u.k,si:u.si,en:u.en,d:(u.deps||[]).filter(k=>UNIT_BY[k]&&UNIT_BY[k].subj===s&&!lmX(UNIT_BY[k])),bl:unitBlocks(u.k),n:unitLen(u),tag:u.tag||'',xs:[]}));
+  const by=Object.fromEntries(main.map(u=>[u.k,u]));
+  L.filter(lmX).forEach(u=>{const p=by[u.k.slice(0,-1)];if(p)p.xs.push({k:u.k,en:u.en,bl:unitBlocks(u.k),n:unitLen(u)})});
+  return main;
+}
+function lmState(u,tk,by,seen){seen=seen||new Set();const dn=u.bl.filter(e=>e.done).length;
+  if(u.bl.length&&dn===u.bl.length)return['done',1];
+  if(dn||(u.bl[0]&&u.bl[0].date<=tk))return['now',Math.max(.04,dn/(u.bl.length||1))];
+  if(seen.has(u.k))return['lock',0];seen.add(u.k);
+  return[u.d.every(k=>by[k]&&lmState(by[k],tk,by,seen)[0]==='done')?'next':'lock',0]}
+function renderLibMap(box,tk){
+  const s=lbS,U=lmUnits(s),by=Object.fromEntries(U.map(u=>[u.k,u])),col=lmCol(s),M=s==='maths';
+  const st={};U.forEach(u=>st[u.k]=lmState(u,tk,by));
+  const kids=k=>U.filter(u=>u.d.includes(k));
+  /* layout: Physics/Chemistry flow top to bottom by prerequisite depth, each tile level with its parents; Maths snakes month by month */
+  const pos={};let cols=0,rows=0;
+  if(M){U.forEach((u,i)=>pos[u.k]={c:i<5?i:9-i,r:i<5?0:1});cols=5;rows=2}
+  else{const dep={},depth=(k,v)=>{if(dep[k]!=null)return dep[k];v=v||new Set();if(v.has(k))return 0;v.add(k);return dep[k]=Math.max(-1,...by[k].d.map(x=>depth(x,v)))+1};U.forEach(u=>depth(u.k));
+    const lv={};U.forEach(u=>(lv[dep[u.k]]=lv[dep[u.k]]||[]).push(u));
+    for(const l of Object.keys(lv).map(Number).sort((a,b)=>a-b)){
+      const cc=lv[l].map(u=>({u,w:l===0||!u.d.length?0:u.d.reduce((a,k)=>a+(pos[k]?pos[k].c:0),0)/u.d.length,f:(u.bl[0]||{}).date||'9'}));
+      cc.sort((a,b)=>a.w-b.w||(a.f<b.f?-1:1));let c=-1;
+      cc.forEach((o,i)=>{c=l===0?i:Math.max(Math.round(o.w),c+1);pos[o.u.k]={c,r:l};cols=Math.max(cols,c+1);rows=Math.max(rows,l+1)})}}
+  const ox=120,oy=120,W=M?250:230,H=M?300:235,w=140,h=70,thk=u=>8+Math.min(u.n,17)*1.3;
+  const P=k=>({x:ox+pos[k].c*W,y:oy+pos[k].r*H});
+  const vw=ox*2+(cols-1)*W+40,vh=oy+(rows-1)*H+(M?200:130);
+  const span=u=>u.bl.length?fmtD(u.bl[0].date)+(u.bl.at(-1).date!==u.bl[0].date?' – '+fmtD(u.bl.at(-1).date):''):'Not in plan';
+  let g='';
+  for(const u of U)for(const dk of u.d){if(!pos[dk])continue;const a=P(dk),b=P(u.k),dn=st[dk][0]==='done';let d;
+    if(M){d=pos[dk].r!==pos[u.k].r?`M${a.x} ${a.y+40} V${(a.y+b.y)/2} H${b.x} V${b.y-40}`:pos[u.k].r===1?`M${a.x-70} ${a.y} H${b.x+70}`:`M${a.x+70} ${a.y} H${b.x-70}`}
+    else{const y0=a.y+h/2+thk(by[dk])+44,y1=b.y-h/2,my=y1-24-(pos[dk].c%4)*10,r=b.x===a.x?0:10,sg=b.x>a.x?1:-1;
+      d=r?`M${a.x} ${y0} V${my-r} Q${a.x} ${my} ${a.x+sg*r} ${my} H${b.x-sg*r} Q${b.x} ${my} ${b.x} ${my+r} V${y1}`:`M${a.x} ${y0} V${y1}`}
+    g+=`<path class="lm-wire${dn&&st[u.k][0]==='now'?' lm-flow':''}" data-a="${dk}" data-b="${u.k}" d="${d}" fill="none" stroke="${dn?col:'#5a5550'}" stroke-width="2"${dn&&st[u.k][0]!=='now'?'':' stroke-dasharray="5 5"'}/>`}
+  for(const u of U){const p=P(u.k),[sv,pr]=st[u.k],th=thk(u),lock=sv==='lock';
+    const top=`${p.x},${p.y-h/2} ${p.x+w/2},${p.y} ${p.x},${p.y+h/2} ${p.x-w/2},${p.y}`;
+    const lf=`${p.x-w/2},${p.y} ${p.x},${p.y+h/2} ${p.x},${p.y+h/2+th} ${p.x-w/2},${p.y+th}`,rt=`${p.x+w/2},${p.y} ${p.x},${p.y+h/2} ${p.x},${p.y+h/2+th} ${p.x+w/2},${p.y+th}`;
+    const sc=lock?'#4a4642':col,fill=sv==='done'?col:'#1d1b19',side=sv==='done'?col:'#141312',id='lmc'+u.k.replace(/\W/g,'');
+    g+=`<g class="lm-tile${sv==='now'?' lm-now':''}" data-k="${u.k}" style="--c:${col}" tabindex="0" role="button" aria-label="${esc(u.en)}">`+
+      `<polygon points="${lf}" fill="${side}" fill-opacity="${sv==='done'?.55:1}" stroke="${sc}" stroke-width="1.6"/><polygon points="${rt}" fill="${side}" fill-opacity="${sv==='done'?.75:1}" stroke="${sc}" stroke-width="1.6"/>`+
+      `<polygon class="lm-top" points="${top}" fill="${fill}" stroke="${sc}" stroke-width="${lock?1.4:2}"/>`+
+      (sv==='now'?`<clipPath id="${id}"><rect x="${p.x-w/2}" y="${p.y-h/2}" width="${w*pr}" height="${h}"/></clipPath><polygon points="${top}" fill="${col}" fill-opacity=".45" clip-path="url(#${id})"/>`:'')+
+      (sv==='done'?`<path d="M${p.x-9} ${p.y} l6 6 l12 -12" fill="none" stroke="#1a1714" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`:
+       lock?`<g stroke="#5a5550" stroke-width="1.8" fill="none"><rect x="${p.x-7}" y="${p.y-3}" width="14" height="11" rx="2"/><path d="M${p.x-4} ${p.y-3} v-3 a4 4 0 0 1 8 0 v3"/></g>`:
+       `<ellipse cx="${p.x}" cy="${p.y}" rx="9" ry="4.5" fill="none" stroke="${col}" stroke-width="2"/>`);
+    const ly=p.y+h/2+th+20,nm=u.si.length>22?u.si.slice(0,21)+'…':u.si;
+    g+=`<text class="lm-l1" x="${p.x}" y="${ly}" text-anchor="middle" opacity="${lock?.5:1}">${esc(nm)}</text>`+
+       `<text class="lm-l2" x="${p.x}" y="${ly+16}" text-anchor="middle">${sv==='now'?Math.round(pr*100)+'% · ':''}${M?u.topics.length+' topics':u.n+(u.n>1?' days':' day')}</text>`+
+       `<text class="lm-l3" x="${p.x}" y="${ly+31}" text-anchor="middle">${span(u)}</text></g>`;
+    /* hanging cards: extra recordings for Physics/Chemistry, each month's topics for Maths */
+    const xs=M?u.topics.map(t=>({en:t[1]})):u.xs;
+    xs.forEach((x,i)=>{const n=xs.length,up=M?pos[u.k].r===0:true;
+      const cx=M?p.x-((n-1)*34)/2+i*34:p.x+52+i*30,cy=M?(up?p.y-h/2-58-(i%2)*18:p.y+h/2+th+92+(i%2)*18):p.y-h/2-34-i*8;
+      const xd=M?sv==='done'||(sv==='now'&&i<pr*n):x.bl.length&&x.bl.every(e=>e.done);
+      g+=M?`<g class="lm-x" data-k="${u.k}"><path d="M${cx} ${up?cy+12:cy-12} V${up?p.y-h/2+10:p.y+h/2+th-6}" stroke="${xd?col:'#5a5550'}" stroke-dasharray="3 4" fill="none"/><rect x="${cx-14}" y="${cy-12}" width="28" height="24" rx="6" fill="${xd?col:'#24221f'}" stroke="${xd?col:'#55504a'}"/><title>${esc(x.en)}</title><path d="M${cx-7} ${cy-3} h14 M${cx-7} ${cy+3} h9" stroke="${xd?'#1a1714':'#77716a'}" stroke-width="1.6"/></g>`
+          :`<g class="lm-x" data-k="${u.k}"><path d="M${p.x+20} ${p.y-h/2+12} V${cy+12} H${cx-16}" stroke="${xd?col:'#5a5550'}" stroke-dasharray="3 4" fill="none"/><rect x="${cx-16}" y="${cy-12}" width="34" height="24" rx="5" fill="${xd?col:'#24221f'}" stroke="${xd?col:'#55504a'}"/><title>${esc(x.en)} (${x.n} recording${x.n>1?'s':''})</title><path d="M${cx-9} ${cy-4} h18 M${cx-9} ${cy+1} h18 M${cx-9} ${cy+6} h10" stroke="${xd?'#1a1714':'#77716a'}" stroke-width="1.4"/></g>`});
+  }
+  const cur=U.filter(u=>st[u.k][0]==='now');
+  cur.forEach(u=>{const p=P(u.k);g+=`<g pointer-events="none"><rect x="${p.x-38}" y="${p.y-72}" width="76" height="20" rx="10" fill="#b9a8ff"/><text x="${p.x}" y="${p.y-58}" text-anchor="middle" style="font:500 11px Sora,sans-serif" fill="#1a1714">You are here</text><path d="M${p.x-5} ${p.y-52} l5 6 l5 -6" fill="#b9a8ff"/></g>`});
+  if(!lmSel||!by[lmSel])lmSel=(cur[0]||U.find(u=>st[u.k][0]==='next')||U[0]).k;
+  const dn=U.filter(u=>st[u.k][0]==='done').length;
+  $('#lbSub').textContent=`${M?'Vikum Harshana’s 2027 plan, month by month':'A line means: finish this to start that'} · ${dn} of ${U.length} done`;
+  box.innerHTML=`<div class="lm"><div class="lm-stage"><svg id="lmSvg" viewBox="0 0 ${vw} ${vh}" role="img" aria-label="Unit map">${g}</svg>
+    <div class="lm-leg"><span><i style="background:${col}"></i>Done</span><span><i style="border:2px solid ${col};box-shadow:0 0 8px ${col}"></i>Studying now</span><span><i style="border:2px solid ${col}"></i>Unlocked, up next</span><span><i style="border:2px solid #4a4642"></i>Locked</span><span style="color:var(--t3)">Thicker tile = more class days. Hover a tile to light its path.</span></div></div>
+    <aside class="lm-side" id="lmSide"></aside></div>`;
+  const side=()=>{const u=by[lmSel],[sv,pr]=st[u.k];
+    const lab={done:['Done ✓','rgba(95,224,138,.18)'],now:['Studying now · '+Math.round(pr*100)+'%','rgba(185,168,255,.22)'],next:['Unlocked: you can start this','rgba(185,168,255,.12)'],lock:['Locked','rgba(255,255,255,.06)']}[sv];
+    const nm=x=>M?x.si:x.en,needs=u.d.filter(k=>by[k]).map(k=>by[k]),left=needs.filter(x=>st[x.k][0]!=='done'),ul=kids(u.k);
+    const ch=a=>a.length?a.map(x=>`<button class="lm-chip" data-k="${x.k}" style="${st[x.k][0]==='done'?'border-color:'+col:''}">${st[x.k][0]==='done'?'✓ ':''}${esc(nm(x))}</button>`).join(''):'<span style="color:var(--t3);font-size:13px">Nothing</span>';
+    const d=u.bl.filter(e=>e.done).length;
+    $('#lmSide').innerHTML=`<span class="lm-st" style="background:${lab[1]}">${lab[0]}</span><h3>${esc(u.si)}</h3><div class="en">${esc(u.en)}</div>`+
+      (sv==='lock'&&left.length?`<p style="margin:0 0 10px;color:var(--t2);font-size:13px">Finish <b style="color:var(--t1)">${left.map(x=>esc(nm(x))).join(' and ')}</b> first.</p>`:'')+
+      (M?`<div class="rw"><span>Topics</span><b>${u.topics.map(t=>esc(t[1])).join(', ')}</b></div>`:'')+
+      `<div class="rw"><span>Done</span><b>${d} of ${u.bl.length} ${M?'classes':'class days'}</b></div><div class="rw"><span>Planned</span><b>${span(u)}</b></div>`+
+      (u.tag?`<div class="rw"><span>In the exam</span><b>${esc(u.tag)}</b></div>`:'')+
+      (u.xs&&u.xs.length?`<div class="rw"><span>Extras</span><b>${u.xs.map(x=>`${x.bl.filter(e=>e.done).length}/${x.bl.length} ${esc(x.en.replace(/ extras$/,''))}`).join(', ')}</b></div>`:'')+
+      `<div class="hd">NEEDS</div>${ch(needs)}<div class="hd">UNLOCKS</div>${ch(ul)}<button class="lm-go" data-go="${u.k}">Open unit card</button>`;
+    $('#lmSvg').querySelectorAll('.lm-tile').forEach(t=>t.classList.toggle('sel',t.dataset.k===lmSel))};
+  side();
+  const svg=$('#lmSvg');
+  const hl=k=>{svg.classList.toggle('lm-dim',!!k);svg.querySelectorAll('.hl').forEach(e=>e.classList.remove('hl'));if(!k)return;
+    const all=new Set([k]),up=x=>by[x].d.forEach(y=>{if(by[y]&&!all.has(y)){all.add(y);up(y)}}),dw=x=>kids(x).forEach(y=>{if(!all.has(y.k)){all.add(y.k);dw(y.k)}});up(k);dw(k);
+    svg.querySelectorAll('.lm-tile,.lm-x').forEach(e=>{if(all.has(e.dataset.k))e.classList.add('hl')});
+    svg.querySelectorAll('.lm-wire').forEach(e=>{if(all.has(e.dataset.a)&&all.has(e.dataset.b))e.classList.add('hl')})};
+  svg.querySelectorAll('.lm-tile').forEach(t=>{t.onmouseenter=()=>hl(t.dataset.k);t.onmouseleave=()=>hl(null);t.onfocus=()=>hl(t.dataset.k);t.onblur=()=>hl(null);
+    t.onclick=()=>{lmSel=t.dataset.k;side()};t.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();lmSel=t.dataset.k;side()}}});
+  $('#lmSide').onclick=e=>{const c=e.target.closest('.lm-chip');if(c){lmSel=c.dataset.k;side();return}
+    const go=e.target.closest('[data-go]');if(!go)return;const k=go.dataset.go;
+    /* jump to the unit's card in Cards view (Maths: the month card) */
+    lbV='cards';lsSet(LVKEY,lbV);if(!M)lbOpen=k;renderLibrary();
+    const el=document.getElementById('lb-'+k.replace(':','-'));if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('lm-flash');setTimeout(()=>el.classList.remove('lm-flash'),1700)}};
+}
+$('#lbView').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;lbV=b.dataset.v;lsSet(LVKEY,lbV);renderLibrary()});
+$('#lbSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;lbS=b.dataset.s;lbOpen=null;lmSel=null;renderLibrary()});
 $('#lbList').addEventListener('click',e=>{const b=e.target.closest('.lb-main[data-u]');if(!b)return;lbOpen=lbOpen===b.dataset.u?null:b.dataset.u;renderLibrary()});
 /* Atomic structure: story tab and tickable key points (ticks saved in lockin-atom-v1) */
 let atTab='story';const ATKEY='lockin-atom-v1';let AT=lsGet(ATKEY,{ok:[]});
