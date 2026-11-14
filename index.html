@@ -2281,7 +2281,9 @@ const DRIVE='https://drive.google.com/file/d/',PZ='https://paperzone.lk/al-strea
  LIB.maths['1998'].p.push(['Full paper',W+'24233/1998-a-l/61732/1998-a-l-combined-mathematics-past-paper-sinhala-medium.pdf']);
  for(const s of ['phy','chem','maths'])LIB[s]['2026']=LIB[s]['2026']||{p:[],m:[],g:[]};
  /* 2026 papers live in Theja's own Drive folder "Lock In papers" (1iE4FlaVfGsZv1yTbT9qHhADSuTWk1JQa) */
- LIB.phy['2026'].p.push(['Paper I (MCQ)','1WvUkMvfKzfOASLGFUylnEYl13Vd8e-rY']);}
+ LIB.phy['2026'].p.push(['Paper I (MCQ)','1WvUkMvfKzfOASLGFUylnEYl13Vd8e-rY'],['Paper II','1NeUgnsrVrn9pp5tPXcLQvtwr8sA_MSmC']);
+ LIB.chem['2026'].p.push(['Paper I (MCQ)','166PXxG3GF3OCSbnVYCzmXodsQddyOJEP'],['Paper II','1KxA5N_jeYmyXUuHOepYIkeKxRGoI1_ii']);
+ LIB.maths['2026'].p.push(['Pure','123mHog_Px6FG7Wu0t5gyE1W3tKYHK-1P'],['Applied','184u_hqfV2zdYsSBGpr-A5HyTICqLhm0u']);}
 const PKEY='lockin-papers-v1';
 let PP=(()=>{try{return JSON.parse(localStorage.getItem(PKEY)||'null')}catch(e){return null}})()||{done:{},score:{},log:[]};
 const savePP=()=>{try{localStorage.setItem(PKEY,JSON.stringify(PP))}catch(e){}};
