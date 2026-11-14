@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600&family=Noto+Sans+Sinhala:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#eeeae4;--ink-2:#b4ada4;--ink-3:#7f7972;
+  --ink:#eeeae4;--ink-2:#b4ada4;--ink-3:#958f87;
   --glass:rgba(255,255,255,.045);--edge:rgba(255,255,255,.09);
   --lav:#b9a8ff;--green:#5fe08a;
   --phy:#5b9dff;--chem:#4cd38a;--maths:#ff9f43;
@@ -638,9 +638,9 @@ b,.n,.lb-meta,.fo-nums b{font-variant-numeric:tabular-nums}
 .lm-dim .lm-tile,.lm-dim .lm-wire,.lm-dim .lm-x{opacity:.13}
 .lm-dim .hl{opacity:1!important}
 .lm-wire{transition:opacity .25s}
-.lm-l1{font:500 13px 'Noto Sans Sinhala',Sora,sans-serif;fill:#eeeae4}
-.lm-l2{font:400 11px Sora,sans-serif;fill:#b4ada4}
-.lm-l3{font:400 10.5px Sora,sans-serif;fill:#7f7972}
+.lm-l1{font:500 18px 'Noto Sans Sinhala',Sora,sans-serif;fill:#eeeae4}
+.lm-l2{font:400 14px Sora,sans-serif;fill:#b4ada4}
+.lm-l3{font:400 13px Sora,sans-serif;fill:#7f7972}
 .lm-now .lm-top{animation:lmPulse 2.2s ease-in-out infinite}
 @keyframes lmPulse{50%{filter:brightness(1.5) drop-shadow(0 0 10px var(--c))}}
 .lm-flow{animation:lmFlow 1.2s linear infinite}
@@ -654,10 +654,10 @@ b,.n,.lb-meta,.fo-nums b{font-variant-numeric:tabular-nums}
 .at-b{max-height:460px;overflow:auto;padding-right:4px}
 .at-sc{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}
 .at-sc h4,.at-pt h4{display:flex;gap:8px;align-items:center;margin:0 0 6px;font-size:13px;font-weight:500;color:var(--ink)}
-.at-sc p{margin:0 0 8px;font-size:13px;line-height:1.75;color:var(--ink-2)}
-.at-sc ul{margin:0;padding-left:18px;font-size:12px;line-height:1.7;color:var(--lav)}
+.at-sc p{margin:0 0 8px;font-size:14.5px;line-height:1.75;color:var(--ink-2)}
+.at-sc ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.7;color:var(--lav)}
 .at-pt{padding:8px 0}
-.at-k{display:flex;gap:10px;align-items:flex-start;padding:5px 0;font-size:12.5px;line-height:1.55;color:var(--ink-2);cursor:pointer}
+.at-k{display:flex;gap:10px;align-items:flex-start;padding:5px 0;font-size:14px;line-height:1.55;color:var(--ink-2);cursor:pointer}
 .at-k input{margin-top:3px;accent-color:#5fe08a;width:15px;height:15px;flex:none}
 .at-k.ok span{color:var(--ink-3);text-decoration:line-through}
 .at-hot{display:inline-block;margin-left:8px;font-size:10.5px;font-weight:500;padding:1px 7px;border-radius:999px;background:rgba(255,159,67,.12);color:#ffb26b;border:1px solid rgba(255,159,67,.3);vertical-align:1px}
@@ -672,7 +672,7 @@ b,.n,.lb-meta,.fo-nums b{font-variant-numeric:tabular-nums}
 .at-b.dc{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:4px 32px;max-height:none}
 .dc-g{padding:8px 0 10px;border-bottom:1px solid rgba(255,255,255,.05)}
 .dc-g h4{margin:0 0 8px;font-size:13px;font-weight:500;color:var(--ink)}
-.dc-r{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;padding:4px 0;font-size:12.5px;color:var(--ink-2)}
+.dc-r{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;padding:4px 0;font-size:14px;color:var(--ink-2)}
 .dc-sw{width:18px;height:18px;border-radius:6px;border:1px solid rgba(255,255,255,.25);box-shadow:0 0 10px -2px currentColor}
 .dc-sw.none{background:repeating-linear-gradient(45deg,transparent 0 3px,rgba(255,255,255,.18) 3px 4px)}
 .dc-f{font-family:Sora,sans-serif;color:var(--ink)}
@@ -680,7 +680,7 @@ b,.n,.lb-meta,.fo-nums b{font-variant-numeric:tabular-nums}
 .lb-dep{display:flex;flex-direction:column;gap:2px;margin-top:8px;font-size:11px;color:var(--ink-3);text-align:left}
 .lb-dep span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lb-days{list-style:none;margin:0;padding:4px 18px 14px 20px;border-top:1px solid var(--edge);max-height:320px;overflow:auto}
-.lb-days li{display:grid;grid-template-columns:86px 1fr auto;gap:10px;padding:7px 0;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.04)}
+.lb-days li{display:grid;grid-template-columns:86px 1fr auto;gap:10px;padding:7px 0;font-size:13.5px;border-bottom:1px solid rgba(255,255,255,.04)}
 .lb-days .dd{color:var(--ink-3);font-variant-numeric:tabular-nums}
 .lb-days .dt{font-family:var(--si);color:var(--ink-2)}
 .lb-days .ds{font-size:11px;color:var(--ink-3)}
@@ -2723,12 +2723,12 @@ function renderLibMap(box,tk){
       cc.forEach((o,i)=>{c=l===0?i:Math.max(Math.round(o.w),c+1);pos[o.u.k]={c,r:l};cols=Math.max(cols,c+1);rows=Math.max(rows,l+1)})}}
   const ox=120,oy=120,W=M?250:230,H=M?300:235,w=140,h=70,thk=u=>8+Math.min(u.n,17)*1.3;
   const P=k=>({x:ox+pos[k].c*W,y:oy+pos[k].r*H});
-  const vw=ox*2+(cols-1)*W+40,vh=oy+(rows-1)*H+(M?200:130);
+  const vw=ox*2+(cols-1)*W+40,vh=oy+(rows-1)*H+(M?215:150);
   const span=u=>u.bl.length?fmtD(u.bl[0].date)+(u.bl.at(-1).date!==u.bl[0].date?' – '+fmtD(u.bl.at(-1).date):''):'Not in plan';
   let g='';
   for(const u of U)for(const dk of u.d){if(!pos[dk])continue;const a=P(dk),b=P(u.k),dn=st[dk][0]==='done';let d;
     if(M){d=pos[dk].r!==pos[u.k].r?`M${a.x} ${a.y+40} V${(a.y+b.y)/2} H${b.x} V${b.y-40}`:pos[u.k].r===1?`M${a.x-70} ${a.y} H${b.x+70}`:`M${a.x+70} ${a.y} H${b.x-70}`}
-    else{const y0=a.y+h/2+thk(by[dk])+44,y1=b.y-h/2,my=y1-24-(pos[dk].c%4)*10,r=b.x===a.x?0:10,sg=b.x>a.x?1:-1;
+    else{const y0=a.y+h/2+thk(by[dk])+70,y1=b.y-h/2,my=y1-24-(pos[dk].c%4)*10,r=b.x===a.x?0:10,sg=b.x>a.x?1:-1;
       d=r?`M${a.x} ${y0} V${my-r} Q${a.x} ${my} ${a.x+sg*r} ${my} H${b.x-sg*r} Q${b.x} ${my} ${b.x} ${my+r} V${y1}`:`M${a.x} ${y0} V${y1}`}
     g+=`<path class="lm-wire${dn&&st[u.k][0]==='now'?' lm-flow':''}" data-a="${dk}" data-b="${u.k}" d="${d}" fill="none" stroke="${dn?col:'#5a5550'}" stroke-width="2"${dn&&st[u.k][0]!=='now'?'':' stroke-dasharray="5 5"'}/>`}
   for(const u of U){const p=P(u.k),[sv,pr]=st[u.k],th=thk(u),lock=sv==='lock';
@@ -2742,10 +2742,10 @@ function renderLibMap(box,tk){
       (sv==='done'?`<path d="M${p.x-9} ${p.y} l6 6 l12 -12" fill="none" stroke="#1a1714" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`:
        lock?`<g stroke="#5a5550" stroke-width="1.8" fill="none"><rect x="${p.x-7}" y="${p.y-3}" width="14" height="11" rx="2"/><path d="M${p.x-4} ${p.y-3} v-3 a4 4 0 0 1 8 0 v3"/></g>`:
        `<ellipse cx="${p.x}" cy="${p.y}" rx="9" ry="4.5" fill="none" stroke="${col}" stroke-width="2"/>`);
-    const ly=p.y+h/2+th+20,nm=u.si.length>22?u.si.slice(0,21)+'…':u.si;
+    const ly=p.y+h/2+th+24,nm=u.si.length>18?u.si.slice(0,17)+'…':u.si;
     g+=`<text class="lm-l1" x="${p.x}" y="${ly}" text-anchor="middle" opacity="${lock?.5:1}">${esc(nm)}</text>`+
-       `<text class="lm-l2" x="${p.x}" y="${ly+16}" text-anchor="middle">${sv==='now'?Math.round(pr*100)+'% · ':''}${M?u.topics.length+' topics':u.n+(u.n>1?' days':' day')}</text>`+
-       `<text class="lm-l3" x="${p.x}" y="${ly+31}" text-anchor="middle">${span(u)}</text></g>`;
+       `<text class="lm-l2" x="${p.x}" y="${ly+21}" text-anchor="middle">${sv==='now'?Math.round(pr*100)+'% · ':''}${M?u.topics.length+' topics':u.n+(u.n>1?' days':' day')}</text>`+
+       `<text class="lm-l3" x="${p.x}" y="${ly+39}" text-anchor="middle">${span(u)}</text></g>`;
     /* hanging cards: extra recordings for Physics/Chemistry, each month's topics for Maths */
     const xs=M?u.topics.map(t=>({en:t[1]})):u.xs;
     xs.forEach((x,i)=>{const n=xs.length,up=M?pos[u.k].r===0:true;
