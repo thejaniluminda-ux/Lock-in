@@ -1462,7 +1462,7 @@ const REC={mech:'https://t.me/Sci_Link/1007',therm:'https://t.me/Sci_Link/876',c
 /* unit: k key, en, si, tag, subj, track (A = 4 to 5 hour slot, B = up to 3.5 hours), h hours, rec, days (names or a count), after (unit that must finish first), day (true = whole-day seminar) */
 const CLASSES=[
  {k:'mech',subj:'phy',track:'A',h:5,en:'Mechanics',si:'යාන්ත්‍ර විද්‍යාව',tag:'~16% of paper',days:['යාන්ත්‍ර විද්‍යාව ආරම්භය (දෛශික)','චලිත ප්‍රස්තාර සම්පූර්ණ පාඩම','චලිත ගැටලු විසඳීම','සාපේක්ෂ චලිතය සහ ප්‍රක්ෂිප්ත සම්පූර්ණ පාඩම','නිව්ටන් නියම ආරම්භය','ආවේගය හා ගම්‍යතාව','ගම්‍යතා සංස්ථිතිය','ඝර්ෂණය','බල සමතුලිතතාව','බල සමතුලිතතාව විශේෂ සිද්ධාන්ත','කාර්යය, ශක්තිය, ක්ෂමතාව සම්පූර්ණ පාඩම','කෝණික චලිතය','භ්‍රමණ චලිතය','වෘත්ත චලිතය','ද්‍රවස්ථිතිය ආරම්භය','ද්‍රවස්ථිතිය විශේෂ කරුණු','ද්‍රවගති විද්‍යාව']},
- {k:'wave',subj:'phy',track:'A',h:5,en:'Oscillations and Waves',si:'දෝලන හා තරංග',tag:'~15% of paper',days:['දෝලන හා තරංග ආරම්භය','තරංග ආරම්භය','ස්ථාවර තරංග සම්පූර්ණ පාඩම','ඩොප්ලර් ආචරණය සහ ධ්වනි තීව්‍රතාව']},
+ {k:'wave',subj:'phy',track:'A',need:{0:'mech:14'},h:5,en:'Oscillations and Waves',si:'දෝලන හා තරංග',tag:'~15% of paper',days:['දෝලන හා තරංග ආරම්භය','තරංග ආරම්භය','ස්ථාවර තරංග සම්පූර්ණ පාඩම','ඩොප්ලර් ආචරණය සහ ධ්වනි තීව්‍රතාව']},
  {k:'estat',subj:'phy',track:'A',h:5,en:'Electrostatic Fields',si:'ස්ථිති විද්‍යුත් ක්ෂේත්‍ර',tag:'',days:['ස්ථිති විද්‍යුත් ක්ෂේත්‍ර ආරම්භය','ගෞස් ප්‍රමේය සහ විභවය','ධාරිත්‍රක ආරම්භය']},
  {k:'mag',subj:'phy',track:'A',h:5,en:'Magnetic Fields',si:'චුම්බක ක්ෂේත්‍ර',tag:'',after:'cur',days:['චුම්බක ක්ෂේත්‍ර ආරම්භය','චුම්බක ක්ෂේත්‍ර','චුම්බක ක්ෂේත්‍රයේ ආරෝපණ මත බල','චුම්බක ප්‍රේරණය ආරම්භය','මෝටර්, ඩයිනමෝ සහ පරිණාමක']},
  {k:'elec',subj:'phy',track:'A',h:5,en:'Electronics',si:'ඉලෙක්ට්‍රොනික විද්‍යාව',tag:'',after:'cur',days:['ඉලෙක්ට්‍රොනික විද්‍යාව ආරම්භය','ට්‍රාන්සිස්ටර ආරම්භය','කාරකාත්මක වර්ධක','තාර්කික ද්වාර, DTL, TTL සහ ෆ්ලිප්-ෆ්ලොප්']},
@@ -1471,7 +1471,7 @@ const CLASSES=[
  {k:'mprop',subj:'phy',track:'A',h:5,en:'Mechanical Properties of Matter',si:'පදාර්ථයේ යාන්ත්‍රික ගුණ',tag:'',days:['ප්‍රත්‍යස්ථතාව','පෘෂ්ඨික ආතතිය','දුස්ස්‍රාවීතාව']},
  {k:'grav',subj:'phy',track:'A',h:5,en:'Gravitational Fields',si:'ගුරුත්වාකර්ෂණ ක්ෂේත්‍ර',tag:'',days:['ගුරුත්වාකර්ෂණ ක්ෂේත්‍ර']},
  {k:'cur',subj:'phy',track:'B',h:3,en:'Current Electricity',si:'ධාරා විද්‍යුතය',tag:'~15% of paper',days:['ධාරා විද්‍යුතය ආරම්භය','ප්‍රතිරෝධක පද්ධති','ප්‍රතිරෝධ විශේෂ කරුණු','කෝෂ ආරම්භය','කර්චොෆ් නියම ආරම්භය සහ සම්පූර්ණ පාඩම','ධාරා විද්‍යුතය සම්බන්ධ උපකරණ භාවිතය','මීටර සේතුව හා විභවමානය සම්පූර්ණ පාඩම','ධාරා විද්‍යුතයේ තාපන ඵලය']},
- {k:'therm',subj:'phy',track:'B',h:3,en:'Thermal Physics',si:'තාපය',tag:'~14% of paper',days:['ඝන ප්‍රසාරණය','ද්‍රව ප්‍රසාරණය','උෂ්ණත්වමිතිය','වායු නියම','චාලක අණුක වාදය','තාපමිතිය ආරම්භය','තාපමිතිය විශේෂ කරුණු','තාප සන්නයනය සම්පූර්ණ පාඩම','තාප සංවහනය','තාප ගති විද්‍යාව සම්පූර්ණ පාඩම','වාෂ්ප හා ආර්ද්‍රතාමිතිය','වාෂ්ප හා ආර්ද්‍රතාමිතිය ප්‍රශ්න පුහුණුව']},
+ {k:'therm',subj:'phy',track:'B',need:{4:'mech:7'},h:3,en:'Thermal Physics',si:'තාපය',tag:'~14% of paper',days:['ඝන ප්‍රසාරණය','ද්‍රව ප්‍රසාරණය','උෂ්ණත්වමිතිය','වායු නියම','චාලක අණුක වාදය','තාපමිතිය ආරම්භය','තාපමිතිය විශේෂ කරුණු','තාප සන්නයනය සම්පූර්ණ පාඩම','තාප සංවහනය','තාප ගති විද්‍යාව සම්පූර්ණ පාඩම','වාෂ්ප හා ආර්ද්‍රතාමිතිය','වාෂ්ප හා ආර්ද්‍රතාමිතිය ප්‍රශ්න පුහුණුව']},
 
  {k:'calc',subj:'chem',track:'A',h:5,en:'Chemical Calculations',si:'රසායනික ගණනය කිරීම්',tag:'P1 MCQs',days:3},
  {k:'redox',subj:'chem',track:'A',h:6.5,day:true,en:'Redox seminar',si:'ඔක්සිකරණ-ඔක්සිහරණ සම්මන්ත්‍රණය',tag:'P1 MCQs',after:'calc',days:['ඔක්සිකරණ-ඔක්සිහරණ සම්මන්ත්‍රණය']},
@@ -1524,7 +1524,7 @@ const UNIT_BY=Object.fromEntries(CLASSES.map(u=>[u.k,u]));
 for(const u of CLASSES)if(u.at){const p=UNIT_BY[u.at[0].split(':')[0]];u.w=(p&&p.w||10)+1}
 const unitLen=u=>typeof u.days==='number'?u.days:u.days.length;
 /* which units need this one / which this one needs (for the Library unlock view) */
-function unitNeeds(k){const u=UNIT_BY[k];return [...new Set([...(u.deps||[]),...(u.at||[]).map(x=>x.split(':')[0])])]}
+function unitNeeds(k){const u=UNIT_BY[k];return [...new Set([...(u.deps||[]),...Object.values(u.need||{}).map(x=>x.split(':')[0]),...(u.at||[]).map(x=>x.split(':')[0])])]}
 function unitUnlocks(k){return CLASSES.filter(u=>unitNeeds(u.k).includes(k)).map(u=>u.k)}
 
 /* ---------- Combined Maths revision blueprint (Vikum Harshana, 2027) ---------- */
@@ -1540,6 +1540,7 @@ const BP=[
  {m:'2027-05',n:'May 2027',t:[['සම්භාවිතාව','Probability',85],['සංඛ්‍යානය','Statistics',115],['සරල රේඛාව','Straight line',100],['වෘත්තය','Circle',100]]},
  {m:'2027-06',n:'June 2027',t:[['සන්ධි කළ දඬු','Jointed rods',80],['රාමු සැකිලි','Frameworks',70],['සරල අනුවර්තීය චලිතය','Simple harmonic motion',150]]}
 ];
+const PAIR={cur:'therm',therm:'cur'};
 function buildPlan(){
   const p2=n=>String(n).padStart(2,'0'),kOf=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`,addD=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
   /* expand units into class items, grouped into four queues */
@@ -1551,6 +1552,8 @@ function buildPlan(){
     list.forEach((dn,i)=>{const nm=Array.isArray(dn)?dn[0]:dn,h=Array.isArray(dn)?dn[1]:u.h;
       const deps=[];if(i>0)deps.push(`${u.k}:${i}`);else for(const p of u.deps)deps.push(`${p}:${unitLen(UNIT_BY[p])}`);
       if(u.at&&u.at[Math.min(i,u.at.length-1)])deps.push(u.at[Math.min(i,u.at.length-1)]);
+      /* a class that needs one exact class from another unit (Waves after circular motion, kinetic theory after momentum) */
+      if(u.need&&u.need[i])deps.push(u.need[i]);
       Q[u.subj+u.track].push({unit:u.k,iid:`${u.k}:${i+1}`,deps:[...new Set(deps)],w:u.w||5,x:!!u.at,subj:u.subj,h,day:!!u.day,title:nm,sub:list.length>1?`${u.en}, ${i+1} of ${list.length}`:u.en,tag:u.tag,rec:REC[u.rec||u.k]||''})});
   }
   const ok=it=>it.deps.every(d=>taken.has(d));
@@ -1573,7 +1576,8 @@ function buildPlan(){
          2. otherwise keep going with the unit already in progress on this track
          3. otherwise start the biggest, most exam-heavy unit whose foundations are done */
       const ch=chain[n];
-      const pick=fits.find(([it])=>it.x)||fits.find(([it])=>it.unit===ch)||fits.slice().sort((a,b)=>b[0].w-a[0].w||a[1]-b[1])[0];
+      /* Current Electricity and Thermal take turns on the 3 h track, so both big units run alongside Mechanics */
+      const alt=ch&&PAIR[ch],pick=fits.find(([it])=>it.x)||(alt&&fits.find(([it])=>it.unit===alt))||fits.find(([it])=>it.unit===ch)||fits.slice().sort((a,b)=>b[0].w-a[0].w||a[1]-b[1])[0];
       cands.push({n,i:pick[1],it:pick[0]})}
     /* foundations (w 28+) jump the Physics/Chemistry turn-taking so the big units they unlock can start early */
     best=cands.filter(c=>c.it.w>=28).sort((a,b)=>b.it.w-a.it.w)[0]||cands[0]||null;
@@ -1724,8 +1728,8 @@ function buildPlan(){
 /* the plan lives in the browser; it is built once from the data above */
 const CKEY='lockin-plan-v2';
 let CS=null;
-try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=7)CS=s}catch(e){}
-if(!CS)CS={v:7,days:buildPlan().days,off:{},fresh:true};
+try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=8)CS=s}catch(e){}
+if(!CS)CS={v:8,days:buildPlan().days,off:{},fresh:true};
 const saveCS=()=>{try{localStorage.setItem(CKEY,JSON.stringify(CS))}catch(e){}};
 
 /* ---------- Date + countdown ---------- */
@@ -2285,7 +2289,7 @@ $('#mNext').addEventListener('click',()=>{miniM=new Date(miniM.getFullYear(),min
 $('#mGrid').addEventListener('click',e=>{const b=e.target.closest('.md');if(!b)return;viewD=dOf(b.dataset.k);renderWeek();renderMini()});
 document.querySelectorAll('[data-f]').forEach(c=>c.addEventListener('change',()=>{filt[c.dataset.f]=c.checked;renderWeek()}));
 $('#cCreate').addEventListener('click',e=>{const tk=kOf(today0),k=curKeys.includes(tk)?tk:curKeys[0];openForm({date:k,s:1140,e:1200,title:'',sub:'',subj:'phy',tag:''},true,e.currentTarget.getBoundingClientRect())});
-$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:7,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
+$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:8,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
 /* ================= Report: weak-spot radar ================= */
 const UNITS={
   phy:[['Mechanics','Mechanics',16],['Waves','Waves',15],['Current electricity','Current el.',15],['Thermal physics','Thermal',14],['Light','Light',8],['Magnetic fields','Magnetism',8],['Electronics','Electronics',6],['Electrostatics','Electrostatics',5],['Matter and radiation','Matter & rad.',5],['Measurement','Measurement',5],['Mechanical properties','Mech. properties',4],['Gravitation','Gravitation',3]],
@@ -2521,13 +2525,15 @@ function rebuildOrder(keepPast){
     const m=e.unit?byKey[e.unit+'|'+e.title+'|'+(e.sub||'').includes('(part 2)')]:(days[k]||[]).find(x=>x.title===e.title&&!x.done);
     if(m)m.done=true;
   }
-  CS={v:7,days,off:{},slid:old.slid||[]};
+  CS={v:8,days,off:{},slid:old.slid||[]};
   for(const e of redo)cuPlace(cuItem(e));
   for(const k in (old.off||{}))if(k>=sk&&old.off[k]){CS.off[k]=true;(CS.days[k]||[]).filter(x=>x.kind!=='life'&&x.kind!=='review'&&!x.fixed&&!x.done&&!x.user).forEach(skipToCU);CS.days[k]=(CS.days[k]||[]).filter(x=>x.fixed||x.user)}
 }
 (function migrate(){
   if(CS.fresh){delete CS.fresh;applyBlueprint(CS.days);saveCS();return}
-  if(CS.v===7){applyBlueprint(CS.days);saveCS();return}
+  if(CS.v===8){applyBlueprint(CS.days);saveCS();return}
+  /* v7 to v8: Physics pairs take turns (Current with Thermal, Mechanics with Waves) */
+  if(CS.v===7){rebuildOrder(true);saveCS();return}
   /* v6 to v7: practice blocks name what to practise, and no practice before a subject's first class */
   if(CS.v===6){rebuildOrder(true);saveCS();return}
   if(CS.v===5){rebuildOrder();saveCS();return}
@@ -2535,8 +2541,8 @@ function rebuildOrder(keepPast){
     const tk=dkey(new Date());
     for(const k in CS.days)if(k>=tk)retimeDay(k,CS.days[k]);
     CS.v=4;}
-  if(CS.v===4){restartPlan();CS.v=7;saveCS();return}
-  const old=CS,fresh={v:7,days:applyBlueprint(buildPlan().days),off:old.off||{}};
+  if(CS.v===4){restartPlan();CS.v=8;saveCS();return}
+  const old=CS,fresh={v:8,days:applyBlueprint(buildPlan().days),off:old.off||{}};
   for(const k in old.days)for(const e of old.days[k]){
     if(e.user){(fresh.days[k]||(fresh.days[k]=[])).push(e);continue}
     if(e.done){const m=(fresh.days[k]||[]).find(x=>x.title===e.title&&!x.done);if(m)m.done=true}
@@ -2614,7 +2620,7 @@ function lmUnits(s){
       return{k:'m:'+b.m,si:b.n,en:miss?'Missed: catch-up recordings':'Live classes Tue/Fri',d,bl,topics:b.t,n:b.t.length*2,tag:b.t.reduce((a,t)=>a+(t[2]||0),0)+' paper marks'}});
   }
   const L=CLASSES.filter(u=>u.subj===s);
-  const main=L.filter(u=>!lmX(u)).map(u=>({k:u.k,si:u.si,en:u.en,d:(u.deps||[]).filter(k=>UNIT_BY[k]&&UNIT_BY[k].subj===s&&!lmX(UNIT_BY[k])),bl:unitBlocks(u.k),n:unitLen(u),tag:u.tag||'',xs:[]}));
+  const main=L.filter(u=>!lmX(u)).map(u=>({k:u.k,si:u.si,en:u.en,d:[...new Set([...(u.deps||[]),...Object.values(u.need||{}).map(x=>x.split(':')[0])])].filter(k=>UNIT_BY[k]&&UNIT_BY[k].subj===s&&!lmX(UNIT_BY[k])),bl:unitBlocks(u.k),n:unitLen(u),tag:u.tag||'',xs:[]}));
   const by=Object.fromEntries(main.map(u=>[u.k,u]));
   L.filter(lmX).forEach(u=>{const p=by[u.k.slice(0,-1)];if(p)p.xs.push({k:u.k,en:u.en,bl:unitBlocks(u.k),n:unitLen(u)})});
   return main;
