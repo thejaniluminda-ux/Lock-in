@@ -1450,7 +1450,8 @@ function playIntro(){
   introT.push(setTimeout(()=>{if(run===introRun)endIntro()},3700));
 }
 intro.addEventListener('click',()=>{if(!intro.classList.contains('fade'))endIntro(true)});
-playIntro();
+/* the opening animation plays once a day; later opens go straight to the app (Replay intro still works) */
+{let seen=null;try{seen=localStorage.getItem('lockin-intro-day')}catch(e){}const td=new Date().toDateString();if(seen===td){intro.classList.add('gone');app.classList.add('in')}else{try{localStorage.setItem('lockin-intro-day',td)}catch(e){}playIntro()}}
 $('#replay').addEventListener('click',()=>{audio();playIntro()});
 const sndBtn=$('#sndBtn');
 function paintSnd(){sndBtn.textContent='Intro sound: '+(soundOn?'on':'off');sndBtn.setAttribute('aria-pressed',soundOn)}
