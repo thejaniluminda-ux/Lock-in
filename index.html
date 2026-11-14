@@ -1490,6 +1490,19 @@ const unitLen=u=>typeof u.days==='number'?u.days:u.days.length;
 function unitNeeds(k){const u=UNIT_BY[k];return [...new Set([...(u.deps||[]),...(u.at||[]).map(x=>x.split(':')[0])])]}
 function unitUnlocks(k){return CLASSES.filter(u=>unitNeeds(u.k).includes(k)).map(u=>u.k)}
 
+/* ---------- Combined Maths revision blueprint (Vikum Harshana, 2027) ---------- */
+const BP=[
+ {m:'2026-09',n:'September 2026',rec:'mSep',t:[['මාපාංක ශ්‍රිත','Modulus functions',25],['ගෝල ගැටුම්','Collisions',25],['ද්විපද ප්‍රසාරණය','Binomial expansion',25],['ප්‍රක්ෂිප්ත','Projectiles',25],['ගණිත අභ්‍යුහන මූලධර්මය','Mathematical induction',25],['චලිත ප්‍රස්තාර','Motion graphs',60]]},
+ {m:'2026-10',n:'October 2026',rec:'mOct',t:[['සාපේක්ෂ ප්‍රවේගය','Relative velocity',90],['වර්ගජ සමීකරණ','Quadratic equations',90],['බහුපද ශ්‍රිත','Polynomials',60],['කාර්යය සහ ශක්තිය','Work and energy',null],['ජවය','Power',25]]},
+ {m:'2026-11',n:'November 2026',rec:'mNov',t:[['බල සමතුලිතතාවය','Equilibrium of forces',25],['ඝර්ෂණය','Friction',25],['සංකරණ සහ සංයෝජන','Permutations and combinations',60],['ශ්‍රේණි','Series',90],['දෛශික','Vectors',85],['ඒකතල බල පද්ධති','Coplanar forces',90]]},
+ {m:'2026-12',n:'December 2026',t:[['න්‍යාස','Matrices',60],['සංකීර්ණ සංඛ්‍යා','Complex numbers',115]]},
+ {m:'2027-01',n:'January 2027',t:[['ත්‍රිකෝණමිතිය','Trigonometry',175]]},
+ {m:'2027-02',n:'February 2027',t:[['සීමාව','Limits',25],['අවකලනය','Differentiation',25],['අවකලනයේ භාවිත','Uses of differentiation',150]]},
+ {m:'2027-03',n:'March 2027',t:[['ස්කන්ධ කේන්ද්‍රය','Centre of mass',150],['තිරස් වෘත්ත චලිතය','Horizontal circular motion',25],['සිරස් වෘත්ත චලිතය','Vertical circular motion',60],['සාපේක්ෂ ත්වරණය','Relative acceleration',115]]},
+ {m:'2027-04',n:'April 2027',t:[['අනුකලනය','Integration',150],['අනුකලනයේ භාවිත','Uses of integration',25]]},
+ {m:'2027-05',n:'May 2027',t:[['සම්භාවිතාව','Probability',85],['සංඛ්‍යානය','Statistics',115],['සරල රේඛාව','Straight line',100],['වෘත්තය','Circle',100]]},
+ {m:'2027-06',n:'June 2027',t:[['සන්ධි කළ දඬු','Jointed rods',80],['රාමු සැකිලි','Frameworks',70],['සරල අනුවර්තීය චලිතය','Simple harmonic motion',150]]}
+];
 function buildPlan(){
   const p2=n=>String(n).padStart(2,'0'),kOf=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`,addD=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
   /* expand units into class items, grouped into four queues */
@@ -1506,6 +1519,8 @@ function buildPlan(){
   const ok=it=>it.deps.every(d=>taken.has(d));
   const papers=[];/* unit past-paper question tasks waiting for a study slot */
   const last={phy:null,chem:null};
+  const done={phy:[],chem:[]},fin={phy:[],chem:[]},mDone=[],pc={phy:0,chem:0,maths:0};
+  const mAdd=t=>{const i=mDone.findIndex(x=>x.en===t.en);if(i>=0)mDone.splice(i,1);mDone.push(t)};/* classes taken so far, finished units, Maths topics covered */
   const lastSubj={A:'chem',B:'phy'};/* alternate Physics and Chemistry inside each track */
   const chain={};/* the unit each track+subject is working through, so a unit runs day after day */
   const finished={};/* unit -> day it finished (for spaced review) */
@@ -1527,14 +1542,19 @@ function buildPlan(){
     best=cands.filter(c=>c.it.w>=28).sort((a,b)=>b.it.w-a.it.w)[0]||cands[0]||null;
     if(!best)return null;
     Q[best.n].splice(best.i,1);const it=best.it;taken.add(it.iid);last[it.subj]=it;lastSubj[tr]=it.subj;if(!it.x)chain[best.n]=it.unit;
-    today.push(it);
-    if(--left[it.unit]===0){const u=UNIT_BY[it.unit];finished[it.unit]=null;if(!u.day&&!/x$/.test(u.k)&&!u.self)papers.push({subj:u.subj,title:`${u.si}: ඒකක පසුගිය ප්‍රශ්න`,sub:`${u.en}: unit past-paper questions, then log your score`,tag:u.tag,rec:''})}
+    today.push(it);done[it.subj].push(it);
+    if(--left[it.unit]===0){const u=UNIT_BY[it.unit];finished[it.unit]=null;if(!u.day&&!/x$/.test(u.k))fin[u.subj].push(u.k);if(!u.day&&!/x$/.test(u.k)&&!u.self)papers.push({subj:u.subj,title:`${u.si}: ඒකක පසුගිය ප්‍රශ්න`,sub:`${u.en}: unit past-paper questions, then log your score`,tag:u.tag,rec:''})}
     return it;
   }
   /* spaced review: a 20-minute recap 3 days, 2 weeks and 6 weeks after a unit ends */
   const reviews=[];
   const mark=k=>{for(const u in finished)if(finished[u]===null){finished[u]=k;const un=UNIT_BY[u];if(un&&!/x$/.test(u)&&!un.day)[[3,'3-day'],[14,'2-week'],[42,'6-week']].forEach(([n,l])=>reviews.push({u,due:kOf(addD(new Date(k+'T00:00'),n)),l}))}};
-  const mcu=[];MCU.forEach(m=>{for(let i=1;i<=2;i++)mcu.push({title:m[0],sub:`${m[1]} (missed class, part ${i} of 2)`,tag:m[2]+' · 2027',rec:REC[m[3]]})});
+  const mcu=[];MCU.forEach(m=>{for(let i=1;i<=2;i++)mcu.push({title:m[0],en:m[1],sub:`${m[1]} (missed class, part ${i} of 2)`,tag:m[2]+' · 2027',rec:REC[m[3]]})});
+  /* best guess at the topic of a Tue/Fri live Maths class: spread the month's blueprint topics over its classes by their weight */
+  const liveTopic=x=>{const w=x.getDay();if((w!==2&&w!==5)||x>=JULY)return null;const b=BP.find(y=>y.m===kOf(x).slice(0,7));if(!b)return null;
+    const ds=[];for(let y=new Date(x.getFullYear(),x.getMonth(),1);y.getMonth()===x.getMonth();y=addD(y,1))if(y.getDay()===2||y.getDay()===5)ds.push(kOf(y));
+    const ws=b.t.map(t=>t[2]||60),tot=ws.reduce((a,c)=>a+c,0);let pos=(ds.indexOf(kOf(x))+.5)/ds.length*tot;
+    for(let j=0;j<ws.length;j++){if(pos<ws[j])return b.t[j];pos-=ws[j]}return b.t[b.t.length-1]};
   const days={};let pr=0,measDone=false,rot=0;
   const allEmpty=()=>Object.values(Q).every(q=>!q.length);
   let classesEnd=null;
@@ -1546,27 +1566,45 @@ function buildPlan(){
     const add=(s,e,subj,kind,c,x)=>ev.push(Object.assign({s,e,subj,kind,title:c.title,sub:c.sub||'',tag:c.tag||'',rec:c.rec||'',unit:c.unit||''},c.iid?{iid:c.iid,deps:c.deps}:{},x||{}));
     prevDay=today;today=[];
     const study=(s,e,subj,title,sub,tag,rec)=>add(s,e,subj,'study',{title,sub,tag,rec});
-    const def=(subj)=>{const l=last[subj];if(l){const u=UNIT_BY[l.unit];return{title:`${u.si}: සටහන් සහ ප්‍රශ්න`,sub:`${u.en}: notes and topic questions`,tag:u.tag,rec:l.rec}}return{title:subj==='phy'?'භෞතික විද්‍යාව: සටහන් සහ ප්‍රශ්න':'රසායන විද්‍යාව: සටහන් සහ ප්‍රශ්න',sub:'Notes and topic questions',tag:'',rec:''}};
-    const mathsPractice={title:'සංයුක්ත ගණිතය: ප්‍රශ්න පුහුණුව',sub:'Combined Maths: practice on this week’s topics',tag:'',rec:''};
+    /* practice blocks always name exactly what to practise, and a subject gets no practice before its first class.
+       Every 3rd practice block of a subject goes back to an older finished unit/topic so it stays fresh. */
+    const prac=sj=>{
+      if(sj==='maths'){if(!mDone.length)return null;
+        const n=++pc.maths,cur=mDone[mDone.length-1],olds=[...new Set(mDone.map(x=>x.en))].filter(x=>x!==cur.en);
+        const t=n%3===0&&olds.length?mDone.find(x=>x.en===olds[(n/3-1)%olds.length]):cur;
+        return{subj:'maths',title:`ගණිත ප්‍රශ්න: ${t.si}`,sub:`Combined Maths: ${t.en} questions${t===cur?' (your latest class)':' (older topic, keeps it fresh)'}`,tag:t===cur?'':'Old topic',rec:t.rec||''}}
+      const main=done[sj].filter(x=>!x.x);if(!main.length)return null;
+      const l=main[main.length-1],n=++pc[sj],olds=fin[sj].filter(u=>u!==l.unit);
+      if(n%3===0&&olds.length){const o=UNIT_BY[olds[(n/3-1)%olds.length]];return{subj:sj,title:`පැරණි ඒකකය: ${o.si} ප්‍රශ්න`,sub:`${o.en}: questions from this finished unit, so it stays fresh`,tag:'Old unit',rec:REC[o.rec||o.k]||'',unit:o.k}}
+      const u=UNIT_BY[l.unit],ds=main.filter(x=>x.unit===l.unit).slice(-2),nums=ds.map(x=>+x.iid.split(':')[1]);
+      return{subj:sj,title:`ප්‍රශ්න: ${ds.map(x=>x.title).join(' + ')}`,sub:`${u.en}, class ${nums.join(' and ')}: topic questions`,tag:u.tag||'',rec:l.rec||'',unit:u.k}};
+    /* nothing studied yet: skim the book for the next class instead (needs no questions) */
+    const ahead=sj=>{
+      if(sj==='maths'){for(let i=0,x=d;i<7;i++,x=addD(x,1)){const t=liveTopic(x);if(t)return{subj:'maths',title:`ඉදිරියට කියවීම: ${t[0]}`,sub:`Combined Maths: read ahead on ${t[1]} before the next class (no questions yet)`,tag:'Read ahead',rec:''}}return null}
+      const c=[...Q[sj+"A"],...Q[sj+"B"]].filter(it=>ok(it)&&!it.x&&!UNIT_BY[it.unit].self).sort((a,b)=>b.w-a.w)[0];if(!c)return null;
+      return{subj:sj,title:`ඉදිරියට කියවීම: ${c.title}`,sub:`${UNIT_BY[c.unit].en}: skim the book pages before this class (no questions yet)`,tag:'Read ahead',rec:'',unit:c.unit}};
+    const pick=sj=>{const c=prac(sj);if(c)return c;for(const s of ['phy','chem','maths'])if(s!==sj){const o=prac(s);if(o)return o}
+      return ahead(sj)||ahead('phy')||{subj:sj,title:'ඉදිරියට කියවීම',sub:'Read ahead for your next class',tag:'Read ahead',rec:''}};
+    const put=(s,e,c)=>add(s,e,c.subj,'study',c);
     /* fe: latest end for a filler block (a real class may run past it, e.g. a 3 h recording to 17:15) */
     let slotEnd=0;
     const slotClass=(s,cap,names,allowDay,fe)=>{
       const fill=Math.min(s+Math.min(cap,3)*60,fe||1e9);
       if(buffer){const sj=['phy','chem'][rot++%2];add(s,fill,sj,'study',{title:'Buffer: catch up or revise',sub:'Buffer week. Finish anything skipped, or redo your weakest unit.',tag:'Buffer week'});slotEnd=fill;return null}
       const it=take(names,cap,allowDay);
-      if(!it){const sj=['phy','chem'][rot++%2],c=allEmpty()?{title:'ඒකක පසුගිය ප්‍රශ්න: දුර්වල ඒකක',sub:'All classes done. Past-paper questions on your weakest units.',tag:'Revision'}:def(sj);add(s,fill,sj,'study',c);slotEnd=fill;return null}
+      if(!it){const sj=['phy','chem'][rot++%2],c=allEmpty()?{title:'ඒකක පසුගිය ප්‍රශ්න: දුර්වල ඒකක',sub:'All classes done. Past-paper questions on your weakest units.',tag:'Revision'}:pick(sj);add(s,fill,c.subj||sj,'study',c);slotEnd=fill;return null}
       if(it.day){add(s,s+300,it.subj,'class',it);slotEnd=855+Math.round((it.h-5)*60);add(855,slotEnd,it.subj,'class',{title:it.title,sub:it.sub+' (part 2)',tag:it.tag,rec:it.rec,unit:it.unit});return it}
       slotEnd=s+Math.round(it.h*60);add(s,slotEnd,it.subj,'class',it);return it;
     };
     /* 19:00 to 22:30 evening study */
     const evening=()=>{
-      if(mcu.length&&!july&&!today.some(it=>it.day)){/* keep a seminar day under about 8 h of class */add(1140,1290,'maths','class',mcu.shift());study(1290,1350,'maths',mathsPractice.title,'Combined Maths: questions on this class','');return}
-      const r=rot++%3;if(r===0)add(1140,1350,'maths','study',mathsPractice);else add(1140,1350,r===1?'phy':'chem','study',def(r===1?'phy':'chem'));
+      if(mcu.length&&!july&&!today.some(it=>it.day)){/* keep a seminar day under about 8 h of class */const m=mcu.shift();add(1140,1290,'maths','class',m);mAdd({si:m.title,en:m.en,rec:m.rec});study(1290,1350,'maths',`ගණිත ප්‍රශ්න: ${m.title}`,`Combined Maths: ${m.en} questions from this class`,'',m.rec);return}
+      put(1140,1350,pick(['maths','phy','chem'][rot++%3]));
     };
     /* workout, shower, then free time and dinner until 19:00 */
     const afternoonOff=t=>{L(t,t+30,'Workout');L(t+30,t+60,'Shower');L(t+60,1140,'Free time and dinner')};
     const night=()=>{L(1350,1365,'Review and check tomorrow',{kind:'review'});L(1365,1380,'Screens off, sleep')};
-    const paperOr=(s,e,subj)=>{const i=papers.findIndex(x=>!subj||x.subj===subj);const p=i>=0?papers.splice(i,1)[0]:(papers.length?papers.shift():null);if(p)add(s,e,p.subj,'study',p);else{const sj=subj||'phy';add(s,e,sj,'study',def(sj))}};
+    const paperOr=(s,e,subj)=>{const i=papers.findIndex(x=>!subj||x.subj===subj);const p=i>=0?papers.splice(i,1)[0]:(papers.length?papers.shift():null);if(p)add(s,e,p.subj,'study',p);else put(s,e,pick(subj||'phy'))};
     /* 06:00 to 23:00 frame. Brother and sister use the bathroom until 07:30, so study in your room first */
     L(360,375,'Wake, water, stretch',{sub:'10-minute stretch in your room'});
     const paperDay=sj=>{/* one ~5 h paper, then ~3 h checking */
@@ -1577,14 +1615,14 @@ function buildPlan(){
     if(july){
       /* July: full papers most days */
       if(w===0){study(375,450,'maths','සංයුක්ත ගණිතය: දුර්වල තැන්','Fix this week’s weakest paper questions','');L(450,465,'Shower');L(465,495,'Breakfast');study(495,750,'phy','සතියේ ප්‍රශ්න පත්‍ර සමාලෝචනය','Review this week’s papers and update your weak-spot radar','');L(750,810,'Lunch');study(810,1020,'chem','දුර්වල ඒකක ප්‍රතිශෝධනය','Revise the weakest units from the radar','');L(1020,1050,'Workout');L(1050,1350,'Off duty',{sub:'Sunday evening is yours'})}
-      else if(w===3){study(375,450,'maths',mathsPractice.title,'Combined Maths: practice','');L(450,465,'Shower');L(465,495,'Breakfast');study(495,750,'phy','දුර්වල ඒකක ප්‍රතිශෝධනය: භෞතික විද්‍යාව','Weak-spot revision from the radar','');L(750,810,'Lunch');study(810,1020,'chem','දුර්වල ඒකක ප්‍රතිශෝධනය: රසායන විද්‍යාව','Weak-spot revision from the radar','');afternoonOff(1020);study(1140,1350,'maths','දුර්වල ඒකක ප්‍රතිශෝධනය: සංයුක්ත ගණිතය','Weak-spot revision from the radar','')}
+      else if(w===3){put(375,450,pick('maths'));L(450,465,'Shower');L(465,495,'Breakfast');study(495,750,'phy','දුර්වල ඒකක ප්‍රතිශෝධනය: භෞතික විද්‍යාව','Weak-spot revision from the radar','');L(750,810,'Lunch');study(810,1020,'chem','දුර්වල ඒකක ප්‍රතිශෝධනය: රසායන විද්‍යාව','Weak-spot revision from the radar','');afternoonOff(1020);study(1140,1350,'maths','දුර්වල ඒකක ප්‍රතිශෝධනය: සංයුක්ත ගණිතය','Weak-spot revision from the radar','')}
       else{const sj=PSUB[pr++%3];
         study(375,450,sj[0],`${sj[2]}: සූත්‍ර සහ ඉක්මන් සමාලෝචනය`,`${sj[1]}: formula sheet and quick review before the paper`,'');L(450,465,'Shower');L(465,495,'Breakfast');
         paperDay(sj);
         study(1140,1290,sj[0],'වැරදි ප්‍රශ්න නැවත කිරීම','Redo the questions you got wrong','')}
       night();
     }else if(w===1||w===3||w===4){
-      const c=def(w===3?'phy':'chem');study(375,450,w===3?'phy':'chem',c.title,c.sub,c.tag,c.rec);
+      put(375,450,pick(w===3?'phy':'chem'));
       L(450,465,'Shower');L(465,495,'Breakfast');
       const a=slotClass(495,5,['phyA','chemA'],true);
       L(795,855,'Lunch');
@@ -1592,19 +1630,23 @@ function buildPlan(){
       afternoonOff(Math.max(1020,slotEnd));
       evening();night();
     }else if(w===2){
-      const c=def('chem');study(375,450,'chem',c.title,c.sub,c.tag,c.rec);L(450,465,'Shower');L(465,495,'Breakfast');
+      put(375,450,pick('chem'));L(450,465,'Shower');L(465,495,'Breakfast');
       slotClass(495,3.5,['phyB','chemB'],false,705);
       L(705,735,'Workout');L(735,780,'Lunch');
-      study(780,885,'maths','අද පන්තියට සූදානම් වීම','Read ahead for today’s Maths class','');L(885,900,'Get ready');
-      add(900,1200,'maths','class',{title:'සංයුක්ත ගණිතය: සජීවී පන්තිය',sub:'Combined Maths live class',tag:'Live · 2027',rec:d<new Date(2026,11,1)?REC.mNov:''},{fixed:true});
+      const lt=liveTopic(d);
+      study(780,885,'maths',lt?`අද පන්තියට සූදානම් වීම: ${lt[0]}`:'අද පන්තියට සූදානම් වීම',lt?`Read ahead on ${lt[1]} (likely today’s topic)`:'Read ahead for today’s Maths class','Read ahead');L(885,900,'Get ready');
+      add(900,1200,'maths','class',{title:'සංයුක්ත ගණිතය: සජීවී පන්තිය',sub:'Combined Maths live class',tag:'Live · 2027',rec:d<new Date(2026,11,1)?REC.mNov:''},{fixed:true,topic:lt?lt[1]:''});
+      if(lt)mAdd({si:lt[0],en:lt[1],rec:''});
       L(1200,1260,'Shower and dinner');
-      study(1260,1350,'maths','අද පන්තියේ සටහන් සමාලෝචනය','Review today’s Maths class notes','');
+      study(1260,1350,'maths',lt?`අද පන්තියේ සටහන් සමාලෝචනය: ${lt[0]}`:'අද පන්තියේ සටහන් සමාලෝචනය',lt?`Review today’s Maths notes (${lt[1]})`:'Review today’s Maths class notes','');
       night();
     }else if(w===5){
-      const c=def('phy');study(375,450,'phy',c.title,c.sub,c.tag,c.rec);L(450,465,'Shower');L(465,480,'Quick breakfast at your desk');
-      add(480,780,'maths','class',{title:'සංයුක්ත ගණිතය: සජීවී පන්තිය',sub:'Combined Maths live class',tag:'Live · 2027',rec:d<new Date(2026,11,1)?REC.mNov:''},{fixed:true});
+      put(375,450,pick('phy'));L(450,465,'Shower');L(465,480,'Quick breakfast at your desk');
+      const lt=liveTopic(d);
+      add(480,780,'maths','class',{title:'සංයුක්ත ගණිතය: සජීවී පන්තිය',sub:'Combined Maths live class',tag:'Live · 2027',rec:d<new Date(2026,11,1)?REC.mNov:''},{fixed:true,topic:lt?lt[1]:''});
+      if(lt)mAdd({si:lt[0],en:lt[1],rec:''});
       L(780,840,'Lunch');
-      study(840,1020,'maths','ගණිත පන්තියේ සටහන් සහ ප්‍රශ්න','Maths class notes and questions','');
+      study(840,1020,'maths',lt?`ගණිත සටහන් සහ ප්‍රශ්න: ${lt[0]}`:'ගණිත පන්තියේ සටහන් සහ ප්‍රශ්න',lt?`Notes and questions on ${lt[1]} (today’s class)`:'Maths class notes and questions','');
       afternoonOff(1020);
       evening();night();
     }else if(w===6){
@@ -1613,14 +1655,14 @@ function buildPlan(){
         study(375,450,sj[0],`${sj[2]}: සූත්‍ර සහ ඉක්මන් සමාලෝචනය`,`${sj[1]}: quick review before the paper`,'');L(450,465,'Shower');L(465,495,'Breakfast');
         paperDay(sj);
       }else{
-        study(375,450,'maths',mathsPractice.title,mathsPractice.sub,'');L(450,465,'Shower');L(465,495,'Breakfast');
+        put(375,450,pick('maths'));L(450,465,'Shower');L(465,495,'Breakfast');
         const sa=slotClass(495,5,['phyA','chemA'],true);/* Saturdays can take a full-day seminar too */
         L(795,855,'Lunch');if(!(sa&&sa.day))paperOr(855,1020);
         afternoonOff(1020);
       }
       evening();night();
     }else{
-      study(375,450,'maths',mathsPractice.title,mathsPractice.sub,'');L(450,465,'Shower');L(465,495,'Breakfast');
+      put(375,450,pick('maths'));L(450,465,'Shower');L(465,495,'Breakfast');
       if(!measDone){measDone=true;study(495,750,'phy','මිනුම්: ස්වයං අධ්‍යයනය','Measurement: self-study day (units, dimensions, errors, instruments)','~5% of paper');L(750,810,'Lunch');study(810,870,'phy','මිනුම්: පසුගිය ප්‍රශ්න','Measurement: past-paper questions','~5% of paper');paperOr(870,1020,'chem')}
       else{paperOr(495,750,'phy');L(750,810,'Lunch');paperOr(810,1020,'chem')}
       L(1020,1050,'Workout');L(1050,1350,'Off duty',{sub:'Sunday evening is yours. Skipped blocks land here first.'});
@@ -1645,8 +1687,8 @@ function buildPlan(){
 /* the plan lives in the browser; it is built once from the data above */
 const CKEY='lockin-plan-v2';
 let CS=null;
-try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=6)CS=s}catch(e){}
-if(!CS)CS={v:6,days:buildPlan().days,off:{},fresh:true};
+try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=7)CS=s}catch(e){}
+if(!CS)CS={v:7,days:buildPlan().days,off:{},fresh:true};
 const saveCS=()=>{try{localStorage.setItem(CKEY,JSON.stringify(CS))}catch(e){}};
 
 /* ---------- Date + countdown ---------- */
@@ -2206,7 +2248,7 @@ $('#mNext').addEventListener('click',()=>{miniM=new Date(miniM.getFullYear(),min
 $('#mGrid').addEventListener('click',e=>{const b=e.target.closest('.md');if(!b)return;viewD=dOf(b.dataset.k);renderWeek();renderMini()});
 document.querySelectorAll('[data-f]').forEach(c=>c.addEventListener('change',()=>{filt[c.dataset.f]=c.checked;renderWeek()}));
 $('#cCreate').addEventListener('click',e=>{const tk=kOf(today0),k=curKeys.includes(tk)?tk:curKeys[0];openForm({date:k,s:1140,e:1200,title:'',sub:'',subj:'phy',tag:''},true,e.currentTarget.getBoundingClientRect())});
-$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:6,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
+$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:7,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
 /* ================= Report: weak-spot radar ================= */
 const UNITS={
   phy:[['Mechanics','Mechanics',16],['Waves','Waves',15],['Current electricity','Current el.',15],['Thermal physics','Thermal',14],['Light','Light',8],['Magnetic fields','Magnetism',8],['Electronics','Electronics',6],['Electrostatics','Electrostatics',5],['Matter and radiation','Matter & rad.',5],['Measurement','Measurement',5],['Mechanical properties','Mech. properties',4],['Gravitation','Gravitation',3]],
@@ -2358,24 +2400,11 @@ const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const MONL=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const fmtD=k=>{const d=new Date(k+'T00:00');return `${DOW[d.getDay()]} ${d.getDate()} ${MONL[d.getMonth()]}`};
 
-/* ---------- Combined Maths revision blueprint (Vikum Harshana, 2027) ---------- */
-const BP=[
- {m:'2026-09',n:'September 2026',rec:'mSep',t:[['මාපාංක ශ්‍රිත','Modulus functions',25],['ගෝල ගැටුම්','Collisions',25],['ද්විපද ප්‍රසාරණය','Binomial expansion',25],['ප්‍රක්ෂිප්ත','Projectiles',25],['ගණිත අභ්‍යුහන මූලධර්මය','Mathematical induction',25],['චලිත ප්‍රස්තාර','Motion graphs',60]]},
- {m:'2026-10',n:'October 2026',rec:'mOct',t:[['සාපේක්ෂ ප්‍රවේගය','Relative velocity',90],['වර්ගජ සමීකරණ','Quadratic equations',90],['බහුපද ශ්‍රිත','Polynomials',60],['කාර්යය සහ ශක්තිය','Work and energy',null],['ජවය','Power',25]]},
- {m:'2026-11',n:'November 2026',rec:'mNov',t:[['බල සමතුලිතතාවය','Equilibrium of forces',25],['ඝර්ෂණය','Friction',25],['සංකරණ සහ සංයෝජන','Permutations and combinations',60],['ශ්‍රේණි','Series',90],['දෛශික','Vectors',85],['ඒකතල බල පද්ධති','Coplanar forces',90]]},
- {m:'2026-12',n:'December 2026',t:[['න්‍යාස','Matrices',60],['සංකීර්ණ සංඛ්‍යා','Complex numbers',115]]},
- {m:'2027-01',n:'January 2027',t:[['ත්‍රිකෝණමිතිය','Trigonometry',175]]},
- {m:'2027-02',n:'February 2027',t:[['සීමාව','Limits',25],['අවකලනය','Differentiation',25],['අවකලනයේ භාවිත','Uses of differentiation',150]]},
- {m:'2027-03',n:'March 2027',t:[['ස්කන්ධ කේන්ද්‍රය','Centre of mass',150],['තිරස් වෘත්ත චලිතය','Horizontal circular motion',25],['සිරස් වෘත්ත චලිතය','Vertical circular motion',60],['සාපේක්ෂ ත්වරණය','Relative acceleration',115]]},
- {m:'2027-04',n:'April 2027',t:[['අනුකලනය','Integration',150],['අනුකලනයේ භාවිත','Uses of integration',25]]},
- {m:'2027-05',n:'May 2027',t:[['සම්භාවිතාව','Probability',85],['සංඛ්‍යානය','Statistics',115],['සරල රේඛාව','Straight line',100],['වෘත්තය','Circle',100]]},
- {m:'2027-06',n:'June 2027',t:[['සන්ධි කළ දඬු','Jointed rods',80],['රාමු සැකිලි','Frameworks',70],['සරල අනුවර්තීය චලිතය','Simple harmonic motion',150]]}
-];
 const LIVE_T='සංයුක්ත ගණිතය: සජීවී පන්තිය';
 function applyBlueprint(days){
   for(const k in days)for(const e of days[k]){
     if(e.subj==='maths'&&e.kind==='class'&&e.title===LIVE_T&&!e.cu){const b=BP.find(x=>x.m===k.slice(0,7));
-      if(b){e.sub='This month: '+b.t.map(t=>t[1]).join(', ');e.bp=b.m;if(b.rec&&!e.rec)e.rec=REC[b.rec]}}
+      if(b){e.sub=(e.topic?'Likely today: '+e.topic+'. ':'')+'This month: '+b.t.map(t=>t[1]).join(', ');e.bp=b.m;if(b.rec&&!e.rec)e.rec=REC[b.rec]}}
     /* Sundays are a rest day from the workout */
     if(new Date(k+'T00:00').getDay()===0&&e.kind==='life'&&e.title==='Workout'){e.title='Off duty';e.sub='Rest day. No workout on Sundays.';e.rest=true}
   }
@@ -2441,31 +2470,36 @@ function restartPlan(){
 /* v5 to v6: rebuild in blueprint order (prerequisites first, big units early, consolidation, spaced recaps).
    Ticks follow their class (matched by unit and title), your own blocks and finished catch-ups stay,
    unfinished catch-ups are placed again, and days off stay off. */
-function rebuildOrder(){
-  const old=CS,days=applyBlueprint(buildPlan().days),sk=kOf(START);
+function rebuildOrder(keepPast){
+  const old=CS,days=applyBlueprint(buildPlan().days),tk=dkey(new Date()),sk=keepPast&&tk>kOf(START)?tk:kOf(START);
+  /* v6 to v7: days before today stay exactly as they were */
+  if(keepPast)for(const k in old.days)if(k<sk)days[k]=old.days[k];
   const byKey={};for(const k in days)for(const x of days[k])if(x.unit)byKey[x.unit+'|'+x.title+'|'+(x.sub||'').includes('(part 2)')]=x;
   const redo=[];
   for(const k in old.days)for(const e of old.days[k]){
+    if(keepPast&&k<sk)continue;
     if(e.user||(e.cu&&e.done)||(k<sk&&e.done)){(days[k]||(days[k]=[])).push(e);continue}
     if(e.cu){redo.push(e);continue}
     if(!e.done)continue;
     const m=e.unit?byKey[e.unit+'|'+e.title+'|'+(e.sub||'').includes('(part 2)')]:(days[k]||[]).find(x=>x.title===e.title&&!x.done);
     if(m)m.done=true;
   }
-  CS={v:6,days,off:{},slid:old.slid||[]};
+  CS={v:7,days,off:{},slid:old.slid||[]};
   for(const e of redo)cuPlace(cuItem(e));
   for(const k in (old.off||{}))if(k>=sk&&old.off[k]){CS.off[k]=true;(CS.days[k]||[]).filter(x=>x.kind!=='life'&&x.kind!=='review'&&!x.fixed&&!x.done&&!x.user).forEach(skipToCU);CS.days[k]=(CS.days[k]||[]).filter(x=>x.fixed||x.user)}
 }
 (function migrate(){
   if(CS.fresh){delete CS.fresh;applyBlueprint(CS.days);saveCS();return}
-  if(CS.v===6){applyBlueprint(CS.days);saveCS();return}
+  if(CS.v===7){applyBlueprint(CS.days);saveCS();return}
+  /* v6 to v7: practice blocks name what to practise, and no practice before a subject's first class */
+  if(CS.v===6){rebuildOrder(true);saveCS();return}
   if(CS.v===5){rebuildOrder();saveCS();return}
   if(CS.v===3){
     const tk=dkey(new Date());
     for(const k in CS.days)if(k>=tk)retimeDay(k,CS.days[k]);
     CS.v=4;}
-  if(CS.v===4){restartPlan();CS.v=6;saveCS();return}
-  const old=CS,fresh={v:6,days:applyBlueprint(buildPlan().days),off:old.off||{}};
+  if(CS.v===4){restartPlan();CS.v=7;saveCS();return}
+  const old=CS,fresh={v:7,days:applyBlueprint(buildPlan().days),off:old.off||{}};
   for(const k in old.days)for(const e of old.days[k]){
     if(e.user){(fresh.days[k]||(fresh.days[k]=[])).push(e);continue}
     if(e.done){const m=(fresh.days[k]||[]).find(x=>x.title===e.title&&!x.done);if(m)m.done=true}
