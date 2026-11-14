@@ -1620,7 +1620,7 @@ function buildPlan(){
     const ds=[];for(let y=new Date(x.getFullYear(),x.getMonth(),1);y.getMonth()===x.getMonth();y=addD(y,1))if(y.getDay()===2||y.getDay()===5)ds.push(kOf(y));
     const ws=b.t.map(t=>t[2]||60),tot=ws.reduce((a,c)=>a+c,0);let pos=(ds.indexOf(kOf(x))+.5)/ds.length*tot;
     for(let j=0;j<ws.length;j++){if(pos<ws[j])return b.t[j];pos-=ws[j]}return b.t[b.t.length-1]};
-  const days={};let pr=0,measDone=false,rot=0;
+  const days={};let pr=0,measDone=false,rot=0,tsR=0;
   const allEmpty=()=>Object.values(Q).every(q=>!q.length);
   let classesEnd=null;
   for(let d=new Date(START);d<=EXAM;d=addD(d,1)){
@@ -1663,7 +1663,9 @@ function buildPlan(){
     };
     /* 19:00 to 22:30 evening study */
     const evening=()=>{
-      if(mcu.length&&!july&&!today.some(it=>it.day)){/* keep a seminar day under about 8 h of class */const m=mcu.shift();add(1140,1290,'maths','class',m);mAdd({si:m.title,en:m.en,rec:m.rec});study(1290,1350,'maths',`ගණිත ප්‍රශ්න: ${m.title}`,`Combined Maths: ${m.en} questions from this class`,'',m.rec);return}
+      /* a missed-Maths recording (2.5 h) only goes on an evening where the day stays at 8 h of class or less */
+      const clsH=ev.filter(e=>e.kind==='class').reduce((a,e)=>a+(e.e-e.s)/60,0);
+      if(mcu.length&&!july&&!today.some(it=>it.day)&&clsH+2.5<=8){const m=mcu.shift();add(1140,1290,'maths','class',m);mAdd({si:m.title,en:m.en,rec:m.rec});study(1290,1350,'maths',`ගණිත ප්‍රශ්න: ${m.title}`,`Combined Maths: ${m.en} questions from this class`,'',m.rec);return}
       put(1140,1350,pick(['maths','phy','chem'][rot++%3]));
     };
     /* workout, shower, then free time and dinner until 19:00 */
@@ -1729,7 +1731,15 @@ function buildPlan(){
     }else{
       put(375,450,pick('maths'));L(450,465,'Shower');L(465,495,'Breakfast');
       if(!measDone){measDone=true;study(495,750,'phy','මිනුම්: ස්වයං අධ්‍යයනය','Measurement: self-study day (units, dimensions, errors, instruments)','~5% of paper');L(750,810,'Lunch');study(810,870,'phy','මිනුම්: පසුගිය ප්‍රශ්න','Measurement: past-paper questions','~5% of paper');paperOr(870,1020,'chem')}
-      else{paperOr(495,750,'phy');L(750,810,'Lunch');paperOr(810,1020,'chem')}
+      else{
+        /* from December: a 1 h timed section first, rotating through the subjects you have started (testing effect + exam speed) */
+        const tsS=d>=new Date(2026,11,1)?['phy','chem','maths'].filter(s=>s==='maths'?mDone.length:done[s].some(x=>!x.x)):[];
+        if(tsS.length){const s=tsS[tsR++%tsS.length];
+          add(495,555,s,'study',s==='maths'?{title:'කාලය මනින කොටස: Paper I Part A',sub:'Combined Maths: Part A questions from topics you have done, timed at exam pace. Mark it and log the %.',tag:'Timed'}
+            :{title:'කාලය මනින කොටස: Paper I MCQ',sub:`${s==='phy'?'Physics':'Chemistry'}: 25 Paper I MCQs from units you have finished in 1 hour (exam pace). Mark it and log the %.`,tag:'Timed'});
+          paperOr(555,750,'phy')}
+        else paperOr(495,750,'phy');
+        L(750,810,'Lunch');paperOr(810,1020,'chem')}
       L(1020,1050,'Workout');L(1050,1350,'Off duty',{sub:'Sunday evening is yours. Skipped blocks land here first.'});
       night();
     }
@@ -1752,8 +1762,8 @@ function buildPlan(){
 /* the plan lives in the browser; it is built once from the data above */
 const CKEY='lockin-plan-v2';
 let CS=null;
-try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=8)CS=s}catch(e){}
-if(!CS)CS={v:8,days:buildPlan().days,off:{},fresh:true};
+try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=9)CS=s}catch(e){}
+if(!CS)CS={v:9,days:buildPlan().days,off:{},fresh:true};
 const saveCS=()=>{try{localStorage.setItem(CKEY,JSON.stringify(CS))}catch(e){}};
 
 /* ---------- Date + countdown ---------- */
@@ -2313,7 +2323,7 @@ $('#mNext').addEventListener('click',()=>{miniM=new Date(miniM.getFullYear(),min
 $('#mGrid').addEventListener('click',e=>{const b=e.target.closest('.md');if(!b)return;viewD=dOf(b.dataset.k);renderWeek();renderMini()});
 document.querySelectorAll('[data-f]').forEach(c=>c.addEventListener('change',()=>{filt[c.dataset.f]=c.checked;renderWeek()}));
 $('#cCreate').addEventListener('click',e=>{const tk=kOf(today0),k=curKeys.includes(tk)?tk:curKeys[0];openForm({date:k,s:1140,e:1200,title:'',sub:'',subj:'phy',tag:''},true,e.currentTarget.getBoundingClientRect())});
-$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:8,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
+$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:9,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
 /* ================= Report: weak-spot radar ================= */
 const UNITS={
   phy:[['Mechanics','Mechanics',16],['Waves','Waves',15],['Current electricity','Current el.',15],['Thermal physics','Thermal',14],['Light','Light',8],['Magnetic fields','Magnetism',8],['Electronics','Electronics',6],['Electrostatics','Electrostatics',5],['Matter and radiation','Matter & rad.',5],['Measurement','Measurement',5],['Mechanical properties','Mech. properties',4],['Gravitation','Gravitation',3]],
@@ -2567,13 +2577,15 @@ function rebuildOrder(keepPast){
     const m=e.unit?byKey[e.unit+'|'+e.title+'|'+(e.sub||'').includes('(part 2)')]:(days[k]||[]).find(x=>x.title===e.title&&!x.done);
     if(m)m.done=true;
   }
-  CS={v:8,days,off:{},slid:old.slid||[]};
+  CS={v:9,days,off:{},slid:old.slid||[]};
   for(const e of redo)cuPlace(cuItem(e));
   for(const k in (old.off||{}))if(k>=sk&&old.off[k]){CS.off[k]=true;(CS.days[k]||[]).filter(x=>x.kind!=='life'&&x.kind!=='review'&&!x.fixed&&!x.done&&!x.user).forEach(skipToCU);CS.days[k]=(CS.days[k]||[]).filter(x=>x.fixed||x.user)}
 }
 (function migrate(){
   if(CS.fresh){delete CS.fresh;applyBlueprint(CS.days);saveCS();return}
-  if(CS.v===8){applyBlueprint(CS.days);saveCS();return}
+  if(CS.v===9){applyBlueprint(CS.days);saveCS();return}
+  /* v8 to v9: no missed-Maths recording after an 8 h class day; weekly 1 h timed section on Sundays from December */
+  if(CS.v===8){rebuildOrder(true);saveCS();return}
   /* v7 to v8: Physics pairs take turns (Current with Thermal, Mechanics with Waves) */
   if(CS.v===7){rebuildOrder(true);saveCS();return}
   /* v6 to v7: practice blocks name what to practise, and no practice before a subject's first class */
@@ -2583,8 +2595,8 @@ function rebuildOrder(keepPast){
     const tk=dkey(new Date());
     for(const k in CS.days)if(k>=tk)retimeDay(k,CS.days[k]);
     CS.v=4;}
-  if(CS.v===4){restartPlan();CS.v=8;saveCS();return}
-  const old=CS,fresh={v:8,days:applyBlueprint(buildPlan().days),off:old.off||{}};
+  if(CS.v===4){restartPlan();CS.v=9;saveCS();return}
+  const old=CS,fresh={v:9,days:applyBlueprint(buildPlan().days),off:old.off||{}};
   for(const k in old.days)for(const e of old.days[k]){
     if(e.user){(fresh.days[k]||(fresh.days[k]=[])).push(e);continue}
     if(e.done){const m=(fresh.days[k]||[]).find(x=>x.title===e.title&&!x.done);if(m)m.done=true}
