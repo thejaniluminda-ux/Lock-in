@@ -170,7 +170,55 @@ main{margin-left:104px;padding:28px 32px 56px 16px}
 
 /* Home header: date on the left, bell and countdown on the right */
 .date{align-self:flex-end}
-.lane{flex:1;align-self:stretch;position:relative;min-width:0}
+.lane{flex:1;align-self:stretch;position:relative;min-width:0;min-height:124px}
+/* Baku, the liquid-glass owl (Home header) */
+#baku{position:absolute;left:50%;bottom:0;width:112px;height:112px;transform:translateX(-50%);cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent}
+#baku:focus-visible{outline:2px solid var(--lav);outline-offset:4px;border-radius:16px}
+#bkArt,#bkArt svg{width:100%;height:100%;display:block;overflow:visible}
+.bk-bub{position:absolute;left:50%;bottom:calc(100% + 6px);transform:translate(-50%,6px);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;white-space:nowrap;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.26);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:#fff;font-size:12.5px;font-weight:400;border-radius:14px;padding:6px 12px;box-shadow:0 8px 22px rgba(0,0,0,.35)}
+.bk-bub.show{opacity:1;transform:translate(-50%,0)}
+#baku .all{transform-origin:100px 190px}
+#baku .lid{transform-origin:center;transform-box:fill-box}
+#baku .m-happy .all{animation:bkBob 2.8s ease-in-out infinite}
+#baku .m-yay .all{animation:bkJump .7s cubic-bezier(.3,.7,.4,1) infinite}
+#baku .m-sleepy .all{animation:bkBreathe 3.6s ease-in-out infinite}
+#baku .m-cheeky .all{animation:bkTilt 1.6s ease-in-out infinite}
+#baku .m-love .all{animation:bkBob 1.8s ease-in-out infinite}
+#baku .m-dance .all{animation:bkDance .9s ease-in-out infinite}
+#baku .m-angry .all{animation:bkShake .5s linear infinite}
+#baku .m-sad .all{animation:bkDroop 3s ease-in-out infinite}
+#baku .blink{animation:bkBlink 4.2s infinite}
+#baku .wingL{transform-origin:46px 112px;animation:bkWingL 2.8s ease-in-out infinite}
+#baku .wingR{transform-origin:154px 112px;animation:bkWingR 2.8s ease-in-out infinite}
+#baku .m-yay .wingL,#baku .m-dance .wingL{animation:bkFlapL .35s ease-in-out infinite}
+#baku .m-yay .wingR,#baku .m-dance .wingR{animation:bkFlapR .35s ease-in-out infinite}
+#baku .m-sleepy .wingL,#baku .m-sleepy .wingR,#baku .m-sad .wingL,#baku .m-sad .wingR,#baku .m-angry .wingL,#baku .m-angry .wingR{animation:none}
+#baku .shine{animation:bkShine 5s ease-in-out infinite}
+#baku .fx{animation:bkRise 2.2s ease-out infinite;opacity:0}
+#baku .fx.d2{animation-delay:.7s}#baku .fx.d3{animation-delay:1.4s}
+#baku .tear{animation:bkTear 1.8s ease-in infinite}
+#baku .steam{animation:bkSteam 1.4s ease-out infinite;opacity:0}
+#baku .steam.d2{animation-delay:.7s}
+#baku .conf{animation:bkConf 1.2s ease-out infinite;opacity:0}
+@keyframes bkBob{50%{transform:translateY(-5px)}}
+@keyframes bkJump{0%,100%{transform:scale(1.07,.92)}40%{transform:translateY(-26px) scale(.95,1.06)}70%{transform:translateY(0) scale(1.03,.96)}}
+@keyframes bkBreathe{50%{transform:scale(1.02,1.04)}}
+@keyframes bkTilt{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+@keyframes bkDance{0%,100%{transform:rotate(-10deg)}25%{transform:rotate(0) translateY(-12px)}50%{transform:rotate(10deg)}75%{transform:rotate(0) translateY(-12px)}}
+@keyframes bkShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+@keyframes bkDroop{50%{transform:scale(1.01,.96)}}
+@keyframes bkBlink{0%,46%,50%,100%{transform:scaleY(1)}48%{transform:scaleY(.08)}}
+@keyframes bkWingL{50%{transform:rotate(-6deg)}}
+@keyframes bkWingR{50%{transform:rotate(6deg)}}
+@keyframes bkFlapL{50%{transform:rotate(-38deg)}}
+@keyframes bkFlapR{50%{transform:rotate(38deg)}}
+@keyframes bkShine{0%,100%{opacity:.55}50%{opacity:.85}}
+@keyframes bkRise{0%{opacity:0;transform:translateY(8px) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translateY(-34px) scale(1.1)}}
+@keyframes bkTear{0%{opacity:0;transform:translateY(0)}20%{opacity:1}100%{opacity:0;transform:translateY(22px)}}
+@keyframes bkSteam{0%{opacity:0;transform:translateY(4px) scale(.7)}30%{opacity:.9}100%{opacity:0;transform:translateY(-22px) scale(1.2)}}
+@keyframes bkConf{0%{opacity:1;transform:translate(0,0) rotate(0)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(200deg)}}
+#baku svg.hop .all{animation:bkJump .7s cubic-bezier(.3,.7,.4,1) 1}
+@media(prefers-reduced-motion:reduce){#baku *{animation:none!important}}
 .p{position:absolute;pointer-events:none;font-weight:600;animation:floatUp 2s ease-out forwards;z-index:2}
 @keyframes floatUp{0%{opacity:0;transform:translate(0,0) scale(.6)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-90px) scale(1.2)}}
 @media (prefers-reduced-motion:reduce){.pose .tail,.pose .pbody,.pose .arm{animation:none!important}}
@@ -260,7 +308,7 @@ body.page-rep #repPage{display:block}
   .rp-top{flex-direction:column;align-items:flex-start}
 }
 @media (max-width:760px){
-  .lane{width:100%;min-height:0;align-self:auto;flex:none}
+  .lane{width:100%;min-height:118px;align-self:auto;flex:none}
   .date{align-self:flex-start}
   .nr{margin-left:6px}
 }
@@ -994,7 +1042,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
   <main>
     <div class="top">
       <div class="date"><div class="big" id="bigDate">Sun 08</div><div class="mon" id="monYear">November<br>2026</div></div>
-      <div class="lane" id="lane"></div>
+      <div class="lane" id="lane"><div id="baku" role="button" tabindex="0" aria-label="Baku the owl"><div class="bk-bub" id="bkBub"></div><div id="bkArt"></div></div></div>
       <div class="corner">
 
         <div class="bwrap"><button class="bell" id="bell" aria-label="Notifications" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg></button>
@@ -1869,9 +1917,83 @@ $('#prevM').addEventListener('click',()=>{if(vm>MINM){vm=new Date(vm.getFullYear
 $('#nextM').addEventListener('click',()=>{if(vm<MAXM){vm=new Date(vm.getFullYear(),vm.getMonth()+1,1);renderCal()}});
 renderCal();
 
-/* Leo (the mascot) was removed on 16 Nov 2026: it did nothing for marks and was about 1.8 MB of pictures.
-   These do-nothing stand-ins keep the old call sites (focus timer, quiz, finish early, workout) working. */
-const say=()=>{},hop=()=>{},setMood=()=>{},setPose=()=>{},leoNudge=()=>{};let lmood='idle';
+/* ---------- Baku (බකු), the liquid-glass owl. Drawn in code, no pictures. Approved demo: mascot-demo.html (16 Nov 2026).
+   He sits still in the Home header and only reacts to what happens: tick a block (happy hop), whole day done (celebrate),
+   paper mark up (proud), finish early (cheeky), idle for a minute (sleepy), leave the focus tab (grumpy), quit focus (sad).
+   The old Leo call sites (say, hop, setMood, setPose, leoNudge) now drive him. ---------- */
+const BK_INK='#1b2240',BK_BEAK='#ff8fb0',BK_BEAKD='#e0628a',BK_FEET='#ff9ec4';let bkUid=0;
+function bkEyes(m){
+  const W=x=>`<circle cx="${x}" cy="98" r="22" fill="#fff"/><circle cx="${x}" cy="98" r="22" fill="none" stroke="rgba(27,34,64,.18)" stroke-width="3"/>`;
+  const arc=x=>`<path d="M${x-15} 102 Q${x} 84 ${x+15} 102" stroke="${BK_INK}" stroke-width="6.5" fill="none" stroke-linecap="round"/>`;
+  if(m==='yay')return arc(76)+arc(124);
+  if(m==='love')return `${W(76)}${W(124)}<path d="M76 110 l-12-12 a7.5 7.5 0 0 1 12-8 a7.5 7.5 0 0 1 12 8z" fill="#ff5c86"/><path d="M124 110 l-12-12 a7.5 7.5 0 0 1 12-8 a7.5 7.5 0 0 1 12 8z" fill="#ff5c86"/>`;
+  if(m==='sleepy')return `${W(76)}${W(124)}<path d="M54 98 A22 22 0 0 1 98 98 Z" fill="#cfe6ff"/><path d="M102 98 A22 22 0 0 1 146 98 Z" fill="#cfe6ff"/><path d="M55 98 L97 98" stroke="${BK_INK}" stroke-width="5" stroke-linecap="round"/><path d="M103 98 L145 98" stroke="${BK_INK}" stroke-width="5" stroke-linecap="round"/><circle cx="76" cy="107" r="8" fill="${BK_INK}"/><circle cx="124" cy="107" r="8" fill="${BK_INK}"/>`;
+  if(m==='cheeky')return `${W(76)}<circle cx="80" cy="99" r="11" fill="${BK_INK}"/><circle cx="84" cy="94" r="4" fill="#fff"/>${arc(124)}`;
+  const big=m==='angry'?8:11,dx=m==='dance'?6:3,dy=m==='sad'?4:0;
+  return `<g class="blink"><g class="lid">${W(76)}${W(124)}<circle cx="${76+dx}" cy="${99+dy}" r="${big}" fill="${BK_INK}"/><circle cx="${124+dx}" cy="${99+dy}" r="${big}" fill="${BK_INK}"/><circle cx="${80+dx}" cy="${94+dy}" r="4" fill="#fff"/><circle cx="${128+dx}" cy="${94+dy}" r="4" fill="#fff"/></g></g>`;
+}
+function bkBrows(m){
+  if(m==='angry')return `<path d="M54 72 L94 86" stroke="${BK_INK}" stroke-width="8" stroke-linecap="round"/><path d="M146 72 L106 86" stroke="${BK_INK}" stroke-width="8" stroke-linecap="round"/>`;
+  if(m==='sad')return `<path d="M58 82 L92 72" stroke="${BK_INK}" stroke-width="6" stroke-linecap="round" opacity=".7"/><path d="M142 82 L108 72" stroke="${BK_INK}" stroke-width="6" stroke-linecap="round" opacity=".7"/>`;
+  return '';
+}
+function bkBeak(m){
+  if(m==='yay'||m==='dance')return `<path d="M88 118 Q100 112 112 118 L106 140 Q100 146 94 140 Z" fill="${BK_BEAKD}"/><path d="M88 118 Q100 112 112 118 L100 128 Z" fill="${BK_BEAK}"/><path d="M95 134 Q100 140 105 134" fill="#ffc2d4"/>`;
+  if(m==='cheeky')return `<path d="M89 117 Q100 111 111 117 L100 132 Z" fill="${BK_BEAK}"/><path d="M98 128 q2 14 12 8 q-2-8 -6-10z" fill="#ff6f9a"/>`;
+  if(m==='sad')return `<path d="M91 121 Q100 116 109 121 L100 133 Z" fill="${BK_BEAK}" opacity=".9"/>`;
+  return `<path d="M89 117 Q100 111 111 117 L100 132 Z" fill="${BK_BEAK}"/><path d="M93 117 Q100 114 107 117" stroke="rgba(255,255,255,.6)" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+}
+function bkFx(m){
+  if(m==='love')return [[156,62,''],[38,70,' d2'],[166,98,' d3']].map(([x,y,d])=>`<path class="fx${d}" d="M${x} ${y+8} l-8-8 a5 5 0 0 1 8-5.5 a5 5 0 0 1 8 5.5z" fill="#ff5c86"/>`).join('');
+  if(m==='dance')return [[156,58,''],[30,70,' d2'],[166,100,' d3']].map(([x,y,d])=>`<text class="fx${d}" x="${x}" y="${y}" font-size="22" fill="#7fd6ff">♪</text>`).join('');
+  if(m==='sleepy')return [[146,58,''],[158,44,' d2'],[170,30,' d3']].map(([x,y,d],i)=>`<text class="fx${d}" x="${x}" y="${y}" font-size="${14+i*4}" font-weight="600" fill="#bfe8ff">z</text>`).join('');
+  if(m==='sad')return `<path class="tear" d="M64 116 q-5 9 0 12 q5-3 0-12z" fill="#7cc4ff"/><path class="tear" style="animation-delay:.9s" d="M136 116 q-5 9 0 12 q5-3 0-12z" fill="#7cc4ff"/>`;
+  if(m==='angry')return `<path class="steam" d="M90 40 q-6-8 0-14 q6-6 0-12" stroke="#d8d2cc" stroke-width="4" fill="none" stroke-linecap="round"/><path class="steam d2" d="M110 40 q-6-8 0-14 q6-6 0-12" stroke="#d8d2cc" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+  if(m==='yay')return ['#ffd76a','#7fd6ff','#ff8fb0','#5fe08a','#b9a8ff','#ff8fb0'].map((c,i)=>`<rect class="conf" x="96" y="50" width="8" height="8" rx="2" fill="${c}" style="--dx:${[-74,-42,-10,22,52,78][i]}px;--dy:${[-28,-50,-62,-56,-44,-24][i]}px;animation-delay:${i*.12}s"/>`).join('');
+  if(m==='cheeky')return `<path class="fx" d="M158 66 l4 8 l8 4 l-8 4 l-4 8 l-4-8 l-8-4 l8-4z" fill="#ffd76a"/>`;
+  return '';
+}
+function bkSvg(m){
+  const id='bk'+(bkUid++),BODY='M100 34 C152 34 170 86 168 126 C166 166 138 184 100 184 C62 184 34 166 32 126 C30 86 48 34 100 34Z';
+  return `<svg class="owl m-${m}" viewBox="0 0 200 200" aria-hidden="true"><defs>
+    <linearGradient id="${id}b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fe3ff" stop-opacity=".75"/><stop offset=".55" stop-color="#7c9bff" stop-opacity=".55"/><stop offset="1" stop-color="#9a7bff" stop-opacity=".7"/></linearGradient>
+    <linearGradient id="${id}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9ecff" stop-opacity=".7"/><stop offset="1" stop-color="#7d86ff" stop-opacity=".6"/></linearGradient>
+    <radialGradient id="${id}f" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#dff4ff" stop-opacity=".22"/></radialGradient>
+    <filter id="${id}s" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3"/></filter>
+    <clipPath id="${id}c"><path d="${BODY}"/></clipPath></defs>
+  <ellipse cx="100" cy="192" rx="${m==='yay'?40:54}" ry="7" fill="rgba(0,0,0,.4)"/>
+  <g class="all">
+    <g class="wingL"><path d="M46 92 C22 104 20 146 46 160 C56 150 60 116 46 92Z" fill="url(#${id}w)" stroke="rgba(255,255,255,.45)" stroke-width="2"/></g>
+    <g class="wingR"><path d="M154 92 C178 104 180 146 154 160 C144 150 140 116 154 92Z" fill="url(#${id}w)" stroke="rgba(255,255,255,.45)" stroke-width="2"/></g>
+    <path d="M58 52 Q52 30 70 26 Q72 42 80 46Z" fill="url(#${id}w)" stroke="rgba(255,255,255,.45)" stroke-width="2"/>
+    <path d="M142 52 Q148 30 130 26 Q128 42 120 46Z" fill="url(#${id}w)" stroke="rgba(255,255,255,.45)" stroke-width="2"/>
+    <path d="M80 178 l-6 10 M86 179 l0 11 M92 178 l6 10 M108 178 l-6 10 M114 179 l0 11 M120 178 l6 10" stroke="${BK_FEET}" stroke-width="6" stroke-linecap="round"/>
+    <path d="${BODY}" fill="url(#${id}b)"/>
+    <g clip-path="url(#${id}c)"><ellipse cx="100" cy="196" rx="70" ry="30" fill="#2b2f6a" opacity=".25"/>
+      <path d="M72 146 q8 7 16 0 M92 146 q8 7 16 0 M112 146 q8 7 16 0 M82 162 q8 7 16 0 M102 162 q8 7 16 0" stroke="rgba(255,255,255,.4)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <ellipse class="shine" cx="66" cy="66" rx="26" ry="16" fill="#fff" opacity=".7" transform="rotate(-30 66 66)" filter="url(#${id}s)"/></g>
+    <path d="${BODY}" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2.5"/>
+    <path d="M56 70 C64 50 82 40 100 40" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>
+    <path d="M100 132 C78 132 46 120 46 90 C46 68 66 60 80 66 C88 70 94 74 100 80 C106 74 112 70 120 66 C134 60 154 68 154 90 C154 120 122 132 100 132Z" fill="url(#${id}f)" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+    ${m==='love'||m==='yay'||m==='cheeky'?'<ellipse cx="56" cy="118" rx="9" ry="6" fill="#ff8fb0" opacity=".7"/><ellipse cx="144" cy="118" rx="9" ry="6" fill="#ff8fb0" opacity=".7"/>':''}
+    ${bkEyes(m)}${bkBrows(m)}${bkBeak(m)}${bkFx(m)}
+  </g></svg>`;
+}
+const bkEl=$('#bkArt'),bkBubEl=$('#bkBub');let bkMood='',bkT=null,bkSayT=null,bkLast=Date.now();
+const BK_MAP={idle:'happy',cheer:'yay',dance:'yay'};
+function bkSet(m,ms){m=BK_MAP[m]||m;clearTimeout(bkT);if(m!==bkMood){bkMood=m;bkEl.innerHTML=bkSvg(m)}if(ms)bkT=setTimeout(()=>bkSet('happy'),ms)}
+const say=(t,ms=2600)=>{bkBubEl.textContent=t;bkBubEl.classList.add('show');clearTimeout(bkSayT);bkSayT=setTimeout(()=>bkBubEl.classList.remove('show'),ms)};
+const hop=()=>{bkSet('happy');const s=bkEl.querySelector('svg');if(!s)return;s.classList.remove('hop');void s.getBoundingClientRect();s.classList.add('hop');setTimeout(()=>s.classList.remove('hop'),750)};
+const setMood=(m,ms)=>bkSet(m,ms||(m==='idle'?0:3000));
+const setPose=p=>bkSet(p==='sit'?'happy':p,p==='sad'?3800:0);
+const leoNudge=()=>{bkSet('happy');say('Night review time! About a minute 🌙',4500)};
+let lmood='idle';
+/* he dozes off after a minute with no mouse or keys, and wakes when you come back */
+addEventListener('pointermove',()=>{bkLast=Date.now();if(bkMood==='sleepy')bkSet('happy')});
+addEventListener('keydown',()=>{bkLast=Date.now();if(bkMood==='sleepy')bkSet('happy')});
+setInterval(()=>{if(bkMood==='happy'&&Date.now()-bkLast>60000)bkSet('sleepy')},5000);
+$('#baku').addEventListener('click',()=>{bkLast=Date.now();bkSet('cheeky',2200);say(['Study first, play later 😜','Hoo! Back to work.','I’m watching your streak 👀'][Math.floor(Math.random()*3)])});
+bkSet('happy');
 /* ================= Calendar ================= */
 const HH=64,D0=360,D1=1380;/* calendar shows 06:00 to 23:00 */
 const p2=n=>String(n).padStart(2,'0');
@@ -2247,6 +2369,7 @@ ut.querySelector('button').addEventListener('click',()=>{if(document.body.classL
 $('#lgBtn').addEventListener('click',()=>{
   const u=$('#lgU').value,s=parseInt($('#lgS').value,10);
   if(isNaN(s)||s<0||s>100){toast('Enter a score from 0 to 100.');return}
+  const prevU=(SC[rpS][u]||[]).slice();if(prevU.length&&s>Math.max(...prevU)){setMood('love',3500);say('Better than last time 💙',3500)}
   (SC[rpS][u]||(SC[rpS][u]=[])).push(s);saveSC();renderReport();toast(`Logged ${u}: ${s}%`);
 });
 $('#rpSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;rpS=b.dataset.s;renderReport();$('#revNote').textContent='Each one goes into the next practice slot for that subject, and everything after it slides forward one slot, so nothing gets lost.'});
@@ -2305,7 +2428,7 @@ $('#libList').addEventListener('click',e=>{
 });
 $('#libList').addEventListener('change',e=>{
   const i=e.target.closest('[data-score]');if(!i)return;const k=i.dataset.score,v=parseInt(i.value,10);
-  if(isNaN(v)){delete PP.score[k];PP.log=PP.log.filter(x=>x.k!==k)}else{const c=Math.max(0,Math.min(100,v));PP.score[k]=c;PP.log=PP.log.filter(x=>x.k!==k);PP.log.push({k,s:ppS,y:k.split('-')[1],v:c,t:dkey(today0)});PP.done[k]=true}
+  if(isNaN(v)){delete PP.score[k];PP.log=PP.log.filter(x=>x.k!==k)}else{const c=Math.max(0,Math.min(100,v));const best=Math.max(-1,...PP.log.filter(x=>x.s===ppS&&x.k!==k).map(x=>x.v));if(best>=0&&c>best){setMood('love',3500);say('Your best mark yet 💙',3500)}PP.score[k]=c;PP.log=PP.log.filter(x=>x.k!==k);PP.log.push({k,s:ppS,y:k.split('-')[1],v:c,t:dkey(today0)});PP.done[k]=true}
   savePP();renderLib();
 });
 $('#ppZone').addEventListener('click',()=>window.open(PZ,'_blank','noopener'));
@@ -2705,7 +2828,7 @@ $('#fFull').addEventListener('click',()=>$('#fsBtn').click());
 document.addEventListener('visibilitychange',()=>{
   if(!fRun||fPhase!=='focus')return;
   if(document.hidden)fAway=Date.now();
-  else if(fAway){const m=Math.round((Date.now()-fAway)/60000);fAway=0;if(m>=1){toast(`You left for ${m} min during focus.`);if(typeof say==='function')say(`You left me for ${m} min 😾`,3200)}}
+  else if(fAway){const m=Math.round((Date.now()-fAway)/60000);fAway=0;if(m>=1){toast(`You left for ${m} min during focus.`);setMood('angry',3200);say(`You left for ${m} min 😤`,3200)}}
 });
 addEventListener('beforeunload',e=>{if(fRun&&fPhase==='focus'){e.preventDefault();e.returnValue=''}});
 
@@ -2949,7 +3072,7 @@ $('#fin').addEventListener('click',e=>{
   renderRoutine();renderRings();renderBars();renderCal();try{renderWeek()}catch(err){}
   if($('#daySheet').classList.contains('show'))showDaySheet($('#daySheet').dataset.k);
   undoToast(`Nice. Every later ${SUBJ[finEv.subj]} class moved up ${n===1?'one slot':n+' slots'}.`);
-  if(typeof hop==='function'){hop();say('Ahead of schedule! 🚀',3000)}
+  setMood('cheeky',3000);say('Ahead of schedule 😜',3000)
   finEv=null;
 });
 
