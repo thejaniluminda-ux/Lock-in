@@ -647,6 +647,14 @@ b,.n,.lb-meta,.fo-nums b{font-variant-numeric:tabular-nums}
 .at-hotbox li .at-hot{margin:0 8px 0 0;min-width:34px;text-align:center}
 .at-hotbox small{color:var(--ink-3);font-size:11px}
 .at-src{margin:10px 0 0;font-size:11px;color:var(--ink-3)}
+.at-b.dc{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:4px 32px;max-height:none}
+.dc-g{padding:8px 0 10px;border-bottom:1px solid rgba(255,255,255,.05)}
+.dc-g h4{margin:0 0 8px;font-size:13px;font-weight:500;color:var(--ink)}
+.dc-r{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;padding:4px 0;font-size:12.5px;color:var(--ink-2)}
+.dc-sw{width:18px;height:18px;border-radius:6px;border:1px solid rgba(255,255,255,.25);box-shadow:0 0 10px -2px currentColor}
+.dc-sw.none{background:repeating-linear-gradient(45deg,transparent 0 3px,rgba(255,255,255,.18) 3px 4px)}
+.dc-f{font-family:Sora,sans-serif;color:var(--ink)}
+.dc-c{text-align:right;color:var(--ink-2)}
 .lb-dep{display:flex;flex-direction:column;gap:2px;margin-top:8px;font-size:11px;color:var(--ink-3);text-align:left}
 .lb-dep span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lb-days{list-style:none;margin:0;padding:4px 18px 14px 20px;border-top:1px solid var(--edge);max-height:320px;overflow:auto}
@@ -1291,6 +1299,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
 <div id="calToast" role="status"><span></span><button>Undo</button></div>
 
 <script src="atom-story.js"></script>
+<script src="dblock-story.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 const app=$('#app'),intro=$('#intro');
@@ -2565,7 +2574,7 @@ function renderLibrary(){
     const nx=bl.find(e=>!e.done&&e.date>=tk),pc=bl.length?d/bl.length:0,rec=REC[u.rec||u.k]||'',ex=/x$/.test(u.k);
     const st=pc>=1?'Finished':nx?`Next: ${fmtD(nx.date)}`:bl.length?'Overdue':'Not in plan';
     const open=lbOpen===u.k;
-    return `<article id="lb-${u.k}" class="lb-card${pc>=1?' fin':''}${open?' open':''}${u.k==='atom'?' atomc':''}" style="--sub:var(--${u.subj})">
+    return `<article id="lb-${u.k}" class="lb-card${pc>=1?' fin':''}${open?' open':''}${STORY[u.k]?' atomc':''}" style="--sub:var(--${u.subj})">
       <button class="lb-main" data-u="${u.k}" aria-expanded="${open}">
         <div class="lb-t"><span class="si">${esc(u.si)}${ex?' <em>extras</em>':''}</span><span class="en">${esc(u.en)}</span></div>
         <div class="lb-meta">${u.tag?`<span class="qt">${esc(u.tag)}</span>`:''}${cfOpen(u.k)?`<span class="qt cfq">? ${cfOpen(u.k)} open</span>`:''}<span>${d} of ${bl.length} days</span><span class="lb-st">${st}</span></div>
@@ -2576,7 +2585,7 @@ function renderLibrary(){
       </button>
       ${rec?`<a class="lb-rec" href="${rec}" target="_blank" rel="noopener">▶ Recordings</a>`:''}
       ${open?cfList(u.k):''}
-      ${open&&u.k==='atom'?atomHtml():''}
+      ${open&&STORY[u.k]?storyHtml(u.k):''}
       ${open?`<ol class="lb-days">${bl.map(e=>`<li class="${e.done?'dn':''}"><span class="dd">${fmtD(e.date)}</span><span class="dt">${esc(e.title)}</span><span class="ds">${e.done?'Done':e.date<tk?'Missed':''}</span></li>`).join('')||'<li><span class="dt">No days for this unit in the plan.</span></li>'}</ol>`:''}
     </article>`}).join('');
   $('#lbSub').textContent=`${us.length} units · ${dn} of ${tot} class days done`;
@@ -2715,21 +2724,25 @@ $('#lbView').addEventListener('click',e=>{const b=e.target.closest('button');if(
 $('#lbSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;lbS=b.dataset.s;lbOpen=null;lmSel=null;renderLibrary()});
 $('#lbList').addEventListener('click',e=>{const b=e.target.closest('.lb-main[data-u]');if(!b)return;lbOpen=lbOpen===b.dataset.u?null:b.dataset.u;renderLibrary()});
 /* Atomic structure: story tab and tickable key points (ticks saved in lockin-atom-v1) */
-let atTab='story';const ATKEY='lockin-atom-v1';let AT=lsGet(ATKEY,{ok:[]});
-function atomHtml(){
-  const S=window.ATOM_STORY;if(!S)return '<p class="at-src">Story file did not load. Check your connection once, then it works offline.</p>';
+/* Unit story cards share one renderer: Atomic structure (ticks in lockin-atom-v1) and d block colours (ticks in lockin-dcol-v1) */
+const STORY={atom:{s:()=>window.ATOM_STORY,key:'lockin-atom-v1',lab:'Atomic structure'},dblock:{s:()=>window.DBLOCK_STORY,key:'lockin-dcol-v1',lab:'d block colours'}};
+const stTab={},stOk={};for(const k in STORY)stOk[k]=lsGet(STORY[k].key,{ok:[]});
+function atomHtml(){return storyHtml('atom')}
+function storyHtml(uk){
+  const C=STORY[uk],S=C.s(),AT=stOk[uk],atTab=stTab[uk]||'story';if(!S)return '<p class="at-src">Story file did not load. Check your connection once, then it works offline.</p>';
   const all=S.scenes.flatMap((s,i)=>s.keys.map((k,j)=>({id:i+'.'+j,k,s:i}))),dn=all.filter(x=>AT.ok.includes(x.id)).length;
-  const tabs=`<div class="seg at-seg" role="group" aria-label="Atomic structure view"><button data-at="story" aria-pressed="${atTab==='story'}">කතාව</button><button data-at="points" aria-pressed="${atTab==='points'}">ප්‍රධාන කරුණු <small>${dn}/${all.length}</small></button></div>`;
+  const tabs=`<div class="seg at-seg" role="group" aria-label="${C.lab} view"><button data-at="${uk}|story" aria-pressed="${atTab==='story'}">කතාව</button>${S.chart?`<button data-at="${uk}|chart" aria-pressed="${atTab==='chart'}">වර්ණ වගුව</button>`:''}<button data-at="${uk}|points" aria-pressed="${atTab==='points'}">ප්‍රධාන කරුණු <small>${dn}/${all.length}</small></button></div>`;
+  if(atTab==='chart'&&S.chart)return `<div class="at">${tabs}<div class="at-b dc">${S.chart.map(g=>`<section class="dc-g"><h4>${esc(g.g)}</h4>${g.rows.map(r=>`<div class="dc-r"><i class="dc-sw${r[2]?'':' none'}" style="${r[2]?'background:'+r[2]:''}"></i><span class="dc-f">${esc(r[0])}</span><span class="dc-c">${esc(r[1])}</span></div>`).join('')}</section>`).join('')}</div><p class="at-src">${esc(S.src)} Swatches are a guide; the colour names are the book's.</p></div>`;
   /* most-asked marks from past papers: scene index -> highest count */
   const H=S.hot,heat={};if(H)for(const h of H.list)for(const s of [].concat(h.s))heat[s]=Math.max(heat[s]||0,h.n);
   const badge=i=>heat[i]?`<span class="at-hot${heat[i]>=4?' big':''}" title="Asked in ${heat[i]} of ${H.total} papers (${H.years})">🔥 ${heat[i]}/${H.total}</span>`:'';
   const hotBox=H?`<div class="at-hotbox"><b>🔥 නිතර අහන දේ (${H.years} Paper I)</b><ol>${H.list.map(h=>`<li><span class="at-hot${h.n>=4?' big':''}">${h.n}/${H.total}</span>${esc(h.q)}</li>`).join('')}</ol><small>${esc(H.src)}</small></div>`:'';
   const body=atTab==='story'
     ?S.scenes.map((s,i)=>`<section class="at-sc"><h4><span>${s.ic}</span>${esc(s.t)}${badge(i)}</h4><p>${esc(s.story)}</p><ul>${s.keys.map(k=>`<li>${esc(k)}</li>`).join('')}</ul></section>`).join('')
-    :S.scenes.map((s,i)=>`<section class="at-pt"><h4>${s.ic} ${esc(s.t.replace(/^\d+\.\s*/,''))}${badge(i)}</h4>${s.keys.map((k,j)=>{const id=i+'.'+j,on=AT.ok.includes(id);return `<label class="at-k${on?' ok':''}"><input type="checkbox" data-atk="${id}" ${on?'checked':''}><span>${esc(k)}</span></label>`}).join('')}</section>`).join('');
+    :S.scenes.map((s,i)=>`<section class="at-pt"><h4>${s.ic} ${esc(s.t.replace(/^\d+\.\s*/,''))}${badge(i)}</h4>${s.keys.map((k,j)=>{const id=i+'.'+j,on=AT.ok.includes(id);return `<label class="at-k${on?' ok':''}"><input type="checkbox" data-atk="${uk}|${id}" ${on?'checked':''}><span>${esc(k)}</span></label>`}).join('')}</section>`).join('');
   return `<div class="at">${tabs}${hotBox}<div class="at-b">${body}</div><p class="at-src">${esc(S.src)}</p></div>`}
-$('#lbList').addEventListener('click',e=>{const t=e.target.closest('[data-at]');if(!t)return;atTab=t.dataset.at;renderLibrary()});
-$('#lbList').addEventListener('change',e=>{const c=e.target.closest('[data-atk]');if(!c)return;const id=c.dataset.atk;AT.ok=AT.ok.filter(x=>x!==id);if(c.checked)AT.ok.push(id);lsSet(ATKEY,AT);renderLibrary()});
+$('#lbList').addEventListener('click',e=>{const t=e.target.closest('[data-at]');if(!t)return;const [uk,v]=t.dataset.at.split('|');stTab[uk]=v;renderLibrary()});
+$('#lbList').addEventListener('change',e=>{const c=e.target.closest('[data-atk]');if(!c)return;const [uk,id]=c.dataset.atk.split('|'),AT=stOk[uk];AT.ok=AT.ok.filter(x=>x!==id);if(c.checked)AT.ok.push(id);lsSet(STORY[uk].key,AT);renderLibrary()});
 
 /* ---------- Focus mode ---------- */
 const FKEY='lockin-focus-v1';
