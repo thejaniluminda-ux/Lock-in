@@ -1775,7 +1775,9 @@ const CKEY='lockin-plan-v2';
 let CS=null;
 try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=9)CS=s}catch(e){}
 if(!CS)CS={v:9,days:buildPlan().days,off:{},fresh:true};
-const saveCS=()=>{try{localStorage.setItem(CKEY,JSON.stringify(CS))}catch(e){}};
+/* if the browser's storage is full, say so loudly instead of silently losing the change */
+let _sfw=0;function storageFull(){const n=Date.now();if(n-_sfw<8000)return;_sfw=n;try{toast('Storage is full, so this change was NOT saved. Make a backup now, then delete some progress photos.')}catch(e){alert('Storage is full, so this change was NOT saved. Make a backup now.')}}
+const saveCS=()=>{try{localStorage.setItem(CKEY,JSON.stringify(CS))}catch(e){storageFull()}};
 
 /* ---------- Date + countdown ---------- */
 const now=new Date(),today0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
@@ -1832,7 +1834,7 @@ function nrHtml(){
 function saveReview(){
   const evs=dayEvents(),rev=evs.find(e=>e.kind==='review');if(!rev)return;
   const ids=[...document.querySelectorAll('.nr-c input:checked')].map(c=>c.dataset.id);
-  try{localStorage.setItem('lockin-review-'+viewKey,JSON.stringify({h:parseFloat($('#nrH').value)||0,learned:$('#nrL').value.trim(),skipped:ids.length}))}catch(e){}
+  try{localStorage.setItem('lockin-review-'+viewKey,JSON.stringify({h:parseFloat($('#nrH').value)||0,learned:$('#nrL').value.trim(),skipped:ids.length}))}catch(e){storageFull()}
   snapAct('night review');
   const res=ids.map(id=>{const e=(CS.days[viewKey]||[]).find(x=>x.id===id);return e&&!e.user?skipToCU(e):'none'});
   rev.done=true;saveCS();nrOpen=false;nudgeOn=false;renderRoutine();renderRings();renderBars();renderCU();
@@ -2350,7 +2352,7 @@ const WT_NOTE={phy:'Weights for Mechanics, Waves, Current electricity and Therma
 const SKEY='lockin-scores-v2';
 let SC=null;try{SC=JSON.parse(localStorage.getItem(SKEY)||'null')}catch(e){}
 if(!SC)SC={phy:{},chem:{},maths:{}};
-const saveSC=()=>{try{localStorage.setItem(SKEY,JSON.stringify(SC))}catch(e){}};
+const saveSC=()=>{try{localStorage.setItem(SKEY,JSON.stringify(SC))}catch(e){storageFull()}};
 let rpS='phy',fixNow=[];
 const scoreOf=(sj,u)=>{const a=(SC[sj]||{})[u];if(!a||!a.length)return null;const l=a.slice(-3);return Math.round(l.reduce((x,y)=>x+y,0)/l.length)};
 /* Checkpoints: are your marks where they need to be? Targets are reasoned estimates (A ≥ 75 is the commonly quoted boundary, not verified).
@@ -2441,7 +2443,7 @@ const DRIVE='https://drive.google.com/file/d/',PZ='https://paperzone.lk/al-strea
  LIB.maths['2026'].p.push(['Pure','123mHog_Px6FG7Wu0t5gyE1W3tKYHK-1P'],['Applied','184u_hqfV2zdYsSBGpr-A5HyTICqLhm0u']);}
 const PKEY='lockin-papers-v1';
 let PP=(()=>{try{return JSON.parse(localStorage.getItem(PKEY)||'null')}catch(e){return null}})()||{done:{},score:{},log:[]};
-const savePP=()=>{try{localStorage.setItem(PKEY,JSON.stringify(PP))}catch(e){}};
+const savePP=()=>{try{localStorage.setItem(PKEY,JSON.stringify(PP))}catch(e){storageFull()}};
 let ppS='phy',ppR='new';
 function renderLib(){
   document.querySelectorAll('#ppSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===ppS));
@@ -2509,7 +2511,7 @@ renderRoutine();renderRings();renderBars();renderStreak();renderCal();moveInd();
 
 /* =================== BUILD 2 =================== */
 const lsGet=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k)||'null');return v??d}catch(e){return d}};
-const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){storageFull()}};
 const MONL=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const fmtD=k=>{const d=new Date(k+'T00:00');return `${DOW[d.getDay()]} ${d.getDate()} ${MONL[d.getMonth()]}`};
 
