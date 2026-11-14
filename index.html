@@ -259,6 +259,14 @@ body.page-rep #repPage{display:block}
 .ck-tb{width:100%;border-collapse:collapse;margin-top:12px;font-size:12.5px;color:var(--ink-2)}
 .ck-tb th,.ck-tb td{padding:6px 8px;border-top:1px solid var(--edge);text-align:left}
 .ck-tb th{font-weight:500;color:var(--ink)}
+.lr-h{margin:14px 0 6px;font-size:13px;font-weight:500}
+.lr{list-style:none;margin:0;padding:0;font-size:13px}
+.lr li{display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid var(--edge);color:var(--ink-2)}
+.lr li span{color:#ff9a88}
+.rate{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:2px 0 10px 64px;padding:10px 12px;border-radius:14px;background:rgba(185,168,255,.08);border:1px solid rgba(185,168,255,.25);font-size:12.5px;color:var(--ink-2)}
+.rate button{width:32px;height:32px;border-radius:50%;border:1px solid var(--edge);background:rgba(255,255,255,.04);color:var(--ink);font:inherit;cursor:pointer}
+.rate button:hover,.rate button.on{background:var(--lav);color:#1a1714}
+.rate small{flex-basis:100%;color:var(--ink-3)}
 .ck-tb .now{color:var(--ink);background:rgba(185,168,255,.08)}
 @media(max-width:900px){.ck-rows{grid-template-columns:1fr}}
 .rp-radar{grid-area:radar}.rp-fix{grid-area:fix}.rp-log{grid-area:log}
@@ -1235,6 +1243,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
         <section class="card rp-radar" aria-labelledby="rdT"><div class="head"><div><h2 id="rdT">Weak-spot radar</h2><p class="sub" id="rpRS"></p></div></div><div id="radar"></div></section>
         <section class="card rp-fix" aria-labelledby="fxT"><div class="head"><div><h2 id="fxT">Fix these first</h2><p class="sub">Low score multiplied by how much of the paper the unit is worth</p></div></div>
           <ol id="fixList"></ol>
+          <div id="lowRec"></div>
           <button class="pri-btn" id="addRev">Add revision to my calendar</button>
           <p class="hint2" id="revNote">Each one goes into the next practice slot for that subject, and everything after it slides forward one slot, so nothing gets lost.</p>
         </section>
@@ -1564,6 +1573,8 @@ const BP=[
  {m:'2027-05',n:'May 2027',t:[['සම්භාවිතාව','Probability',85],['සංඛ්‍යානය','Statistics',115],['සරල රේඛාව','Straight line',100],['වෘත්තය','Circle',100]]},
  {m:'2027-06',n:'June 2027',t:[['සන්ධි කළ දඬු','Jointed rods',80],['රාමු සැකිලි','Frameworks',70],['සරල අනුවර්තීය චලිතය','Simple harmonic motion',150]]}
 ];
+/* the 06:15 consolidation is retrieval practice: recall first, then check, then questions (testing effect) */
+const CONS_HOW='blank page 15 min (write everything you remember), check your notes 10 min, then 5 questions. Tick it and rate your recall 1–5';
 const PAIR={cur:'therm',therm:'cur'};
 function buildPlan(){
   const p2=n=>String(n).padStart(2,'0'),kOf=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`,addD=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
@@ -1749,7 +1760,7 @@ function buildPlan(){
       const pc=prevDay.filter(it=>!it.x);
       const due=reviews.filter(r=>!r.done&&r.due<=k).slice(0,1);due.forEach(r=>r.done=true);
       const rv=due.map(r=>`then 20-min recap: ${UNIT_BY[r.u].en} (${r.l} review)`).join('');
-      if(pc.length){const a=pc[0];Object.assign(mo,{subj:a.subj,title:`ඒකාබද්ධ කිරීම: ${pc.map(x=>x.title).join(' + ')}`,sub:`Consolidate yesterday’s class${pc.length>1?'es':''}: rewrite key points, 5 questions${rv?' · '+rv:''}`,tag:'Consolidate',unit:a.unit,rec:a.rec||'',cons:true})}
+      if(pc.length){const a=pc[0];Object.assign(mo,{subj:a.subj,title:`ඒකාබද්ධ කිරීම: ${pc.map(x=>x.title).join(' + ')}`,sub:`Consolidate yesterday’s class${pc.length>1?'es':''}: ${CONS_HOW}${rv?' · '+rv:''}`,tag:'Consolidate',unit:a.unit,rec:a.rec||'',cons:true})}
       else if(due.length){const u=UNIT_BY[due[0].u];Object.assign(mo,{subj:u.subj,title:`පුනරාවර්තනය: ${u.si}`,sub:`${due[0].l} recap of ${u.en}: key points from memory, then check`,tag:'Recap',unit:u.k,rec:REC[u.rec||u.k]||''})}
     }
     mark(k);
@@ -1782,6 +1793,10 @@ const todayKey=dkey(today0),preview=today0<START;let viewKey=preview?dkey(START)
 let nrOpen=false,nudgeOn=false,autoNudged=false;
 const dayEvents=()=>(CS.days[viewKey]||[]).slice().sort((a,b)=>a.s-b.s);
 const isStudy=e=>e.kind!=='life'&&e.kind!=='review'&&['phy','chem','maths'].includes(e.subj);
+/* recall rating after a consolidation or recap block (1 = blank, 5 = perfect). Saved in lockin-recall-v1 as {unit:[{d,r}]} and shown on the Report as low-recall units */
+const RCKEY='lockin-recall-v1';let RCONF=null,rateFor=null;const cfGet=()=>RCONF||(RCONF=lsGet(RCKEY,{}));
+function rateHtml(e){return `<div class="rate"><span>How much could you recall without notes?</span>${[1,2,3,4,5].map(n=>`<button data-rate="${n}" data-id="${e.id}" class="${e.conf===n?'on':''}" aria-label="Recall ${n} of 5">${n}</button>`).join('')}<small>1 = almost nothing · 5 = everything</small></div>`}
+function saveRate(id,r){const ev=(CS.days[viewKey]||[]).find(x=>x.id===id);if(!ev||!ev.unit)return;ev.conf=r;saveCS();const C=cfGet(),a=(C[ev.unit]=(C[ev.unit]||[]).filter(x=>x.d!==ev.date));a.push({d:ev.date,r});lsSet(RCKEY,C);rateFor=null;renderRoutine();toast(r<=2?'Low recall. It will show on the Report so you can fix it.':'Saved.')}
 function renderRoutine(){
   const evs=dayEvents(),d=new Date(viewKey+'T00:00'),away=Math.round((START-today0)/864e5),other=viewKey!==(preview?dkey(START):todayKey),tmr=viewKey===dkey(addDays(today0,1));
   $('#rTitle').textContent=other?(tmr?'Tomorrow’s routine':viewKey<todayKey?'Past day':'Upcoming day'):preview?(away===1?'Tomorrow’s routine':'Your first day'):'Today’s routine';$('#rBack').hidden=!other;
@@ -1795,7 +1810,7 @@ function renderRoutine(){
       `<span class="t">${e.e-e.s<=5?fm(e.s):fm(e.s)+'–'+fm(e.e)}</span><span class="bar"></span>`+
       `<span class="w"><span class="ti">${esc(e.title)}</span>${second?`<span class="si">${second}</span>`:''}</span>`+
       `<button class="tick" role="checkbox" aria-checked="${!!e.done}" aria-label="Done: ${esc(e.title)}"${preview||viewKey>todayKey?' disabled':''}>${CHECK}</button></div>`+
-      (rev&&nrOpen&&!e.done?nrHtml():'');
+      (rev&&nrOpen&&!e.done?nrHtml():'')+(rateFor===e.id&&e.done?rateHtml(e):'');
   }).join(''):'<p class="sub" style="padding:14px 10px">Nothing is planned for this day.</p>';
   updateProg();
 }
@@ -1827,6 +1842,8 @@ function saveReview(){
 }
 $('#rows').addEventListener('click',e=>{
   if(e.target.closest('.rec'))return;
+  const rb=e.target.closest('[data-rate]');if(rb){saveRate(rb.dataset.id,+rb.dataset.rate);return}
+  if(e.target.closest('.rate'))return;
   if(e.target.closest('#nrLater')){nrOpen=false;renderRoutine();return}
   if(e.target.closest('#nrSave')){saveReview();return}
   if(e.target.closest('.nr'))return;
@@ -1839,7 +1856,7 @@ $('#rows').addEventListener('click',e=>{
     nrOpen=!nrOpen;renderRoutine();if(nrOpen)setTimeout(()=>{const h=$('#nrH');if(h)h.focus()},30);return;
   }
   if(!isTick)return;
-  ev.done=!ev.done;saveCS();renderRoutine();renderRings();renderBars();if(ev.done)offerFinish(ev);
+  ev.done=!ev.done;saveCS();rateFor=ev.done&&(ev.tag==='Consolidate'||ev.tag==='Recap')&&ev.unit?ev.id:null;renderRoutine();renderRings();renderBars();if(ev.done)offerFinish(ev);
   const all=updateProg();
   if(ev.done&&all){setMood('dance',7000);say('Whole day done! 🎉',3500)}
   else if(ev.done){hop();say(['Nice!','One down.','Keep going!','Easy.'][Math.floor(Math.random()*4)],1400)}
@@ -2375,6 +2392,9 @@ function renderReport(){
   $('#fixList').innerHTML=fixNow.length?fixNow.map((o,i)=>`<li class="fx"><span class="n">${i+1}</span><div><b>${esc(o.u[0])}</b><small>about ${o.u[2]}% of the paper</small><div class="bar2"><i style="width:${o.s}%;background:${o.s<50?'#ff8a7a':col}"></i></div></div><span class="sc">${o.s}%</span></li>`).join(''):'<li class="hint2">Log a few scores and your weak spots show up here.</li>';
   const sel=$('#lgU'),keep=sel.value;sel.innerHTML=U.map(u=>`<option>${esc(u[0])}</option>`).join('');if(U.some(u=>u[0]===keep))sel.value=keep;
   $('#wtNote').textContent=WT_NOTE[rpS];
+  /* low recall from the morning consolidation ratings (average of the last 3, 2.5 or below) */
+  const C=cfGet(),lr=Object.entries(C).filter(([k])=>UNIT_BY[k]&&UNIT_BY[k].subj===rpS).map(([k,a])=>{const l=a.slice(-3);return{k,v:l.reduce((x,y)=>x+y.r,0)/l.length,n:a.length}}).filter(o=>o.v<=2.5).sort((a,b)=>a.v-b.v);
+  $('#lowRec').innerHTML=lr.length?`<h3 class="lr-h">Low recall in the morning</h3><ul class="lr">${lr.map(o=>`<li><b>${esc(UNIT_BY[o.k].en)}</b><span>${o.v.toFixed(1)} / 5</span></li>`).join('')}</ul><p class="hint2">Redo these from a blank page before their next class.</p>`:'';
 }
 function insertRevision(sj,unit,fromD,afterId){
   const list=[];
@@ -2496,6 +2516,7 @@ const fmtD=k=>{const d=new Date(k+'T00:00');return `${DOW[d.getDay()]} ${d.getDa
 const LIVE_T='සංයුක්ත ගණිතය: සජීවී පන්තිය';
 function applyBlueprint(days){
   for(const k in days)for(const e of days[k]){
+    if(e.tag==='Consolidate'&&e.sub&&e.sub.includes('rewrite key points, 5 questions'))e.sub=e.sub.replace('rewrite key points, 5 questions',CONS_HOW);
     if(e.subj==='maths'&&e.kind==='class'&&e.title===LIVE_T&&!e.cu){const b=BP.find(x=>x.m===k.slice(0,7));
       if(b){e.sub=(e.topic?'Likely today: '+e.topic+'. ':'')+'This month: '+b.t.map(t=>t[1]).join(', ');e.bp=b.m;if(b.rec&&!e.rec)e.rec=REC[b.rec]}}
     /* Sundays are a rest day from the workout */
