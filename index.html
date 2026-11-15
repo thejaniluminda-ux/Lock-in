@@ -1669,6 +1669,17 @@ function buildPlan(){
   const papers=[];/* unit past-paper question tasks waiting for a study slot */
   const last={phy:null,chem:null};
   const done={phy:[],chem:[]},fin={phy:[],chem:[]},mDone=[],pc={phy:0,chem:0,maths:0};
+  /* plan v10: exam-mark targets per unit. Chemistry = Paper I MCQs per year (7 full papers in qbank.js) + 2026 Paper II marks / 20
+     (both on the final-mark scale). Physics = 2026 Paper I share blended 50/50 with an even split, because it is one paper.
+     gH = minutes given to each unit so far (classes, consolidation, practice). The "old unit" practice slot goes to the finished
+     unit with the fewest minutes per exam mark so far (evens out marks per hour), instead of a fixed rotation. Classes are not moved. */
+  const TGT=(()=>{const T={};try{const Q=window.QBANK||{},W=window.WEIGHTS||{};
+      const yrs=['2019','2020','2021','2022','2023','2025','2026'].filter(y=>Q.chem&&Q.chem[y]);
+      for(const y of yrs)for(const n in Q.chem[y]){const u=Q.chem[y][n];T[u]=(T[u]||0)+1/yrs.length}
+      for(const p of ((W.chem||{}).p2y2026||[]))T[p[3]]=(T[p[3]]||0)+p[2]/20;
+      const U=(W.phy||{}).units||{};for(const k in U)T[k]=(U[k].pct+9)/2}catch(e){}return T})();
+  const tg=u=>TGT[u]!=null?TGT[u]:/x$/.test(u)?.3*(TGT[u.slice(0,-1)]||0):1;
+  const gH={};
   const mAdd=t=>{const i=mDone.findIndex(x=>x.en===t.en);if(i>=0)mDone.splice(i,1);mDone.push(t)};/* classes taken so far, finished units, Maths topics covered */
   const lastSubj={A:'chem',B:'phy'};/* alternate Physics and Chemistry inside each track */
   const chain={};/* the unit each track+subject is working through, so a unit runs day after day */
@@ -1693,7 +1704,7 @@ function buildPlan(){
     if(!best)return null;
     Q[best.n].splice(best.i,1);const it=best.it;taken.add(it.iid);last[it.subj]=it;lastSubj[tr]=it.subj;if(!it.x)chain[best.n]=it.unit;
     today.push(it);done[it.subj].push(it);
-    if(--left[it.unit]===0){const u=UNIT_BY[it.unit];finished[it.unit]=null;if(!u.day&&!/x$/.test(u.k))fin[u.subj].push(u.k);if(!u.day&&!/x$/.test(u.k)&&!u.self)papers.push({subj:u.subj,title:`${u.si}: ඒකක පසුගිය ප්‍රශ්න`,sub:`${u.en}: unit past-paper questions, then log your score`,tag:u.tag,rec:''})}
+    if(--left[it.unit]===0){const u=UNIT_BY[it.unit];finished[it.unit]=null;if(!/x$/.test(u.k))fin[u.subj].push(u.k);/* v10: one-day seminars (Electrochemistry, Redox...) also get old-unit practice */if(!u.day&&!/x$/.test(u.k)&&!u.self)papers.push({subj:u.subj,title:`${u.si}: ඒකක පසුගිය ප්‍රශ්න`,sub:`${u.en}: unit past-paper questions, then log your score`,tag:u.tag,rec:''})}
     return it;
   }
   /* spaced review: a 20-minute recap 3 days, 2 weeks and 6 weeks after a unit ends */
@@ -1713,7 +1724,7 @@ function buildPlan(){
     const wkIdx=Math.floor((addD(d,-((w+6)%7))-new Date(2026,10,9))/6048e5);
     const july=d>=JULY,buffer=!july&&wkIdx>0&&wkIdx%4===0&&!allEmpty()&&d<new Date(2027,5,1);/* no buffer week in June: finishing classes comes first */
     const L=(s,e,t,x)=>ev.push(Object.assign({s,e,title:t,sub:'',tag:'',subj:'life',kind:'life'},x||{}));
-    const add=(s,e,subj,kind,c,x)=>ev.push(Object.assign({s,e,subj,kind,title:c.title,sub:c.sub||'',tag:c.tag||'',rec:c.rec||'',unit:c.unit||''},c.iid?{iid:c.iid,deps:c.deps}:{},x||{}));
+    const add=(s,e,subj,kind,c,x)=>(c.unit&&(gH[c.unit]=(gH[c.unit]||0)+(e-s)),ev.push(Object.assign({s,e,subj,kind,title:c.title,sub:c.sub||'',tag:c.tag||'',rec:c.rec||'',unit:c.unit||''},c.iid?{iid:c.iid,deps:c.deps}:{},x||{})));
     prevDay=today;today=[];
     const study=(s,e,subj,title,sub,tag,rec)=>add(s,e,subj,'study',{title,sub,tag,rec});
     /* practice blocks always name exactly what to practise, and a subject gets no practice before its first class.
@@ -1725,7 +1736,8 @@ function buildPlan(){
         return{subj:'maths',title:`ගණිත ප්‍රශ්න: ${t.si}`,sub:`Combined Maths: ${t.en} questions${t===cur?' (your latest class)':' (older topic, keeps it fresh)'}`,tag:t===cur?'':'Old topic',rec:t.rec||''}}
       const main=done[sj].filter(x=>!x.x);if(!main.length)return null;
       const l=main[main.length-1],n=++pc[sj],olds=fin[sj].filter(u=>u!==l.unit);
-      if(n%3===0&&olds.length){const o=UNIT_BY[olds[(n/3-1)%olds.length]];return{subj:sj,title:`පැරණි ඒකකය: ${o.si} ප්‍රශ්න`,sub:`${o.en}: questions from this finished unit, so it stays fresh`,tag:'Old unit',rec:REC[o.rec||o.k]||'',unit:o.k}}
+      if(n%3===0&&olds.length){const per=u=>(gH[u]||0)/Math.max(tg(u),.05);
+        const o=UNIT_BY[olds.slice().sort((a,b)=>per(a)-per(b))[0]];return{subj:sj,title:`පැරණි ඒකකය: ${o.si} ප්‍රශ්න`,sub:`${o.en}: questions from this finished unit. Picked because it has had less time than its share of exam marks`,tag:'Old unit',rec:REC[o.rec||o.k]||'',unit:o.k}}
       const u=UNIT_BY[l.unit],ds=main.filter(x=>x.unit===l.unit).slice(-2),nums=ds.map(x=>+x.iid.split(':')[1]);
       return{subj:sj,title:`ප්‍රශ්න: ${ds.map(x=>x.title).join(' + ')}`,sub:`${u.en}, class ${nums.join(' and ')}: topic questions`,tag:u.tag||'',rec:l.rec||'',unit:u.k}};
     /* nothing studied yet: skim the book for the next class instead (needs no questions) */
@@ -1847,8 +1859,8 @@ function buildPlan(){
 /* the plan lives in the browser; it is built once from the data above */
 const CKEY='lockin-plan-v2';
 let CS=null;
-try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=9)CS=s}catch(e){}
-if(!CS)CS={v:9,days:buildPlan().days,off:{},fresh:true};
+try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=10)CS=s}catch(e){}
+if(!CS)CS={v:10,days:buildPlan().days,off:{},fresh:true};
 /* if the browser's storage is full, say so loudly instead of silently losing the change */
 let _sfw=0;function storageFull(){const n=Date.now();if(n-_sfw<8000)return;_sfw=n;try{toast('Storage is full, so this change was NOT saved. Make a backup now, then delete some progress photos.')}catch(e){alert('Storage is full, so this change was NOT saved. Make a backup now.')}}
 const saveCS=()=>{try{localStorage.setItem(CKEY,JSON.stringify(CS))}catch(e){storageFull()}};
@@ -2370,7 +2382,7 @@ $('#mNext').addEventListener('click',()=>{miniM=new Date(miniM.getFullYear(),min
 $('#mGrid').addEventListener('click',e=>{const b=e.target.closest('.md');if(!b)return;viewD=dOf(b.dataset.k);renderWeek();renderMini()});
 document.querySelectorAll('[data-f]').forEach(c=>c.addEventListener('change',()=>{filt[c.dataset.f]=c.checked;renderWeek()}));
 $('#cCreate').addEventListener('click',e=>{const tk=kOf(today0),k=curKeys.includes(tk)?tk:curKeys[0];openForm({date:k,s:1140,e:1200,title:'',sub:'',subj:'phy',tag:''},true,e.currentTarget.getBoundingClientRect())});
-$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:9,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
+$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:10,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
 /* ================= Report: weak-spot radar ================= */
 const UNITS={
   phy:[['Mechanics','Mechanics',16],['Waves','Waves',15],['Current electricity','Current el.',15],['Thermal physics','Thermal',14],['Light','Light',8],['Magnetic fields','Magnetism',8],['Electronics','Electronics',6],['Electrostatics','Electrostatics',5],['Matter and radiation','Matter & rad.',5],['Measurement','Measurement',5],['Mechanical properties','Mech. properties',4],['Gravitation','Gravitation',3]],
@@ -2659,13 +2671,15 @@ function rebuildOrder(keepPast){
     const m=e.unit?byKey[e.unit+'|'+e.title+'|'+(e.sub||'').includes('(part 2)')]:(days[k]||[]).find(x=>x.title===e.title&&!x.done);
     if(m)m.done=true;
   }
-  CS={v:9,days,off:{},slid:old.slid||[]};
+  CS={v:10,days,off:{},slid:old.slid||[]};
   for(const e of redo)cuPlace(cuItem(e));
   for(const k in (old.off||{}))if(k>=sk&&old.off[k]){CS.off[k]=true;(CS.days[k]||[]).filter(x=>x.kind!=='life'&&x.kind!=='review'&&!x.fixed&&!x.done&&!x.user).forEach(skipToCU);CS.days[k]=(CS.days[k]||[]).filter(x=>x.fixed||x.user)}
 }
 (function migrate(){
   if(CS.fresh){delete CS.fresh;applyBlueprint(CS.days);saveCS();return}
-  if(CS.v===9){applyBlueprint(CS.days);saveCS();return}
+  if(CS.v===10){applyBlueprint(CS.days);saveCS();return}
+  /* v9 to v10: the old-unit practice slot follows exam marks vs time so far (classes unchanged, past days kept) */
+  if(CS.v===9){rebuildOrder(true);saveCS();return}
   /* v8 to v9: no missed-Maths recording after an 8 h class day; weekly 1 h timed section on Sundays from December */
   if(CS.v===8){rebuildOrder(true);saveCS();return}
   /* v7 to v8: Physics pairs take turns (Current with Thermal, Mechanics with Waves) */
@@ -2678,7 +2692,7 @@ function rebuildOrder(keepPast){
     for(const k in CS.days)if(k>=tk)retimeDay(k,CS.days[k]);
     CS.v=4;}
   if(CS.v===4){restartPlan();CS.v=9;saveCS();return}
-  const old=CS,fresh={v:9,days:applyBlueprint(buildPlan().days),off:old.off||{}};
+  const old=CS,fresh={v:10,days:applyBlueprint(buildPlan().days),off:old.off||{}};
   for(const k in old.days)for(const e of old.days[k]){
     if(e.user){(fresh.days[k]||(fresh.days[k]=[])).push(e);continue}
     if(e.done){const m=(fresh.days[k]||[]).find(x=>x.title===e.title&&!x.done);if(m)m.done=true}
