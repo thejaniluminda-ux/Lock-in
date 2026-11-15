@@ -677,7 +677,11 @@ b,.n,.lb-meta,.fo-nums b{font-variant-numeric:tabular-nums}
 .sm summary::-webkit-details-marker{display:none}.sm summary::after{content:'▾';color:var(--ink-3)}.sm[open] summary::after{content:'▴'}
 .sm summary small{margin-left:auto;color:var(--ink-3);font-weight:400;font-size:11.5px}
 .sm-b{padding:0 16px 14px;max-height:520px;overflow:auto;font-family:var(--si)}
-.sm-b h4{margin:14px 0 6px;font-size:13px;font-weight:500;color:var(--lav)}
+.sm-b h4{margin:14px 0 6px;font-size:14px;font-weight:500;color:var(--lav)}.sm-b h4 small{color:var(--ink-3);font-weight:400;font-size:11.5px;margin-left:6px}
+.sm-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 4px}
+.sm-tabs button{font:inherit;font-size:12.5px;padding:5px 11px;border-radius:999px;border:1px solid var(--edge);background:rgba(255,255,255,.04);color:var(--ink-2);cursor:pointer}
+.sm-tabs button[aria-pressed="true"]{background:rgba(185,168,255,.16);border-color:rgba(185,168,255,.45);color:var(--ink)}
+.sm-l{margin-top:12px}.sm-l b{display:block;font-weight:500;font-size:12.5px;color:var(--ink-3);margin-bottom:5px}
 .sm-b>p{margin:0;font-size:14.5px;line-height:1.85;color:var(--ink-2)}
 .sm-c{margin:6px 0}.sm-c b{font-weight:500;font-size:13.5px;color:var(--ink)}
 .sm-c ul,.sm-w{margin:4px 0 0;padding-left:18px;font-size:13.5px;line-height:1.7;color:var(--ink-2)}
@@ -2877,17 +2881,22 @@ $('#lbList').addEventListener('click',e=>{const b=e.target.closest('.lb-main[dat
 /* Unit story cards share one renderer: Atomic structure (ticks in lockin-atom-v1) and d block colours (ticks in lockin-dcol-v1) */
 const STORY={atom:{s:()=>window.ATOM_STORY,key:'lockin-atom-v1',lab:'Atomic structure'},dblock:{s:()=>window.DBLOCK_STORY,key:'lockin-dcol-v1',lab:'d block colours'}};
 const stTab={},stOk={};for(const k in STORY)stOk[k]=lsGet(STORY[k].key,{ok:[]});
-/* Sinhala unit summary (summaries.js), folded by default */
-const smOpen={};
-function sumHtml(uk){const S=(window.SUMMARY||{})[uk];if(!S)return '';
-  return `<details class="sm" data-sm="${uk}"${smOpen[uk]?' open':''}><summary>සාරාංශය <small>${esc(S.pages)}</small></summary><div class="sm-b">
-    <h4>සාරාංශය</h4><p>${S.sum.map(esc).join(' ')}</p>
-    <h4>ප්‍රධාන සංකල්ප</h4>${S.ideas.map(([h,L])=>`<div class="sm-c"><b>${esc(h)}</b><ul>${L.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`).join('')}
-    <h4>පාරිභාෂික වචන</h4><div class="sm-t">${S.terms.map(([s,e])=>`<span>${esc(s)} <i>(${esc(e)})</i></span>`).join('')}</div>
-    <h4>සූත්‍ර</h4><div class="sm-t">${S.formulas.map(f=>`<span>${esc(f)}</span>`).join('')}</div>
-    ${S.warn&&S.warn.length?`<h4>⚠ තහවුරු කරගන්න</h4><ul class="sm-w">${S.warn.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}
-    <p class="at-src">මූලාශ්‍රය: ${esc(S.book)}, ${esc(S.pages)}. පොත ස්කෑන් කළ එකක් නිසා පිටු රූප ලෙස කියවා ලියා ඇත.</p></div></details>`}
+/* Sinhala unit summary (summaries.js): folded panel, one tab per chapter, tickable points saved in lockin-sum-v1 */
+const SMKEY='lockin-sum-v1',smOpen={},smTab={};let SMOK=null;const smOk=()=>SMOK||(SMOK=lsGet(SMKEY,{}));
+function sumHtml(uk){const S=(window.SUMMARY||{})[uk];if(!S||!S.ch)return '';const ok=(smOk()[uk]||{ok:[]}).ok,ti=smTab[uk]??0;
+  const all=S.ch.reduce((a,c)=>a+c.pts.length,0),dn=ok.length;
+  const tabs=`<div class="sm-tabs">${S.ch.map((c,i)=>{const n=c.pts.filter((_,j)=>ok.includes(i+'.'+j)).length;return `<button data-smt="${uk}|${i}" aria-pressed="${ti===i}" title="${esc(c.t)}">${c.ic} ${i+1}${n===c.pts.length?' ✓':''}</button>`}).join('')}${S.warn&&S.warn.length?`<button data-smt="${uk}|w" aria-pressed="${ti==='w'}">⚠ ${S.warn.length}</button>`:''}</div>`;
+  let body;
+  if(ti==='w')body=`<h4>⚠ තහවුරු කරගන්න</h4><ul class="sm-w">${S.warn.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`;
+  else{const c=S.ch[ti]||S.ch[0],i=S.ch.indexOf(c);
+    body=`<h4>${c.ic} ${esc(c.t)} <small>පි. ${c.p}</small></h4>${c.pts.map((p,j)=>{const id=i+'.'+j,on=ok.includes(id);return `<label class="at-k${on?' ok':''}"><input type="checkbox" data-smk="${uk}|${id}" ${on?'checked':''}><span>${esc(p)}</span></label>`}).join('')}
+      <div class="sm-l"><b>සූත්‍ර</b><div class="sm-t">${c.f.map(f=>`<span>${esc(f)}</span>`).join('')}</div></div>
+      <div class="sm-l"><b>වචන</b><div class="sm-t">${c.w.map(([s,e])=>`<span>${esc(s)} <i>${esc(e)}</i></span>`).join('')}</div></div>`}
+  return `<details class="sm" data-sm="${uk}"${smOpen[uk]?' open':''}><summary>සාරාංශය <small>${dn}/${all} දන්නවා · ${esc(S.pages)}</small></summary><div class="sm-b">${tabs}${body}
+    <p class="at-src">මූලාශ්‍රය: ${esc(S.book)}, ${esc(S.pages)}. ස්කෑන් කළ පොත නිසා පිටු රූප ලෙස කියවා ලියා ඇත.</p></div></details>`}
 document.addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.classList.contains('sm'))smOpen[d.dataset.sm]=d.open},true);
+$('#lbList').addEventListener('click',e=>{const t=e.target.closest('[data-smt]');if(!t)return;e.preventDefault();const [uk,v]=t.dataset.smt.split('|');smTab[uk]=v==='w'?'w':+v;smOpen[uk]=true;renderLibrary()});
+$('#lbList').addEventListener('change',e=>{const c=e.target.closest('[data-smk]');if(!c)return;const [uk,id]=c.dataset.smk.split('|'),O=smOk(),A=O[uk]||(O[uk]={ok:[]});A.ok=A.ok.filter(x=>x!==id);if(c.checked)A.ok.push(id);lsSet(SMKEY,O);smOpen[uk]=true;renderLibrary()});
 function atomHtml(){return storyHtml('atom')}
 function storyHtml(uk){
   const C=STORY[uk],S=C.s(),AT=stOk[uk],atTab=stTab[uk]||'story';if(!S)return '<p class="at-src">Story file did not load. Check your connection once, then it works offline.</p>';
