@@ -672,6 +672,18 @@ b,.n,.lb-meta,.fo-nums b{font-variant-numeric:tabular-nums}
 @keyframes lmFlash{0%,60%{box-shadow:0 0 0 2px var(--lav),0 0 30px -4px var(--lav)}}
 .at{padding:10px 18px 14px 20px;border-top:1px solid var(--edge)}
 .at-seg{width:max-content;margin-bottom:10px}
+.sm{margin:0 18px 10px 20px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid var(--edge)}
+.sm summary{cursor:pointer;padding:11px 16px;font-size:14px;font-weight:500;color:var(--ink);font-family:var(--si);list-style:none;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.sm summary::-webkit-details-marker{display:none}.sm summary::after{content:'▾';color:var(--ink-3)}.sm[open] summary::after{content:'▴'}
+.sm summary small{margin-left:auto;color:var(--ink-3);font-weight:400;font-size:11.5px}
+.sm-b{padding:0 16px 14px;max-height:520px;overflow:auto;font-family:var(--si)}
+.sm-b h4{margin:14px 0 6px;font-size:13px;font-weight:500;color:var(--lav)}
+.sm-b>p{margin:0;font-size:14.5px;line-height:1.85;color:var(--ink-2)}
+.sm-c{margin:6px 0}.sm-c b{font-weight:500;font-size:13.5px;color:var(--ink)}
+.sm-c ul,.sm-w{margin:4px 0 0;padding-left:18px;font-size:13.5px;line-height:1.7;color:var(--ink-2)}
+.sm-w{color:#ffb26b}
+.sm-t{display:flex;flex-wrap:wrap;gap:6px}.sm-t span{font-size:12.5px;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--edge);color:var(--ink-2)}
+.sm-t i{font-style:normal;color:var(--ink-3)}
 .at-seg small{color:var(--ink-3);font-size:10.5px}
 .at-b{max-height:460px;overflow:auto;padding-right:4px}
 .at-sc{padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}
@@ -1359,6 +1371,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
 <script src="atom-story.js"></script>
 <script src="dblock-story.js"></script>
 <script src="qbank.js"></script>
+<script src="summaries.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 const app=$('#app'),intro=$('#intro');
@@ -2709,7 +2722,7 @@ function renderLibrary(){
     const nx=bl.find(e=>!e.done&&e.date>=tk),pc=bl.length?d/bl.length:0,rec=REC[u.rec||u.k]||'',ex=/x$/.test(u.k);
     const st=pc>=1?'Finished':nx?`Next: ${fmtD(nx.date)}`:bl.length?'Overdue':'Not in plan';
     const open=lbOpen===u.k;
-    return `<article id="lb-${u.k}" class="lb-card${pc>=1?' fin':''}${open?' open':''}${STORY[u.k]?' atomc':''}" style="--sub:var(--${u.subj})">
+    return `<article id="lb-${u.k}" class="lb-card${pc>=1?' fin':''}${open?' open':''}${STORY[u.k]||(window.SUMMARY||{})[u.k]?' atomc':''}" style="--sub:var(--${u.subj})">
       <button class="lb-main" data-u="${u.k}" aria-expanded="${open}">
         <div class="lb-t"><span class="si">${esc(u.si)}${ex?' <em>extras</em>':''}</span><span class="en">${esc(u.en)}</span></div>
         <div class="lb-meta">${u.tag?`<span class="qt">${esc(u.tag)}</span>`:''}${cfOpen(u.k)?`<span class="qt cfq">? ${cfOpen(u.k)} open</span>`:''}<span>${d} of ${bl.length} days</span><span class="lb-st">${st}</span></div>
@@ -2720,6 +2733,7 @@ function renderLibrary(){
       </button>
       ${rec?`<a class="lb-rec" href="${rec}" target="_blank" rel="noopener">▶ Recordings</a>`:''}
       ${open?cfList(u.k):''}${open?qbList(u.k):''}${open?fbList(u.k):''}
+      ${open?sumHtml(u.k):''}
       ${open&&STORY[u.k]?storyHtml(u.k):''}
       ${open?`<ol class="lb-days">${bl.map(e=>`<li class="${e.done?'dn':''}"><span class="dd">${fmtD(e.date)}</span><span class="dt">${esc(e.title)}</span><span class="ds">${e.done?'Done':e.date<tk?'Missed':''}</span></li>`).join('')||'<li><span class="dt">No days for this unit in the plan.</span></li>'}</ol>`:''}
     </article>`}).join('');
@@ -2863,6 +2877,17 @@ $('#lbList').addEventListener('click',e=>{const b=e.target.closest('.lb-main[dat
 /* Unit story cards share one renderer: Atomic structure (ticks in lockin-atom-v1) and d block colours (ticks in lockin-dcol-v1) */
 const STORY={atom:{s:()=>window.ATOM_STORY,key:'lockin-atom-v1',lab:'Atomic structure'},dblock:{s:()=>window.DBLOCK_STORY,key:'lockin-dcol-v1',lab:'d block colours'}};
 const stTab={},stOk={};for(const k in STORY)stOk[k]=lsGet(STORY[k].key,{ok:[]});
+/* Sinhala unit summary (summaries.js), folded by default */
+const smOpen={};
+function sumHtml(uk){const S=(window.SUMMARY||{})[uk];if(!S)return '';
+  return `<details class="sm" data-sm="${uk}"${smOpen[uk]?' open':''}><summary>සාරාංශය <small>${esc(S.pages)}</small></summary><div class="sm-b">
+    <h4>සාරාංශය</h4><p>${S.sum.map(esc).join(' ')}</p>
+    <h4>ප්‍රධාන සංකල්ප</h4>${S.ideas.map(([h,L])=>`<div class="sm-c"><b>${esc(h)}</b><ul>${L.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`).join('')}
+    <h4>පාරිභාෂික වචන</h4><div class="sm-t">${S.terms.map(([s,e])=>`<span>${esc(s)} <i>(${esc(e)})</i></span>`).join('')}</div>
+    <h4>සූත්‍ර</h4><div class="sm-t">${S.formulas.map(f=>`<span>${esc(f)}</span>`).join('')}</div>
+    ${S.warn&&S.warn.length?`<h4>⚠ තහවුරු කරගන්න</h4><ul class="sm-w">${S.warn.map(w=>`<li>${esc(w)}</li>`).join('')}</ul>`:''}
+    <p class="at-src">මූලාශ්‍රය: ${esc(S.book)}, ${esc(S.pages)}. පොත ස්කෑන් කළ එකක් නිසා පිටු රූප ලෙස කියවා ලියා ඇත.</p></div></details>`}
+document.addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.classList.contains('sm'))smOpen[d.dataset.sm]=d.open},true);
 function atomHtml(){return storyHtml('atom')}
 function storyHtml(uk){
   const C=STORY[uk],S=C.s(),AT=stOk[uk],atTab=stTab[uk]||'story';if(!S)return '<p class="at-src">Story file did not load. Check your connection once, then it works offline.</p>';
