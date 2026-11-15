@@ -449,6 +449,22 @@ body.page-cal #calPage{display:grid}
 body.page-pap .top,body.page-pap .grid,body.page-pap .demo{display:none}
 #papPage{display:none}
 body.page-pap #papPage{display:block}
+.mq{margin-bottom:16px}
+.mq-g{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px}
+.mq-next{border-radius:18px;padding:14px 16px;background:rgba(185,168,255,.08);border:1px solid rgba(185,168,255,.3);margin-bottom:10px}
+.mq-next .u{font-size:18px;font-weight:500;color:var(--lav)}.mq-next .w{font-size:12.5px;color:var(--ink-2);margin-top:4px;line-height:1.6}.mq-next .w b{color:var(--ink);font-weight:500}
+.mq-q{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+.mq-q .id{color:var(--ink-2)}.mq-q .id a{color:var(--lav);text-decoration:none;font-size:11.5px;margin-left:4px}
+.mq-q .bt{display:flex;flex-wrap:wrap;gap:5px}
+.mq-q button{font:inherit;font-size:11.5px;padding:4px 9px;border-radius:999px;border:1px solid var(--edge);background:rgba(255,255,255,.04);color:var(--ink-2);cursor:pointer}
+.mq-q button:hover{background:rgba(255,255,255,.09)}.mq-q button.on.ok{background:rgba(95,224,138,.18);border-color:#5fe08a;color:#5fe08a}.mq-q button.on.x{background:rgba(255,138,122,.16);border-color:#ff8a7a;color:#ff8a7a}
+.mq-big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.mq-big b{font-size:42px;font-weight:200}.mq-big span{color:var(--ink-3);font-size:13px}
+.mq-h{font-size:12px;color:var(--ink-3);margin:16px 0 6px}
+.mq-r{display:grid;grid-template-columns:130px 1fr 44px 70px;gap:10px;align-items:center;padding:5px 0;font-size:13px}
+.mq-bar{height:8px;border-radius:8px;background:rgba(255,255,255,.07);position:relative;overflow:hidden}.mq-bar i{position:absolute;inset:0 auto 0 0;border-radius:8px}
+.mq-r .m{text-align:right}.mq-r .p{color:var(--ink-3);font-size:11.5px;text-align:right}
+.mq-fix{font-size:13px;line-height:1.7;color:var(--ink-2)}.mq-fix b{color:var(--ink);font-weight:500}.mq-fix .tg{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;background:rgba(255,255,255,.06);margin:0 8px 0 4px}
+@media (max-width:980px){.mq-g{grid-template-columns:1fr}.mq-r{grid-template-columns:104px 1fr 40px 62px}}
 .pp-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
 .pp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.55fr);gap:16px;align-items:start}
 .ptimer{position:sticky;top:20px}
@@ -1308,6 +1324,10 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
         <div><h1 class="rp-h">Papers</h1><p class="sub" style="margin:8px 0 0;font-size:13px;color:var(--ink-3)">Every past paper, marking scheme and answer guide from your Drive, by year</p></div>
         <div class="seg" id="ppSeg" role="group" aria-label="Subject"><button data-s="phy" aria-pressed="true">Physics</button><button data-s="chem" aria-pressed="false">Chemistry</button><button data-s="maths" aria-pressed="false">Combined Maths</button></div>
       </div>
+      <section class="card mq" id="mqCard" aria-labelledby="mqT">
+        <div class="head"><div><h2 id="mqT">What to study next</h2><p class="sub">Log every past Paper I question you try. Mastery × how often a unit is asked = where your next hour earns the most marks.</p></div></div>
+        <div id="mqBody"></div>
+      </section>
       <div class="pp-grid">
         <div>
           <section class="card ptimer" id="ptimer" aria-labelledby="ptT">
@@ -2499,6 +2519,7 @@ function renderLib(){
   (ppR==='new'&&years.some(y=>+y<2011)?`<button class="more" data-r="all">Show ${years.filter(y=>+y<2011).length} older years</button>`:'');
   renderPPChart();
   try{renderMB()}catch(e){}
+  try{renderMQ()}catch(e){}
 }
 function renderPPChart(){
   const pts=PP.log.filter(x=>x.s===ppS),W=520,H=120,P=18;
@@ -3071,6 +3092,45 @@ $('#mbList').addEventListener('click',e=>{
   if(e.target.closest('[data-del]')){MB=MB.filter(x=>x!==m)}else if(e.target.closest('[data-ok]')){if(m.ok){m.ok=false;m.st=0;m.due=mbAdd(dkey(new Date()),1)}else{m.ok=true;m.due=null}}
   saveMB();renderMB();
 });
+/* ---------- What to study next: question log (lockin-qlog-v1) -> mastery per unit -> priority and predicted Paper I.
+   Weights: Chemistry = WEIGHTS.chem.p1 groups (7 papers, tested on 2026), Physics = WEIGHTS.phy (one paper). Mastery uses a Beta(1,1) prior:
+   0 tries = 50%, so a couple of lucky answers can't jump to 100%. A wrong answer also goes into the mistake bank for spaced re-tests. ---------- */
+const QLKEY='lockin-qlog-v1';let QL=null;const qlGet=()=>QL||(QL=lsGet(QLKEY,[]));
+const MQN={echem:'Electrochemistry',ener:'Energetics',equil:'Equilibrium',ind:'Industrial',kin:'Kinetics',org:'Organic',gas:'Gas laws',inorg:'Inorganic + bonding',calc:'Calculations',
+  mech:'Mechanics',therm:'Thermal',wave:'Waves',cur:'Current electricity',light:'Light',mag:'Magnetism',estat:'Electrostatics',elec:'Electronics',matter:'Matter & radiation',mprop:'Properties of matter',meas:'Measurement',grav:'Gravitation'};
+const MQE={concept:'Didn’t know',careless:'Careless',time:'Ran out of time'};
+function mqGroups(sj){const W=window.WEIGHTS;if(!W)return [];
+  if(sj==='chem'){const P=W.chem.p1;return Object.keys(P).map(k=>({k,units:P[k].g,per:P[k].mean}))}
+  if(sj==='phy'){const U=W.phy.units;return Object.keys(U).map(k=>({k,units:[k],per:U[k].pct/2}))}return []}
+const mqQs=(sj,g)=>{const Q=(window.QBANK||{})[sj]||{},o=[];for(const y of Object.keys(Q).sort().reverse())for(const n in Q[y])if(g.units.includes(Q[y][n]))o.push({id:sj+'-'+y+'-'+n,y,n});return o};
+const mqLast=()=>{const o={};for(const x of qlGet())o[x.id]=x.r;return o};
+function mqMast(sj,g,last){const v=mqQs(sj,g).map(q=>last[q.id]).filter(Boolean),c=v.filter(r=>r==='ok').length;return {n:v.length,m:(c+1)/(v.length+2)}}
+function renderMQ(){const box=$('#mqBody');if(!box)return;const sj=ppS;
+  if(sj==='maths'){box.innerHTML='<p class="sub">Combined Maths has no MCQ paper, so this works for Physics and Chemistry. Use the mistake bank for Maths.</p>';return}
+  const last=mqLast(),G=mqGroups(sj).map(g=>Object.assign(g,mqMast(sj,g,last)));if(!G.length){box.innerHTML='<p class="sub">Weights file did not load. Open the app once online.</p>';return}
+  G.forEach(g=>g.gain=g.per*(1-g.m));const top=[...G].sort((a,b)=>b.gain-a.gain)[0];
+  const exp=G.reduce((a,g)=>a+g.per*g.m,0),tried=G.reduce((a,g)=>a+g.n,0);
+  const sd=Math.sqrt(G.reduce((a,g)=>a+g.per*g.m*(1-g.m)+g.per*g.per*g.m*(1-g.m)/(g.n+3),0));
+  const all=mqQs(sj,top),wrong=all.filter(q=>last[q.id]&&last[q.id]!=='ok'),left=all.filter(q=>!last[q.id]);
+  const rows=[...wrong,...left].slice(0,10).map(q=>{const r=last[q.id],l=typeof qbLink==='function'?qbLink(sj,q.y):'';
+    return `<div class="mq-q"><span class="id">${q.y} Q${q.n}${l?`<a href="${l}" target="_blank" rel="noopener">↗</a>`:''}</span><span class="bt">${[['ok','✓ Right','ok'],['concept','✗ Didn’t know','x'],['careless','✗ Careless','x'],['time','✗ Time','x']].map(([v,t,c])=>`<button class="${c}${r===v?' on':''}" data-mq="${q.id}" data-r="${v}" data-u="${top.k}">${t}</button>`).join('')}</span></div>`}).join('');
+  const wr=qlGet().filter(x=>x.id.startsWith(sj+'-')&&x.r!=='ok'),cnt=t=>wr.filter(x=>x.r===t).length;
+  const tip={concept:'<b>Didn’t know</b> → go back to the class notes and the unit summary before doing more questions.',careless:'<b>Careless</b> → you knew it. Underline the question word (NOT, incorrect, increasing) and check units before you choose.',time:'<b>Ran out of time</b> → do 10-question sets against a 15-minute timer; skip any question after 2 minutes and come back.'};
+  const big=Object.keys(MQE).sort((a,b)=>cnt(b)-cnt(a))[0];
+  box.innerHTML=`<div class="mq-g"><div>
+    <div class="mq-next"><div class="u">${MQN[top.k]||top.k}</div><div class="w">Asked about ${top.per.toFixed(1)} times per Paper I · your accuracy ${top.n?Math.round(top.m*100)+'%':'unknown (0 tried)'} · fixing it is worth about <b>${top.gain.toFixed(1)}</b> more correct answers.<br>${wrong.length?'Redo the wrong ones first, then the new ones. ':''}Time each one: about 1.5 minutes.</div></div>
+    ${rows||'<p class="sub">Every question for this unit is right. The next unit moves up.</p>'}</div>
+   <div><div class="mq-big"><b>${Math.round(exp)}</b><span>of 50 predicted on Paper I today · likely ${Math.max(0,Math.round(exp-1.6*sd))}–${Math.min(50,Math.round(exp+1.6*sd))}</span></div>
+    <p class="sub" style="margin:4px 0 0">${tried} questions logged. ${tried<40?'Below about 40 this is mostly a guess; it sharpens as you log.':'Test it: sit a full timed Paper I and compare.'}${sj==='phy'?' Physics weights come from one paper (2026).':''}</p>
+    <div class="mq-h">Mastery by unit (grey = fewer than 3 tries)</div>
+    ${[...G].sort((a,b)=>b.per-a.per).map(g=>{const c=g.n<3?'rgba(255,255,255,.18)':g.m>=.75?'#5fe08a':g.m>=.5?'#ffcf6b':'#ff8a7a';return `<div class="mq-r"><span>${MQN[g.k]||g.k}</span><span class="mq-bar"><i style="width:${(g.m*100).toFixed(0)}%;background:${c}"></i></span><span class="m">${g.n?Math.round(g.m*100)+'%':'–'}</span><span class="p">${g.per.toFixed(1)}/paper</span></div>`}).join('')}
+    <div class="mq-h">Why you lose marks</div>
+    <div class="mq-fix">${wr.length?Object.keys(MQE).map(t=>`${MQE[t]}<span class="tg">${cnt(t)}</span>`).join('')+'<br>Biggest leak: '+tip[big]:'Log some wrong answers to see the pattern.'}</div></div></div>`}
+$('#mqBody').addEventListener('click',e=>{const b=e.target.closest('[data-mq]');if(!b)return;const id=b.dataset.mq,r=b.dataset.r,[sj,y,n]=id.split('-');
+  qlGet().push({id,r,u:b.dataset.u,t:Date.now()});lsSet(QLKEY,qlGet());
+  if(r!=='ok'&&!MB.some(m=>m.qid===id&&!m.ok)){MB.push({id:'m'+Date.now(),qid:id,s:sj,y,q:n,t:MQN[b.dataset.u]||b.dataset.u,w:MQE[r],ok:false,at:dkey(new Date()),st:0,due:mbAdd(dkey(new Date()),MB_GAP[0])});saveMB();toast('Added to your mistake bank. It comes back in 3 days.')}
+  renderMQ();try{renderMB()}catch(x){}});
+
 /* Sunday quiz */
 let qz=[],qi=0;
 function openQuiz(){const due=mbDueNow();qz=(due.length?due:MB.filter(m=>!m.ok)).sort(()=>Math.random()-.5).slice(0,10);qi=0;
