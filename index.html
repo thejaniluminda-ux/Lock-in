@@ -1109,7 +1109,86 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
 /* ---------- exercise screen (PC layout) ---------- */
 #ex{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;background:radial-gradient(900px 700px at 30% 40%,#2c2a27,transparent 70%),#151413}
 #ex.show{display:flex;animation:exIn .35s ease}
-@keyframes exIn{from{opacity:0}to{opacity:1}}
+@keyframes exIn{from{opacity:0;transform:scale(.97) translateY(10px)}to{opacity:1;transform:none}}
+/* ---------- Workout v2: the gym ---------- */
+/* Atmosphere: a shade deeper than the study pages (rubber-floor charcoal), faint concrete grain, one warm overhead light, a darker floor. Lavender stays the accent. */
+body.page-wo{background-color:#141210}
+body.page-wo::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(55% 42% at 52% -6%,rgba(255,214,170,.11),rgba(255,214,170,.03) 45%,transparent 72%),
+    linear-gradient(to top,rgba(0,0,0,.38),transparent 32%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .47 0 0 0 0 .43 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+body.wo-enter::after{animation:woLight .8s cubic-bezier(.2,.8,.2,1) both}
+@keyframes woLight{0%{opacity:0}35%{opacity:.55}45%{opacity:.25}100%{opacity:1}}
+body.wo-enter #woPage .wcol>.card,body.wo-enter #woNudge{animation:woRise .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--wi,0)*55ms + 120ms)}
+@keyframes woRise{from{opacity:0;transform:translateY(16px) scale(.985)}}
+/* moving between exercises, finishing a set, finishing the workout */
+#ex .swap{animation:woSwap .32s cubic-bezier(.2,.8,.2,1) both}
+@keyframes woSwap{from{opacity:0;transform:translateX(18px)}}
+#ex .ex-prog i.cur{animation:woSeg .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes woSeg{from{transform:scaleY(2.5);opacity:.4}}
+#woPage .sets i.pop{animation:woPop .42s cubic-bezier(.34,1.56,.64,1)}
+#woPage .sets i.pop::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--rc,#b9a8ff);animation:woBurst .5s cubic-bezier(.2,.8,.2,1) forwards;pointer-events:none}
+#woPage .sets i{position:relative}
+@keyframes woPop{40%{transform:scale(1.45)}}
+@keyframes woBurst{from{opacity:.9;transform:scale(.6)}to{opacity:0;transform:scale(2.2)}}
+#ringArc{transition:stroke-dashoffset .6s cubic-bezier(.2,.8,.2,1)}
+#ex .doneScr{position:relative;animation:woRise .5s cubic-bezier(.2,.8,.2,1) both}
+#ex .doneScr::before{content:'';position:absolute;left:50%;top:40px;width:140px;height:140px;margin-left:-70px;border-radius:50%;border:3px solid #5fe08a;opacity:0;animation:woRing 1.1s cubic-bezier(.2,.8,.2,1) .1s both;pointer-events:none}
+@keyframes woRing{0%{opacity:.8;transform:scale(.3)}100%{opacity:0;transform:scale(2.4)}}
+/* new cards: same glass as the others */
+#woPage .wg2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:16px}
+#woPage .wg2 h2{margin:0 0 4px}
+#woPage .w2-sub{color:var(--ink-3);font-size:12.5px;margin:0 0 12px}
+#woNudge{display:none;align-items:center;gap:16px;flex-wrap:wrap;margin:0 0 16px;padding:16px 20px;border-radius:20px;background:rgba(185,168,255,.09);border:1px solid rgba(185,168,255,.32)}
+#woNudge.on{display:flex}#woNudge b{font-weight:500}#woNudge p{margin:2px 0 0;color:var(--ink-2);font-size:13px}#woNudge .sp{margin-left:auto;display:flex;gap:8px}
+.cg8{display:grid;grid-template-columns:48px repeat(7,1fr);gap:5px 6px;align-items:center;font-size:11px;color:var(--ink-3)}
+.cg8 .d{width:100%;aspect-ratio:1;max-width:17px;justify-self:center;border-radius:8px;background:rgba(255,255,255,.04)}
+.cg8 .d.done{background:#b9a8ff;box-shadow:0 0 10px rgba(185,168,255,.45)}.cg8 .d.extra{background:rgba(185,168,255,.45)}
+.cg8 .d.part{background:linear-gradient(135deg,#b9a8ff 50%,rgba(255,255,255,.06) 50%)}
+.cg8 .d.miss{background:transparent;border:1.5px solid rgba(255,138,122,.65)}.cg8 .d.rest{background:transparent;border:1px dashed rgba(255,255,255,.12)}
+.cg8 .d.today{outline:2px solid var(--ink);outline-offset:2px}.cg8 .d.fut{opacity:.35}.cg8 .d.pre{opacity:.15}
+.c-stats{display:flex;gap:22px;margin:14px 0 4px;flex-wrap:wrap}.c-stats b{display:block;font-size:30px;font-weight:200;line-height:1}.c-stats span{font-size:12px;color:var(--ink-3)}
+.c-msg{font-size:13px;color:var(--ink-2);line-height:1.6;margin-top:10px}
+.lv{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05);align-items:center}
+.lv:last-child{border:0}.lv .n{font-weight:500;font-size:14px}.lv .lst{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+.lv .steps{display:flex;gap:4px;margin-top:6px}.lv .steps i{width:22px;height:5px;border-radius:5px;background:rgba(255,255,255,.08)}.lv .steps i.on{background:var(--lc)}.lv .steps i.cur{background:var(--lc);box-shadow:0 0 8px var(--lc)}
+.lv .pg{font-size:11.5px;color:var(--ink-3);grid-column:1/-1}.lv .ready{color:#5fe08a}
+.lv button{height:30px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--ink-2);font:12px Sora,sans-serif;cursor:pointer}
+.lv button.go{background:#5fe08a;color:#10140f;border-color:transparent}
+.ms{display:grid;grid-template-columns:118px 1fr 70px;gap:10px;align-items:center;padding:6px 0;font-size:13px}
+.ms .tr{position:relative;height:12px;border-radius:6px;background:rgba(255,255,255,.05)}
+.ms .band{position:absolute;top:0;bottom:0;border-radius:6px;background:rgba(255,255,255,.07);border-left:1px dashed rgba(255,255,255,.25);border-right:1px dashed rgba(255,255,255,.25)}
+.ms .pl{position:absolute;left:0;top:3px;bottom:3px;width:100%;border-radius:4px;background:var(--mc);opacity:.28;transform-origin:left;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.ms .dn{position:absolute;left:0;top:3px;bottom:3px;width:100%;border-radius:4px;background:var(--mc);transform-origin:left;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+.ms .v{font-size:12px;color:var(--ink-2);text-align:right;font-variant-numeric:tabular-nums}
+.ms .nm{display:flex;align-items:center;gap:8px}.ms .nm i{width:8px;height:8px;border-radius:50%;background:var(--mc)}
+.wt{display:flex;align-items:flex-end;gap:8px;height:120px;margin:12px 0 6px}
+.wt div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%}
+.wt i{display:block;width:100%;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,#b9a8ff,rgba(185,168,255,.3));transform-origin:bottom}
+.wt i.none{background:rgba(255,255,255,.05)}.wt span{font-size:10.5px;color:var(--ink-3)}.wt b{font-size:11px;font-weight:400;color:var(--ink-2)}
+.wv{margin-top:8px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);font-size:13px;line-height:1.6;color:var(--ink-2)}.wv b{color:var(--ink);font-weight:500}
+@media (max-width:900px){#woPage .wg2{grid-template-columns:1fr}.ms{grid-template-columns:96px 1fr 62px}}
+/* everything above is off when motion is reduced (system setting, or the demo checkbox) */
+@media (prefers-reduced-motion:reduce){body.wo-enter::after,body.wo-enter #woPage .card,body.wo-enter #woNudge,#ex .swap,#ex .ex-prog i.cur,#woPage .sets i.pop,#woPage .sets i.pop::after,#ex .doneScr,#ex .doneScr::before,#ex.show{animation:none!important}.ms .dn,.ms .pl,.wt i,#ringArc{transition:none!important}}
+/* ---------- tidy layout: three column stacks (no gaps under short cards) and compact new cards ---------- */
+#woPage .wgrid.wcols{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.82fr);gap:14px;align-items:start}
+#woPage .wcol{display:flex;flex-direction:column;gap:14px;min-width:0}
+@media (min-width:1151px){#woPage .wcol>.card{grid-column:auto!important;grid-row:auto!important}}
+@media (max-width:1150px){#woPage .wgrid.wcols{grid-template-columns:1fr 1fr}#woPage .wcol{display:contents}#cCons,#cLvl,#cSets,#cWt{grid-column:auto}}
+@media (max-width:760px){#woPage .wgrid.wcols{grid-template-columns:1fr}}
+#woNudge{margin:0 0 14px;padding:12px 16px}
+#cCons,#cLvl,#cSets,#cWt{padding:16px 18px}
+#cCons h2,#cLvl h2,#cSets h2,#cWt h2{font-size:14px}
+#woPage .w2-sub{font-size:11.5px;margin:0 0 10px;line-height:1.45}
+.cg8{grid-template-columns:40px repeat(7,1fr);gap:4px 5px;font-size:10px}
+.cg8 .d{max-width:13px;border-radius:4px}.cg8 .d.today{outline-offset:1px;outline-width:1.5px}
+.c-stats{gap:18px;margin:10px 0 0}.c-stats b{font-size:22px}.c-stats span{font-size:11px}
+.c-msg{font-size:12px;margin-top:8px;line-height:1.5}
+.lv{padding:7px 0;gap:4px 10px}.lv .n{font-size:13px}.lv .lst{font-size:12px;margin-top:1px}.lv .steps{margin-top:4px}.lv .steps i{width:18px;height:4px}
+.lv .pg{font-size:11px;line-height:1.4}.lv button{height:26px;padding:0 10px;font-size:11.5px}
+.ms{grid-template-columns:100px 1fr 64px;gap:8px;padding:3px 0;font-size:12px}.ms .tr{height:9px}.ms .pl,.ms .dn{top:2px;bottom:2px}.ms .v{font-size:11px;white-space:nowrap}
+.wt{height:74px;gap:6px;margin:6px 0 4px}.wt b{font-size:10px}.wt span{font-size:9.5px}
+.wv{margin-top:6px;padding:9px 12px;font-size:12px;line-height:1.5}
 #ex .ex-top{display:flex;align-items:center;gap:18px;padding:22px 34px 0}
 #ex .ex-top .k{font-size:13px;color:var(--ink-3)}
 #ex .ex-top h2{margin:2px 0 0;font-size:clamp(28px,3.2vw,44px);font-weight:400;letter-spacing:-.03em}
@@ -1279,7 +1358,9 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
       <div class="pp-top">
         <div><h1 class="rp-h">Workout</h1><p class="sub lb-sub" id="phaseLine"></p></div>
       </div>
-      <div class="wgrid">
+      <div id="woNudge" role="status"></div>
+      <div class="wgrid wcols">
+        <div class="wcol">
         <section class="card c-today" id="woToday">
           <div class="td-h">
             <div>
@@ -1293,27 +1374,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
           <button class="start" id="startBtn"><span class="pl">▶</span><span id="startTxt">Start workout</span></button>
           <div class="wk" id="wkStrip"></div>
         </section>
-        <section class="card c-map">
-          <div class="head">
-            <div><h2>Target muscles</h2><p class="sub">Tap a muscle to see its exercises and recovery</p></div>
-            <div class="seg" role="group" aria-label="Body side"><button aria-pressed="true" data-side="front">Front</button><button aria-pressed="false" data-side="back">Back</button></div>
-          </div>
-          <div class="map-wrap"><div class="mm" id="mm" role="img" aria-label="Muscle map. Use the colour buttons below to pick a muscle."></div></div>
-          <div class="mm-legend" id="mmLegend"></div>
-          <div class="mm-info" id="mmInfo"></div>
-        </section>
-        <section class="card c-week">
-          <h2>This week</h2>
-          <div class="wbig" id="wkTotal"></div>
-          <div class="wbr" id="wkBars"></div>
-        </section>
-        <section class="card c-protein">
-          <div class="head"><h2>Protein today</h2><button class="wtb" id="pUndo">Undo</button></div>
-          <div class="wbig" id="pTotal"></div>
-          <div class="pbar"><i id="pFill"></i></div>
-          <div class="foods" id="foods"></div>
-          <div class="kcal">Calories: about <b>2,700–2,800 a day</b> to gain. Weigh yourself once a week. If your weight hasn't gone up in 2 weeks, add about 300.</div>
-        </section>
+        <section class="card" id="cCons"><h2>Never miss twice</h2><p class="w2-sub">Last 8 weeks. Filled = done, red ring = missed, dashed = rest day</p><div id="consBox"></div></section>
         <section class="card c-body">
           <div class="head"><h2>Body</h2><div style="display:flex;gap:6px"><button class="wtb" id="wBtn">Log weight</button><button class="wtb" id="tBtn">Log measurements</button></div></div>
           <div class="wform" id="wForm"><label>Weight (kg)<input id="wIn" type="number" step="0.1" min="30" max="150"></label><button class="pbtn pri" id="wSave">Save</button></div>
@@ -1329,16 +1390,45 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
           <div class="tape" id="tape"></div>
           <div class="face"><span>Face today</span><div id="faceList"></div></div>
         </section>
+        </div>
+        <div class="wcol">
+        <section class="card c-map">
+          <div class="head">
+            <div><h2>Target muscles</h2><p class="sub">Tap a muscle to see its exercises and recovery</p></div>
+            <div class="seg" role="group" aria-label="Body side"><button aria-pressed="true" data-side="front">Front</button><button aria-pressed="false" data-side="back">Back</button></div>
+          </div>
+          <div class="map-wrap"><div class="mm" id="mm" role="img" aria-label="Muscle map. Use the colour buttons below to pick a muscle."></div></div>
+          <div class="mm-legend" id="mmLegend"></div>
+          <div class="mm-info" id="mmInfo"></div>
+        </section>
+        <section class="card" id="cLvl"><h2>Next level-up</h2><p class="w2-sub">Reps → tempo → harder version → backpack. Move up after hitting the top of the range on every set, two sessions in a row</p><div id="lvlBox"></div></section>
         <section class="card c-photo">
           <div class="head"><h2>Progress photos</h2><label class="wtb" style="cursor:pointer">Add this month's photo<input type="file" accept="image/*" id="phIn" hidden></label></div>
           <div id="phBox"></div>
         </section>
+        </div>
+        <div class="wcol">
+        <section class="card c-week">
+          <h2>This week</h2>
+          <div class="wbig" id="wkTotal"></div>
+          <div class="wbr" id="wkBars"></div>
+        </section>
+        <section class="card c-protein">
+          <div class="head"><h2>Protein today</h2><button class="wtb" id="pUndo">Undo</button></div>
+          <div class="wbig" id="pTotal"></div>
+          <div class="pbar"><i id="pFill"></i></div>
+          <div class="foods" id="foods"></div>
+          <div class="kcal">Calories: about <b>2,700–2,800 a day</b> to gain. Weigh yourself once a week. If your weight hasn't gone up in 2 weeks, add about 300.</div>
+        </section>
+        <section class="card" id="cSets"><h2>Sets per muscle this week</h2><p class="w2-sub">Solid = done, faded = still planned before Sunday, grey band = your 10–20 set target</p><div id="setsBox"></div></section>
+        <section class="card" id="cWt"><h2>Weight trend</h2><p class="w2-sub">Weekly averages. The rule from your plan: no rise in 2 weeks → add about 300 kcal</p><div id="wtBox"></div></section>
         <section class="card c-chal">
           <h2>Monthly challenge</h2>
           <div class="when" id="chWhen"></div>
           <div class="chal" id="chal"></div>
           <button class="pbtn pri" id="chSave" style="margin-top:12px">Save scores</button>
         </section>
+        </div>
       </div>
     </section>
 
@@ -1635,7 +1725,7 @@ function go(p){
   if(p==='Papers')renderLib();
   if(p==='Focus'){fShow();cfRender()}
   if(p==='Library')renderLibrary();
-  if(p==='Workout')renderWorkout();
+  if(p==='Workout'){renderWorkout();try{woEnter()}catch(e){}}
   if(p==='Home'){renderRoutine();renderRings();renderBars();renderCal()}
   moveInd();
 }
@@ -3344,6 +3434,9 @@ function renderPX(){const box=$('#px');if(!box)return;const sj=rpS;box.classList
     <section class="hx-card hx-in" style="--i:2"><h3>Mock pace</h3><div class="hx-big" style="margin-top:12px;color:${col}">${cur==null?'–':`<span data-hxn="${Math.round(cur)}">${Math.round(cur)}</span><small>%</small>`}</div><p class="hx-mut" style="font-size:13px">${cur==null?'Log past questions or take a mini-mock to see this.':`Needed by ${ck[0]}: ${need}%. ${cur>=need?'On pace. Keep the mocks weekly.':`Gap of ${Math.round(need-cur)} points. Biggest fix: ${MQN[P.top.k]||P.top.k}.`}`}</p></section>`;
   box.querySelectorAll('[data-hxn]').forEach(el=>hxCount(el,+el.dataset.hxn))}
 
+/* Workout v2: entering the gym */
+function woEnter(){const b=document.body;[...document.querySelectorAll('#woNudge,#woPage .wcol>.card')].forEach((c,i)=>c.style.setProperty('--wi',i));b.classList.remove('wo-enter');void b.offsetWidth;b.classList.add('wo-enter');clearTimeout(woEnter.t);woEnter.t=setTimeout(()=>b.classList.remove('wo-enter'),1700)}
+
 /* Sunday quiz */
 let qz=[],qi=0;
 function openQuiz(){const due=mbDueNow();qz=(due.length?due:MB.filter(m=>!m.ok)).sort(()=>Math.random()-.5).slice(0,10);qi=0;
@@ -3576,7 +3669,14 @@ const X={
   sideplank:{n:'Side plank',g:['core'],s:30,u:'each side',a:'sideplank',tip:'On one forearm, body straight from head to feet, hips up. Swap sides halfway through. When 45 seconds is easy, switch to hip dips.'},
   flutter:{n:'Flutter kicks',g:['core'],s:30,a:'flutter',tip:'Lower back pressed down, legs straight. Kick them up and down in small, quick, controlled movements.'},
   hipdip:{n:'Side plank hip dips',g:['core'],r:[10,15],u:'each side',a:'hipdip',tip:'From a side plank, lower your hip towards the floor, then lift it back up. Level-up for when a 45-second side plank is easy.'},
-  hollow:{n:'Hollow body hold',g:['core'],s:20,a:'hollow',tip:'Press your lower back into the floor. Hold your arms and legs just off the ground and keep breathing.'}
+  hollow:{n:'Hollow body hold',g:['core'],s:20,a:'hollow',tip:'Press your lower back into the floor. Hold your arms and legs just off the ground and keep breathing.'},
+  /* added in the arena plan (16 Nov 2026). The figure uses the closest existing animation for these. */
+  backrow:{n:'Backpack rows',g:['back','tr','arm'],r:[10,15],a:'ytw',tip:'Hinge forward with a flat back, backpack in both hands. Pull it to your stomach, squeeze your shoulder blades, lower for 3 seconds.'},
+  chinneg:{n:'Chin-up negatives',g:['back','arm'],r:[4,6],a:'negpull',tip:'Palms facing you. Jump up so your chin is over the bar, then lower yourself for 3 to 5 seconds until your arms are straight.'},
+  curl:{n:'Backpack curls',g:['arm'],r:[10,15],a:'lateral',tip:'Hold the backpack by its top handle or straps. Curl it up without swinging, lower for 3 seconds.'},
+  slrdl:{n:'Single-leg RDL with backpack',g:['leg','gl'],r:[10,12],u:'each leg',a:'split',tip:'Stand on one leg, slight knee bend. Hinge at the hips with a flat back, backpack in the opposite hand, until you feel the back of your thigh stretch. Stand up tall.'},
+  slbridge:{n:'Single-leg glute bridges',g:['gl','leg'],r:[10,15],u:'each leg',a:'bridge',tip:'One foot on the floor, the other leg straight up. Push your hips up through the heel, squeeze for a second, lower slowly.'},
+  towelcurl:{n:'Towel leg curls',g:['leg','gl'],r:[8,12],a:'bridge',tip:'Lie on your back, heels on a towel on a smooth floor, hips up. Pull your heels in towards you, then slide them out slowly for 3 seconds.'}
 };
 
 /* ---------- plan ---------- */
@@ -3584,6 +3684,25 @@ const weekNo=d=>Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate())-W
 function plan(type,d){
   const neck=weekNo(d)>=3?['neckcurl',2]:['neckiso',4];
   const P={
+    /* arena plan (16 Nov 2026): upper\/lower split, rows and hamstrings added, Tuesday is the light fasted day, one short conditioning day */
+    upperA:{n:'Upper A',c:'#ff5a5a',warm:['Arm circles, 30 seconds each way','8 scapula hangs from the bar','10 easy push-ups'],
+      main:[['negpull',4],['declinepush',4],['backrow',4],['lateral',4]],acc:[neck],ss:1,
+      cool:['Chest stretch in a doorway, 30 seconds','Hang from the bar to stretch your lats, 30 seconds','Slow breathing, 1 minute']},
+    light:{n:'Light pump',c:'#ff7ab6',warm:['Arm circles, 1 minute','10 easy push-ups'],
+      main:[['lateral',3],['ytw',3],['pike',2],['curl',2]],acc:[['declinepush',2]],
+      cool:['Shoulder and arm stretch, 1 minute']},
+    lowerA:{n:'Lower A',c:'#ffc24a',warm:['10 leg swings each leg','1 minute on the rope or bike','10 easy squats'],
+      main:[['split',3],['calf',3],['slrdl',3],['slbridge',3]],acc:[['legraise',2]],ss:1,
+      cool:['Hip flexor stretch, 30 seconds each side','Hamstring stretch, 30 seconds each side','Slow breathing, 1 minute']},
+    upperB:{n:'Upper B',c:'#9d7bff',warm:['Arm circles, 30 seconds each way','8 scapula hangs from the bar','10 easy push-ups'],
+      main:[['chinneg',4],['declinepush',4],['backrow',3],['ytw',2]],acc:[['lateral',2],neck],ss:1,
+      cool:['Chest stretch in a doorway, 30 seconds','Hang from the bar to stretch your lats, 30 seconds','Slow breathing, 1 minute']},
+    lowerB:{n:'Lower B',c:'#ffb02e',warm:['10 leg swings each leg','1 minute on the rope or bike','10 easy squats'],
+      main:[['squat',4],['calf',3],['towelcurl',3],['split',3]],acc:[['plank',3]],ss:1,
+      cool:['Hip flexor stretch, 30 seconds each side','Hamstring stretch, 30 seconds each side','Slow breathing, 1 minute']},
+    condlite:{n:'Conditioning lite',c:'#2fd4b6',warm:['3 minutes easy on the bike'],
+      main:[['rope',1]],acc:[['hollow',2],['flutter',2],['sideplank',2]],
+      cool:['Full-body stretch, 2 minutes']},
     upper:{n:'Upper body',c:'#ff5a5a',warm:['Arm circles, 30 seconds each way','8 scapula hangs from the bar','10 easy push-ups'],
       main:[['negpull',4],['declinepush',4],['lateral',3],['pike',3]],acc:[['diamond',2],['ytw',2],neck],
       cool:['Chest stretch in a doorway, 30 seconds','Hang from the bar to stretch your lats, 30 seconds','Slow breathing, 1 minute']},
@@ -3597,10 +3716,11 @@ function plan(type,d){
       main:[['negpull',3],['declinepush',3],['squat',3]],acc:[['lateral',2],['plank',2]],
       cool:['Light stretch, 2 minutes']}
   };
-  return P[type];
+  const p=P[type];const wn=weekNo(addD(d,-((d.getDay()+6)%7)));if(p&&type!=='maint'&&wn>0&&wn%6===0){const h=a=>a.map(([e,n])=>[e,Math.max(1,Math.ceil(n/2))]);return Object.assign({},p,{n:p.n+' · deload',main:h(p.main),acc:h(p.acc)})}
+  return p;
 }
-const TYPE_BY_DAY=[null,'upper','legs','cond','upper','legs','cond'];
-const TNAME={upper:'Upper body',legs:'Legs and core',cond:'Conditioning',maint:'Maintenance'};
+const TYPE_BY_DAY=[null,'upperA','light','lowerA','upperB','lowerB','condlite'];const TYPES=['upperA','light','lowerA','upperB','lowerB','condlite'];
+const TNAME={upperA:'Upper A',light:'Light pump',lowerA:'Lower A',upperB:'Upper B',lowerB:'Lower B',condlite:'Conditioning lite',maint:'Maintenance',upper:'Upper body',legs:'Legs and core',cond:'Conditioning'};
 /* July and August: three short sessions a week (Mon, Wed, Fri) */
 const typeOn=d=>d>=MAINT?([1,3,5].includes(d.getDay())?'maint':null):TYPE_BY_DAY[d.getDay()];
 function phaseLine(d){
@@ -3669,7 +3789,7 @@ function renderToday(){
     const x=X[e];
     html+=row(e,x.n,(x.round?n+' rounds':n+' × '+target(e))+', '+lowerNames(x.g),G[x.g[0]].c,dots,c===n);
   })};
-  blk(p.main,t==='maint'?'Main work':'Main work, 15–18 minutes');blk(p.acc,t==='maint'?'Accessory':'Accessory, 6–8 minutes');
+  blk(p.main,t==='maint'?'Main work':p.ss?'Main work in supersets: do 1 and 2 back to back, then rest; same for 3 and 4':'Main work, 15–18 minutes');blk(p.acc,t==='maint'?'Accessory':'Accessory, 6–8 minutes');
   html+='<div class="phase">Cool-down, 2–3 minutes</div>'+row('cool','Cool-down',p.cool.join(', '),'#8a857e','',!!ex.cool);
   $('#tdRows').innerHTML=html;
   const pct=Math.round(done/total*100);
@@ -3850,7 +3970,7 @@ function renderInfo(){
     const recov=Object.keys(G).filter(g=>rec(g).pct<100);
     box.innerHTML=tg.length?`<b>Today works ${lowerNames(tg)}.</b><p>Bright colours are today's muscles. A soft glow means a muscle was trained in the last two days and is still recovering${recov.length?': '+lowerNames(recov)+'.':'.'}</p>`:`<b>Rest day.</b><p>${recov.length?'Still recovering: '+lowerNames(recov)+'.':'Every muscle is ready for the next session.'}</p>`;return}
   const g=G[selG],r=rec(selG),ws=wkSets(selG);
-  const used={};['upper','legs','cond'].forEach(t=>{const p=plan(t,today());[...p.main,...p.acc].forEach(([e])=>{if(X[e].g.includes(selG))(used[X[e].n]=used[X[e].n]||[]).push(TNAME[t])})});
+  const used={};TYPES.forEach(t=>{const p=plan(t,today());[...p.main,...p.acc].forEach(([e])=>{if(X[e].g.includes(selG))(used[X[e].n]=used[X[e].n]||[]).push(TNAME[t])})});
   const ex=Object.entries(used).map(([n,ds])=>n+' <span style="color:var(--ink-3)">('+[...new Set(ds)].join(', ').toLowerCase()+')</span>').join('<br>');
   const recTxt=r.h===null?'Not trained yet':r.pct>=100?'Ready to train':r.pct+'% recovered, ready in about '+Math.ceil(48-r.h)+' h';
   box.innerHTML=`<b><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${g.c};margin-right:7px"></i>${g.n}</b>
@@ -4169,14 +4289,19 @@ $('#exMute').onclick=()=>{muted=!muted;try{localStorage.setItem('lockin-wo-mute'
 
 /* ---------- session engine ---------- */
 let Q=[],qi=0,sess=null,timer=null,tick=null;
-function buildQueue(t){const p=plan(t,today()),q=[{k:'warm',items:p.warm,secs:180}];
-  [['main',p.main],['acc',p.acc]].forEach(([b,arr])=>arr.forEach(([e,n])=>{for(let s=1;s<=n;s++)q.push({k:'work',e,s,n,b})}));
+const MINI={n:'12-minute minimum',c:'#b9a8ff',warm:['1 minute: arm circles and easy squats'],main:[['declinepush',3],['squat',3],['plank',3]],acc:[],cool:['1 minute: slow breathing and a hang from the bar']};
+function buildQueue(t){if(t==='mini'){const q=[{k:'warm',items:MINI.warm,secs:60}];for(let r=1;r<=3;r++)for(const[e]of MINI.main)q.push({k:'work',e,s:r,n:3,b:'mini'});q.push({k:'cool',items:MINI.cool,secs:60});return{p:MINI,q}}
+  const p=plan(t,today()),q=[{k:'warm',items:p.warm,secs:180}];
+  if(p.ss){for(let i=0;i<p.main.length;i+=2){const A=p.main[i],B=p.main[i+1];if(!B){for(let s=1;s<=A[1];s++)q.push({k:'work',e:A[0],s,n:A[1],b:'main'});continue}
+      const m=Math.max(A[1],B[1]);for(let s=1;s<=m;s++){if(s<=A[1])q.push({k:'work',e:A[0],s,n:A[1],b:'main',pr:s<=B[1]?1:0});if(s<=B[1])q.push({k:'work',e:B[0],s,n:B[1],b:'main'})}}
+    p.acc.forEach(([e,n])=>{for(let s=1;s<=n;s++)q.push({k:'work',e,s,n,b:'acc'})})}
+  else [['main',p.main],['acc',p.acc]].forEach(([b,arr])=>arr.forEach(([e,n])=>{for(let s=1;s<=n;s++)q.push({k:'work',e,s,n,b})}));
   q.push({k:'cool',items:p.cool,secs:150});return{p,q}}
-function openSession(){
-  const t=curType();if(!t)return;const{p,q}=buildQueue(t);Q=q;
+function openSession(force){
+  const t=typeof force==='string'?force:curType();if(!t)return;const{p,q}=buildQueue(t);Q=q;
   const dk=ymd(today());
   qi=Q.findIndex(s=>s.k==='warm'?!(S.extra[dk]||{}).warm:s.k==='cool'?!(S.extra[dk]||{}).cool:!setsDone(s.e,dk).has(s.s));if(qi<0)qi=0;
-  sess={dk,p,start:Date.now(),pausedMs:0,pausedAt:null,reps:0,ticked:false};figPaused=false;
+  sess={dk,p,start:Date.now(),pausedMs:0,pausedAt:null,reps:0,ticked:false,mini:t==='mini'};figPaused=false;
   $('#ex').style.setProperty('--ec',p.c);$('#ex').classList.add('show');document.body.style.overflow='hidden';
   cancelAnimationFrame(figRAF);figLast=0;figRAF=requestAnimationFrame(figLoop);
   clearInterval(tick);tick=setInterval(loop,200);showStep(true);
@@ -4265,10 +4390,10 @@ function announce(s,x,sd){
 function jumpEx(dir){const cur=Q[qi];const key=s=>s.k==='work'?s.e:s.k;let i=qi;
   if(dir>0){while(i<Q.length&&key(Q[i])===key(cur))i++}else{while(i>0&&key(Q[i-1])===key(cur))i--;if(i>0){i--;const k=key(Q[i]);while(i>0&&key(Q[i-1])===k)i--}}
   qi=Math.max(0,Math.min(Q.length-1,i));showStep()}
-function logSet(s,reps,secs){const i=S.logs.findIndex(l=>l.d===sess.dk&&l.e===s.e&&l.set===s.s);if(i>=0)S.logs.splice(i,1);S.logs.push({d:sess.dk,e:s.e,set:s.s,reps,secs,t:Date.now()});save()}
+function logSet(s,reps,secs){const i=S.logs.findIndex(l=>l.d===sess.dk&&l.e===s.e&&l.set===s.s);if(i>=0)S.logs.splice(i,1);S.logs.push(Object.assign({d:sess.dk,e:s.e,set:s.s,reps,secs,t:Date.now()},sess.mini?{mini:1}:{}));save()}
 function rest(s){
   qi++;const nx=Q[qi];if(!nx)return finish();
-  const secs=s.e==='rope'?60:s.b==='main'?75:60;progressBar();
+  const secs=s.e==='rope'?60:s.pr?15:s.b==='mini'?20:s.b==='main'?(sess.p.ss?60:75):60;/* superset rounds rest 60 s: each muscle still gets about 2 minutes because the pair alternates */progressBar();
   const nTxt=nx.k==='work'?X[nx.e].n+', '+(X[nx.e].round?'round ':'set ')+nx.s+' of '+nx.n:'Cool-down';
   $('#ex').style.setProperty('--ec','#b9a8ff');
   $('#exK').textContent='Rest';$('#exName').textContent='Breathe and shake it out';$('#exTip').textContent='Up next: '+nTxt+'.';
@@ -4288,7 +4413,7 @@ function tickRoutine(dk){
   return !!r}
 function finish(){
   timer=null;progressBar();const L=S.logs.filter(l=>l.d===sess.dk);
-  if(!sess.ticked){sess.ticked=true;S.extra[sess.dk]=Object.assign(S.extra[sess.dk]||{},{done:Math.round(elapsed()/60000)});save();sess.inRoutine=tickRoutine(sess.dk)}
+  if(!sess.ticked){sess.ticked=true;S.extra[sess.dk]=Object.assign(S.extra[sess.dk]||{},{done:Math.round(elapsed()/60000)},sess.mini?{mini:1}:{});save();sess.inRoutine=tickRoutine(sess.dk)}
   $('#ex').style.setProperty('--ec','#5fe08a');$('#exK').textContent='Workout done';$('#exName').textContent=sess.p.n;$('#exTip').textContent='Eat some protein in the next couple of hours.';
   figSet('cool');
   $('#exRight').innerHTML=`<div class="doneScr"><div class="mode"><i></i>Nice work</div><div class="target">${fmt(elapsed())}</div>
@@ -4297,8 +4422,92 @@ function finish(){
   speak('Workout done. Great job.');$('#mainAct').onclick=()=>{closeSession();if(typeof hop==='function'){try{hop();say('Strong work! 💪',2600)}catch(e){}}};
 }
 
+/* ---------- Workout v2: four new cards ---------- */
+/* A. Never miss twice. A planned day counts as done when the session was finished, a 12-minute minimum was done,
+   or at least half of its sets were logged. Missing one day is fine (habit research); two in a row is what breaks habits. */
+function plannedSets(t,d){if(!t)return 0;const p=plan(t,d);return[...p.main,...p.acc].reduce((a,[,n])=>a+n,0)}
+function dayStat(d){const dk=ymd(d),td=ymd(today()),t=typeOn(d),L=logsOn(dk),ex=S.extra[dk]||{};
+  const first=S.logs.reduce((m,l)=>l.d<m?l.d:m,td);/* days before the first logged workout count as "before you started", not missed */
+  if(d<WSTART||dk<first)return'pre';if(dk>td)return t?'fut':'rest';
+  const done=ex.done!=null||ex.mini||L.some(l=>l.mini)||(t&&L.length>=Math.ceil(plannedSets(t,d)/2));
+  if(!t)return L.length?'extra':'rest';if(done)return'done';if(dk===td)return L.length?'part':'today';return L.length?'part':'miss'}
+function renderCons(){const d=today(),mon=addD(d,-((d.getDay()+6)%7));let h='<div class="cg8"><span></span>'+['M','T','W','T','F','S','S'].map(x=>`<span style="text-align:center">${x}</span>`).join('');
+  let planned=0,doneN=0,wkP=0,wkD=0;
+  for(let w=7;w>=0;w--){const m=addD(mon,-7*w);h+=`<span>${m.getDate()} ${MON[m.getMonth()].slice(0,3)}</span>`;
+    for(let i=0;i<7;i++){const x=addD(m,i),s=dayStat(x),isT=ymd(x)===ymd(d);
+      if(['done','miss','part'].includes(s)&&w<4){planned++;if(s==='done')doneN++}
+      if(w===0&&['done','miss','part','today'].includes(s)){wkP++;if(s==='done')wkD++}
+      h+=`<i class="d ${s}${isT?' today':''}" title="${DAYS[x.getDay()]} ${x.getDate()} ${MON[x.getMonth()].slice(0,3)}: ${{done:'done',miss:'missed',part:'started',rest:'rest day',extra:'extra session',fut:'planned',today:'today',pre:'before the plan'}[s]}"></i>`}}
+  h+='</div>';
+  const y=addD(d,-1),y2=addD(d,-2),ys=dayStat(y),y2s=dayStat(y2),ts=dayStat(d);
+  const rate=planned?Math.round(doneN/planned*100):null;
+  let msg;if(ys==='miss'&&y2s==='miss')msg='Two planned sessions missed in a row. No guilt, no catching up: just do 12 minutes today and the habit is back.';
+  else if(ys==='miss')msg='Yesterday was missed. That is fine once. Do not let it be twice: today’s session, or at least the 12-minute version.';
+  else if(rate!==null)msg=rate>=80?'Strong habit. Missing one day now and then does not hurt it; missing two in a row does.':'Aim for 4 of every 5 planned sessions. On a heavy study day the 12-minute version still counts.';
+  else msg='Your first weeks build the habit. Same time every day: 17:00, straight after class.';
+  $('#consBox').innerHTML=h+`<div class="c-stats"><div><b>${wkD}/${wkP}</b><span>this week</span></div><div><b>${rate===null?'–':rate+'%'}</b><span>last 4 weeks</span></div></div><div class="c-msg">${msg}</div>`;
+  /* the banner above the grid only shows the day after a miss, on a day with a session still to do */
+  const nd=$('#woNudge'),need=(ys==='miss')&&(ts==='today'||ts==='part');
+  nd.classList.toggle('on',need);
+  nd.innerHTML=need?`<div><b>${y2s==='miss'?'Two missed in a row':'Yesterday was missed'}. Never miss twice.</b><p>Do today’s full session, or the 12-minute minimum (push-ups, squats, plank, 3 rounds). Both count.</p></div><div class="sp"><button class="pbtn" id="miniBtn">▶ 12-minute minimum</button><button class="pbtn pri" id="fullBtn">Full session</button></div>`:''}
+/* B. Next level-up, following section 8: reps, then tempo, then a harder version, then the backpack. */
+const LADDER={
+  declinepush:['Reps: 4 × 12','Tempo: 4 s down','Harder: feet higher (on the bed)','Backpack on'],
+  negpull:['Reps: 4 × 6','Tempo: 5 s down','Harder: try 1 full pull-up first each set','Backpack on'],
+  lateral:['Reps: 3 × 20','Tempo: 3 s down, 1 s hold at the top','Harder: bigger bottles (2 L)','Harder: 2 s hold at the top'],
+  pike:['Reps: 3 × 10','Tempo: 3 s down','Harder: feet on a chair','Wall handstand push-ups (around March)'],
+  squat:['Reps: 4 × 20','Tempo: 4 s down','Harder: 2 s pause at the bottom','Backpack on'],
+  split:['Reps: 3 × 12 each leg','Tempo: 4 s down','Harder: front foot on a book','Backpack on'],
+  bridge:['Reps: 3 × 20','Tempo: 3 s squeeze at the top','Harder: single-leg bridges','Backpack on your hips'],
+  calf:['Reps: 3 × 20','Tempo: 3 s down','Harder: one leg at a time','Backpack on'],
+  backrow:['Reps: 4 × 15','Tempo: 3 s down, 1 s squeeze','Harder: more books in the backpack','Harder: one arm at a time'],
+  chinneg:['Reps: 4 × 6','Tempo: 5 s down','Harder: 1 full chin-up first each set','Backpack on'],
+  slrdl:['Reps: 3 × 12 each leg','Tempo: 4 s down','Harder: heavier backpack','Harder: 2 s pause at the bottom'],
+  towelcurl:['Reps: 3 × 12','Tempo: 4 s out','Harder: one leg at a time','Harder: hips higher the whole set']};
+function sessionsOf(e){const by={};for(const l of S.logs)if(l.e===e&&l.reps!=null&&!l.mini)(by[l.d]||(by[l.d]=[])).push(l.reps);return Object.keys(by).sort().map(d=>({d,r:by[d]}))}
+function setsPlanned(e){for(const t of TYPES){const p=plan(t,today());const f=[...p.main,...p.acc].find(([x])=>x===e);if(f)return f[1]}return 3}
+function renderLvl(){S.lvl=S.lvl||{};const t=curType(),todayEx=t&&t!=='maint'?plan(t,today()).main.map(([e])=>e):[];
+  const order=[...todayEx.filter(e=>LADDER[e]),...Object.keys(LADDER).filter(e=>!todayEx.includes(e))].slice(0,4);
+  $('#lvlBox').innerHTML=order.map(e=>{const x=X[e],st=Math.min(S.lvl[e]||0,3),top=x.r?x.r[1]:0,n=setsPlanned(e),ss=sessionsOf(e).slice(-2);
+    const hit=s=>s.r.length>=n&&s.r.every(v=>v>=top),ok=ss.length===2&&ss.every(hit),last=ss.at(-1);
+    const col=G[x.g[0]].c;
+    return `<div class="lv" style="--lc:${col}"><div><div class="n">${x.n}${todayEx.includes(e)?' <span style="font-size:11px;color:var(--ink-3);font-weight:400">· today</span>':''}</div><div class="lst">Now: ${LADDER[e][st]}</div><div class="steps">${LADDER[e].map((_,i)=>`<i class="${i<st?'on':i===st?'cur':''}"></i>`).join('')}</div></div>
+      <div>${ok&&st<3?`<button class="go" data-lvl="${e}|1">Move up ↑</button>`:st>0?`<button data-lvl="${e}|-1" title="Go back a step">↓</button>`:''}</div>
+      <div class="pg ${ok?'ready':''}">${last?`Last: ${last.r.length} × ${Math.min(...last.r)===Math.max(...last.r)?Math.max(...last.r):Math.min(...last.r)+'–'+Math.max(...last.r)} (top ${top})`:'No reps logged yet'}${ok?(st<3?' · ready to move up':' · top of the ladder'):ss.filter(hit).length?' · '+ss.filter(hit).length+' of 2 at the top':''}</div></div>`}).join('')}
+/* C. Sets per muscle. The first muscle of an exercise gets a full set, helpers get half (common practice; listing every helper as a full set overstates the work). */
+const PRIO=['sh','back','ch','arm','tr','leg','gl','core','calf','neck'];
+function muscleSets(from,to){const o={};for(const l of S.logs){if(l.d<from||l.d>to||!X[l.e])continue;X[l.e].g.forEach((g,i)=>o[g]=(o[g]||0)+(i?0.5:1))}return o}
+function renderSets(){const d=today(),mon=addD(d,-((d.getDay()+6)%7)),sun=addD(mon,6),done=muscleSets(ymd(mon),ymd(sun)),plan2={};
+  for(let x=addD(d,ymd(today())in S.extra&&S.extra[ymd(today())].done?1:0);x<=sun;x=addD(x,1)){const t=typeOn(x);if(!t)continue;const p=plan(t,x);
+    for(const[e,n]of[...p.main,...p.acc]){const dk=ymd(x),dn=ymd(x)===ymd(d)?setsDone(e,dk).size:0;X[e].g.forEach((g,i)=>plan2[g]=(plan2[g]||0)+(n-dn)*(i?0.5:1))}}
+  const MAX=26,pc=v=>Math.min(100,v/MAX*100);
+  $('#setsBox').innerHTML=PRIO.map(g=>{const a=Math.round((done[g]||0)*2)/2,b=Math.round(((done[g]||0)+(plan2[g]||0))*2)/2;
+    return `<div class="ms" style="--mc:${G[g].c}"><span class="nm"><i></i>${G[g].n}</span><span class="tr"><span class="band" style="left:${pc(10)}%;width:${pc(20)-pc(10)}%"></span><span class="pl" style="transform:scaleX(${pc(b)/100})"></span><span class="dn" style="transform:scaleX(${pc(a)/100})"></span></span><span class="v">${a} → ${b}</span></div>`}).join('')+
+    `<div class="c-msg">${(()=>{const dl=[...Array(7)].some((_,i)=>{const x=addD(mon,i),t=typeOn(x);return t&&/deload/.test(plan(t,x).n)});return dl?'Deload week: half the sets on purpose, so muscles and joints recover. Full volume comes back next week. ':''})()}${PRIO.filter(g=>g!=='neck'&&g!=='calf').filter(g=>((done[g]||0)+(plan2[g]||0))<10).map(g=>G[g].n).join(', ')?(d.getDay()===0?'This week ended below 10 sets for: ':'Below 10 sets this week even if you do everything planned: ')+PRIO.filter(g=>g!=='neck'&&g!=='calf').filter(g=>((done[g]||0)+(plan2[g]||0))<10).map(g=>G[g].n).join(', ')+'.':(d.getDay()===0?'Every main muscle got 10+ sets this week.':'Every main muscle reaches 10+ sets this week if you do what is planned.')}</div>`}
+/* D. Weight trend: weekly averages, then the 2-week rule from section 8. */
+function renderWt(){const d=today(),mon=addD(d,-((d.getDay()+6)%7)),W=[];
+  for(let w=7;w>=0;w--){const a=ymd(addD(mon,-7*w)),b=ymd(addD(mon,-7*w+6)),v=S.weights.filter(x=>x.d>=a&&x.d<=b).map(x=>+x.w);W.push({lab:addD(mon,-7*w).getDate()+'/'+(addD(mon,-7*w).getMonth()+1),v:v.length?v.reduce((p,c)=>p+c,0)/v.length:null})}
+  const vals=W.filter(x=>x.v!=null).map(x=>x.v),lo=vals.length?Math.min(...vals)-.6:0,hi=vals.length?Math.max(...vals)+.4:1;
+  const bars=W.map(x=>`<div><b>${x.v!=null?x.v.toFixed(1):''}</b><i class="${x.v==null?'none':''}" style="height:${x.v==null?6:Math.max(8,(x.v-lo)/(hi-lo)*100)}%"></i><span>${x.lab}</span></div>`).join('');
+  const k=W.map(x=>x.v),cur=[...k].reverse().find(v=>v!=null),ci=k.lastIndexOf(cur),prev=ci>=2?k.slice(0,ci-1).reverse().find(v=>v!=null):null;
+  let v;
+  if(vals.length<2)v='Weigh yourself once a week, same morning, before breakfast. Two weeks of data are needed to judge.';
+  else if(prev==null)v='Keep weighing weekly. One more week and this card can tell you if you are gaining.';
+  else{const diff=cur-prev;v=diff>=0.2?`<b>Rising ✓</b> ${diff>0?'+':''}${diff.toFixed(1)} kg over 2 weeks. Keep eating about 2,700–2,800 kcal a day.`
+    :diff>-0.2?`<b>Flat for 2 weeks</b> (${diff>=0?'+':''}${diff.toFixed(1)} kg). Your rule says add about <b>300 kcal a day</b>: a glass of milk and a handful of peanuts is about that.`
+    :`<b>Dropping</b> (${diff.toFixed(1)} kg in 2 weeks). Add about 300 kcal a day and check you are not skipping meals on class days.`}
+  $('#wtBox').innerHTML=`<div class="wt">${bars}</div><div class="wv">${v}</div>`}
+$('#lvlBox').addEventListener('click',e=>{const b=e.target.closest('[data-lvl]');if(!b)return;const[ex,dir]=b.dataset.lvl.split('|');S.lvl=S.lvl||{};S.lvl[ex]=Math.max(0,Math.min(3,(S.lvl[ex]||0)+(+dir)));save();renderLvl();if(+dir>0)toast('Moved up: '+LADDER[ex][S.lvl[ex]])});
+$('#woNudge').addEventListener('click',e=>{if(e.target.closest('#miniBtn'))openSession('mini');if(e.target.closest('#fullBtn'))openSession()});
+/* set dot pop: remember which dot was tapped, then animate the freshly drawn one */
+let popKey=null;$('#tdRows').addEventListener('pointerdown',e=>{const d=e.target.closest('[data-dot]');popKey=d?d.dataset.dot:null},true);
+function popDot(){if(!popKey)return;const el=document.querySelector(`#woPage [data-dot="${popKey}"]`);popKey=null;if(el&&el.classList.contains('on')){el.classList.add('pop');setTimeout(()=>el.classList.remove('pop'),600)}}
+/* moving between exercises: slide the right panel and the name in each time the step changes */
+new MutationObserver(()=>{for(const id of['exRight','exName']){const el=$('#'+id);if(!el)continue;el.classList.remove('swap');void el.offsetWidth;el.classList.add('swap')}}).observe($('#exRight'),{childList:true});
+
 /* ---------- boot ---------- */
-function renderAll(){$('#phaseLine').textContent=phaseLine(today());renderToday();renderWeek();renderMap();renderProtein();renderBody();renderPhotos();renderChal()}
+function renderAll(){$('#phaseLine').textContent=phaseLine(today());renderToday();renderWeek();renderMap();renderProtein();renderBody();renderPhotos();renderChal();
+  for(const f of[renderCons,renderLvl,renderSets,renderWt])try{f()}catch(err){console.error(err)}popDot()}
 setInterval(()=>{if(document.body.classList.contains('page-wo')&&!$('#ex').classList.contains('show'))renderMap()},60000);
 if(synth)synth.getVoices();
 return renderAll;
