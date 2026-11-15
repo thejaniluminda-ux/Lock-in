@@ -3413,13 +3413,13 @@ const stand={hd:[200,74],sh:[200,104],el:[200,146],wr:[200,186],hip:[198,184],kn
 const frontStand={hd:[200,70],nk:[200,100],pel:[200,184],lsh:[178,104],lel:[172,146],lwr:[170,186],rsh:[222,104],rel:[228,146],rwr:[230,186],lhip:[188,186],lkn:[186,242],lan:[186,294],rhip:[212,186],rkn:[214,242],ran:[214,294]};
 const M=(a,o)=>Object.assign({},a,o);
 const shiftAll=(j,dy)=>Object.fromEntries(Object.entries(j).map(([k,v])=>[k,[v[0],v[1]+dy]]));
-const lying={hd:[86,282],sh:[114,286],el:[150,292],wr:[184,296],hip:[220,290]};
+const lying={hd:[86,282],sh:[114,286],el:[155,292],wr:[194,297],hip:[220,290]};
 const ANIM={
   declinepush:{f:sideSegs,dn:3,up:1.1,box:[300,252,70,48],
     A:{hd:[84,196],sh:[108,206],el:[110,252],wr:[112,298],hip:[220,224],kn:[276,238],an:[330,248],toe:[348,250]},
     B:{hd:[94,246],sh:[118,256],el:[150,270],wr:[112,298],hip:[226,248],kn:[278,250],an:[330,248],toe:[348,250]}},
   diamond:{f:sideSegs,dn:3,up:1.1,
-    A:{hd:[84,212],sh:[108,222],el:[112,262],wr:[118,298],hip:[220,244],kn:[278,266],an:[336,290],toe:[352,300]},
+    A:{hd:[84,212],sh:[108,222],el:[112,262],wr:[118,298],hip:[220,255],kn:[278,272],an:[336,290],toe:[352,300]},
     B:{hd:[92,262],sh:[116,270],el:[152,282],wr:[118,298],hip:[224,278],kn:[280,286],an:[336,290],toe:[352,300]}},
   pike:{f:sideSegs,dn:2.6,up:1.1,
     A:{hd:[150,226],sh:[166,206],el:[160,252],wr:[152,298],hip:[236,150],kn:[268,224],an:[300,292],toe:[318,300]},
@@ -3429,38 +3429,38 @@ const ANIM={
     B:{hd:[210,90],sh:[203,112],el:[203,78],wr:[202,42],hip:[203,206],kn:[210,256],an:[202,302],toe:[216,308],fwr:[208,42]}},
   squat:{f:sideSegs,fr:-1,dn:3,up:1.2,
     A:{hd:[200,74],sh:[200,104],el:[222,112],wr:[252,112],hip:[198,184],kn:[202,242],an:[198,296],toe:[222,300]},
-    B:{hd:[222,132],sh:[214,158],el:[244,160],wr:[274,160],hip:[166,226],kn:[226,236],an:[198,296],toe:[222,300]}},
+    B:{hd:[222,132],sh:[214,158],el:[244,160],wr:[274,160],hip:[166,226],kn:[222,244],an:[198,296],toe:[222,300]}},
   split:{f:sideSegs,dn:3,up:1.2,box:[250,250,72,50],
     A:{hd:[180,76],sh:[182,106],el:[182,146],wr:[182,186],hip:[184,186],kn:[152,240],an:[140,296],toe:[116,300],fkn:[224,236],fan:[270,248],ftoe:[292,246]},
-    B:{hd:[196,140],sh:[198,170],el:[198,210],wr:[198,248],hip:[204,250],kn:[146,252],an:[140,296],toe:[116,300],fkn:[226,294],fan:[272,250],ftoe:[292,246]}},
+    B:{hd:[196,132],sh:[198,162],el:[198,202],wr:[198,240],hip:[204,242],kn:[144,244],an:[140,296],toe:[116,300],fkn:[232,290],fan:[272,250],ftoe:[292,246]}},
   lateral:{f:frontSegs,dn:1.6,up:2.4,bottles:1,A:frontStand,
     B:M(frontStand,{lel:[138,104],lwr:[100,110],rel:[262,104],rwr:[300,110]})},
-  bridge:{f:sideSegs,fr:-1,dn:1.4,up:1.6,A:M(lying,{kn:[268,240],an:[300,296],toe:[318,300]}),B:M(lying,{hip:[222,244],kn:[272,232],an:[300,296],toe:[318,300]})},
+  bridge:{f:sideSegs,fr:-1,dn:1.4,up:1.6,A:M(lying,{kn:[266,254],an:[300,296],toe:[318,300]}),B:M(lying,{hip:[222,254],kn:[280,246],an:[300,296],toe:[318,300]})},
   calf:{f:sideSegs,fr:-1,dn:1.2,up:1.8,box:[160,300,90,8],A:stand,B:M(shiftAll(stand,-12),{toe:[222,300]})},
-  legraise:{f:sideSegs,fr:-1,dn:1.6,up:2.6,A:M(lying,{kn:[266,288],an:[314,290],toe:[326,282]}),B:M(lying,{kn:[236,244],an:[256,198],toe:[268,190]})},
+  legraise:{f:sideSegs,fr:-1,dn:1.6,up:2.6,A:M(lying,{kn:[277,284],an:[331,278],toe:[341,268]}),B:M(lying,{kn:[240,236],an:[258,185],toe:[266,176]})},
   plank:{f:sideSegs,dn:2,up:2,
-    A:{hd:[124,238],sh:[148,248],el:[150,296],wr:[110,298],hip:[248,258],kn:[300,272],an:[350,288],toe:[362,300]},
-    B:{hd:[124,236],sh:[148,247],el:[150,296],wr:[110,298],hip:[248,253],kn:[300,270],an:[350,288],toe:[362,300]}},
+    A:{hd:[124,238],sh:[148,248],el:[150,296],wr:[110,298],hip:[248,266],kn:[300,278],an:[350,288],toe:[362,300]},
+    B:{hd:[124,236],sh:[148,247],el:[150,296],wr:[110,298],hip:[248,264],kn:[300,276],an:[350,288],toe:[362,300]}},
   sideplank:{f:sideSegs,dn:2,up:2,
     A:{hd:[128,226],sh:[150,240],el:[150,296],wr:[164,299],hip:[250,262],kn:[302,276],an:[352,292],toe:[360,300],fkn:[300,270],fan:[350,286]},
     B:{hd:[128,222],sh:[150,238],el:[150,296],wr:[164,299],hip:[250,254],kn:[302,272],an:[352,292],toe:[360,300],fkn:[300,266],fan:[350,286]}},
-  crunch:{f:sideSegs,fr:-1,dn:1.4,up:1.8,A:{hd:[90,282],sh:[118,286],el:[138,270],wr:[156,272],hip:[218,290],kn:[258,240],an:[296,296],toe:[314,300]},
-    B:{hd:[124,240],sh:[144,256],el:[160,240],wr:[176,236],hip:[218,290],kn:[258,240],an:[296,296],toe:[314,300]}},
-  hollow:{f:sideSegs,fr:-1,dn:2,up:2,A:{hd:[136,270],sh:[156,276],el:[124,264],wr:[92,254],hip:[222,292],kn:[268,284],an:[314,272],toe:[326,266]},
-    B:{hd:[137,267],sh:[157,274],el:[124,262],wr:[92,251],hip:[222,292],kn:[268,282],an:[314,268],toe:[326,262]}},
+  crunch:{f:sideSegs,fr:-1,dn:1.4,up:1.8,A:{hd:[90,282],sh:[118,286],el:[138,270],wr:[156,272],hip:[218,290],kn:[263,253],an:[296,296],toe:[314,300]},
+    B:{hd:[124,240],sh:[144,256],el:[160,240],wr:[176,236],hip:[218,290],kn:[263,253],an:[296,296],toe:[314,300]}},
+  hollow:{f:sideSegs,fr:-1,dn:2,up:2,A:{hd:[136,270],sh:[156,276],el:[117,262],wr:[79,250],hip:[222,292],kn:[279,282],an:[331,270],toe:[341,264]},
+    B:{hd:[137,267],sh:[157,274],el:[118,260],wr:[80,247],hip:[222,292],kn:[279,280],an:[331,266],toe:[341,260]}},
   neckiso:{f:sideSegs,fr:-1,dn:1.5,up:1.5,A:M(stand,{hd:[206,76],el:[236,110],wr:[226,78]}),B:M(stand,{hd:[204,76],el:[235,110],wr:[224,78]})},
-  neckcurl:{f:sideSegs,fr:-1,dn:1.6,up:1.6,A:M(lying,{kn:[258,240],an:[296,296],toe:[314,300],el:[138,270],wr:[156,272]}),B:M(lying,{hd:[100,262],kn:[258,240],an:[296,296],toe:[314,300],el:[138,270],wr:[156,272]})},
+  neckcurl:{f:sideSegs,fr:-1,dn:1.6,up:1.6,A:M(lying,{kn:[263,253],an:[300,296],toe:[318,300],el:[138,270],wr:[156,272]}),B:M(lying,{hd:[100,262],kn:[263,253],an:[300,296],toe:[318,300],el:[138,270],wr:[156,272]})},
   rope:{f:frontSegs,dn:.3,up:.3,rope:1,
     A:M(frontStand,{lel:[168,144],lwr:[150,172],rel:[232,144],rwr:[250,172]}),
     B:M(shiftAll(frontStand,-14),{lel:[168,130],lwr:[150,158],rel:[232,130],rwr:[250,158]})},
-  ytw:{f:sideSegs,dn:1.2,up:1.6,fr:1,A:{hd:[108,274],sh:[134,282],el:[100,280],wr:[68,282],hip:[232,290],kn:[284,293],an:[334,295],toe:[346,300]},
-    B:{hd:[104,264],sh:[132,276],el:[102,258],wr:[72,246],hip:[232,290],kn:[284,293],an:[334,295],toe:[346,300]}},
+  ytw:{f:sideSegs,dn:1.2,up:1.6,fr:1,A:{hd:[108,274],sh:[134,282],el:[93,280],wr:[54,282],hip:[232,290],kn:[290,293],an:[344,295],toe:[356,300]},
+    B:{hd:[104,264],sh:[132,276],el:[95,262],wr:[58,250],hip:[232,290],kn:[290,293],an:[344,295],toe:[356,300]}},
   hipdip:{f:sideSegs,dn:1.3,up:1.3,
     A:{hd:[128,226],sh:[150,240],el:[150,296],wr:[164,299],hip:[250,258],kn:[302,274],an:[352,292],toe:[360,300],fkn:[300,268],fan:[350,286]},
     B:{hd:[130,236],sh:[150,246],el:[150,296],wr:[164,299],hip:[250,286],kn:[302,290],an:[352,294],toe:[360,300],fkn:[300,286],fan:[350,288]}},
   flutter:{f:sideSegs,fr:-1,dn:.45,up:.45,
-    A:{hd:[118,262],sh:[140,272],el:[170,286],wr:[200,292],hip:[222,290],kn:[266,272],an:[312,256],toe:[322,250],fkn:[266,286],fan:[312,282],ftoe:[322,278]},
-    B:{hd:[118,262],sh:[140,272],el:[170,286],wr:[200,292],hip:[222,290],kn:[266,286],an:[312,282],toe:[322,278],fkn:[266,272],fan:[312,256],ftoe:[322,250]}},
+    A:{hd:[118,262],sh:[140,272],el:[181,284],wr:[219,292],hip:[222,290],kn:[275,268],an:[327,250],toe:[337,244],fkn:[276,284],fan:[332,280],ftoe:[342,274]},
+    B:{hd:[118,262],sh:[140,272],el:[181,284],wr:[219,292],hip:[222,290],kn:[276,284],an:[332,280],toe:[342,274],fkn:[275,268],fan:[327,250],ftoe:[337,244]}},
   warm:{f:frontSegs,dn:1.5,up:1.5,A:M(frontStand,{lel:[138,104],lwr:[100,110],rel:[262,104],rwr:[300,110]}),B:M(frontStand,{lel:[156,72],lwr:[140,38],rel:[244,72],rwr:[260,38]})},
   cool:{f:frontSegs,dn:3,up:3,A:frontStand,B:M(frontStand,{lel:[182,62],lwr:[192,24],rel:[218,62],rwr:[208,24]})}
 };
@@ -3519,6 +3519,11 @@ function shoe(an,toe,fr){const dx=toe[0]-an[0],dy=toe[1]-an[1],L=Math.hypot(dx,d
   return{d:limb(heel,tip,15,11,[[.35,2.5,.3]],[[.7,-1,.25]],fr),sole:`M${f1(heel[0])} ${f1(heel[1]+5)}L${f1(tip[0])} ${f1(tip[1]+4)}`}}
 function shoeSvg(s,far){return `<path d="${s.d}" fill="${SHOE}" stroke="${LINE}" stroke-width="2" opacity="${far?.7:1}"/><path d="${s.sole}" stroke="#d9d9d9" stroke-width="2.4" stroke-linecap="round" opacity="${far?.4:.8}"/>`}
 /* faceless bald head with glowing white eyes */
+/* the head turns with the body: o = {s: mirror, a: angle} from the chest direction */
+function headOrient(J,fr){const n=nrm(J.sh,J.hip,fr);return n[0]>=0?{s:1,a:Math.atan2(n[1],n[0])}:{s:-1,a:Math.atan2(n[1],n[0])-Math.PI}}
+function hxf(x,y,o,px,py){const c=Math.cos(o.a),s=Math.sin(o.a),X=o.s*px;return[x+X*c-py*s,y+X*s+py*c]}
+function headTurned(x,y,o){return smooth([[-14,3],[-13,-10],[-6,-18],[5,-18],[13,-14],[15,-6],[15,2],[14,10],[9,17],[2,20],[-5,19],[-12,13]].map(([px,py])=>hxf(x,y,o,px,py)))}
+function eyesTurned(x,y,o){const p=[[5,-3],[14,-5],[12,1]].map(([px,py])=>hxf(x,y,o,px,py));return `<path d="M${f1(p[0][0])} ${f1(p[0][1])}L${f1(p[1][0])} ${f1(p[1][1])}L${f1(p[2][0])} ${f1(p[2][1])}Z" fill="#fff" filter="url(#eyeglow)"/>`}
 function headSide(x,y,s){return `M${x-14*s} ${y+3} C${x-15*s} ${y-15} ${x-3*s} ${y-21} ${x+6*s} ${y-18} C${x+14*s} ${y-15} ${x+16*s} ${y-6} ${x+15*s} ${y+3} C${x+15*s} ${y+12} ${x+10*s} ${y+20} ${x+2*s} ${y+20} C${x-5*s} ${y+20} ${x-13*s} ${y+14} ${x-14*s} ${y+3}Z`}
 function eyesSide(x,y,s){return `<path d="M${x+5*s} ${y-3} L${x+14*s} ${y-5} L${x+12*s} ${y+1}Z" fill="#fff" filter="url(#eyeglow)"/>`}
 function eyesFront(x,y){return `<path d="M${x-11} ${y-4} L${x-3} ${y-1} L${x-4} ${y+3} L${x-11} ${y}Z" fill="#fff" filter="url(#eyeglow)"/><path d="M${x+11} ${y-4} L${x+3} ${y-1} L${x+4} ${y+3} L${x+11} ${y}Z" fill="#fff" filter="url(#eyeglow)"/>`}
@@ -3534,7 +3539,7 @@ function anatSide(J,fr,uid){
   o+=toon(pantsSide(J.hip,J.fkn,J.fan,fr),uid+'fp',PANT,PANT_SH,1)+shoeSvg(shoe(J.fan,J.ftoe,fr),1);
   o+=toon([limb(J.sh,J.fel,24,18,[[.55,4,.2]],[[.4,4,.25]],fr),limb(J.fel,J.fwr,18,13,[[.2,3.5,.2]],[[.15,2.5,.2]],fr),fist(J.fel,J.fwr,fr)],uid+'fa',SKIN,SKIN_SH,1)+`<path d="${band(J.fel,J.fwr)}" fill="${SHOE}" opacity=".7"/>`;
   /* torso, neck, head */
-  o+=toon([limb(J.sh,J.hd,23,15,[],[],fr),limb(J.sh,J.hip,64,34,[[.2,10,.16],[.66,2,.25]],[[.22,7,.2],[1.0,6,.12]],fr),headSide(...J.hd,dir)],uid+'b',SKIN,SKIN_SH,0);
+  o+=toon([limb(J.sh,J.hd,23,15,[],[],fr),limb(J.sh,J.hip,64,34,[[.2,10,.16],[.66,2,.25]],[[.22,7,.2],[1.0,6,.12]],fr),headTurned(...J.hd,headOrient(J,fr))],uid+'b',SKIN,SKIN_SH,0);
   /* torso muscles */
   let m='';
   m+=mus(B(...T,0,.4,1,15,15,fr),"ch");
@@ -3544,7 +3549,7 @@ function anatSide(J,fr,uid){
   m+=mus(B(...T,.06,.72,-1,13,13,fr),'back');
   m+=mus(B(J.hd,J.sh,.45,1.15,-1,9,12,fr),"tr");
   m+=mus(B(...N,.05,.7,1,4,5,fr),'neck');
-  o+=m+eyesSide(...J.hd,dir);
+  o+=m+eyesTurned(...J.hd,headOrient(J,fr));
   /* near leg in joggers (covers hip), shoe */
   o+=toon([...pantsSide(J.hip,J.kn,J.an,fr),limb(along(...T,.9),J.hip,34,40,[],[],fr)],uid+'np',PANT,PANT_SH,0)+folds(J.hip,J.kn,J.an,fr);
   /* glute and leg glow shows through the joggers when they work */
@@ -3609,8 +3614,15 @@ function anatFig(A,k,ropeT,groups,pulse,uid){
   const body=A.f==='side'?anatSide(J,A.fr||1,uid):anatFront(J,uid);
   let extra='';
   if(A.bottles)[J.lwr,J.rwr].forEach(([x,y])=>extra+=`<rect x="${x-6}" y="${y-2}" width="12" height="22" rx="4" fill="#63d6ff" fill-opacity=".6" stroke="${LINE}" stroke-width="1.5"/>`);
-  if(A.rope){const cy=200+Math.cos(ropeT*Math.PI*2/0.6)*150;extra+=`<path d="M${J.lwr[0]} ${J.lwr[1]}Q200 ${cy} ${J.rwr[0]} ${J.rwr[1]}" fill="none" stroke="#e8e2da" stroke-width="2.4" opacity=".85"/>`}
-  return `${ADEFS}${props}<g filter="url(#gsh)">${body}</g>${extra}`;
+  /* skipping rope: a loop that turns around the body. It goes over the head, comes down in front,
+     passes under the feet while he is in the air (top of the jump), then goes back up behind him. */
+  let ropeBack='';
+  if(A.rope){const th=ropeT*Math.PI*2/(A.dn+A.up),top=J.hd[1]-38,bot=306,mid=(top+bot)/2-(bot-top)/2*Math.cos(th);
+    const p0=J.lwr,p3=J.rwr,Y=(8*mid-p0[1]-p3[1])/6,front=Math.sin(th)>0;
+    const d=`M${f1(p0[0])} ${f1(p0[1])}C${f1(p0[0]-8)} ${f1(Y)} ${f1(p3[0]+8)} ${f1(Y)} ${f1(p3[0])} ${f1(p3[1])}`;
+    const r=`<path d="${d}" fill="none" stroke="${LINE}" stroke-width="4.4" stroke-linecap="round" opacity="${front?.9:.5}"/><path d="${d}" fill="none" stroke="#e8e2da" stroke-width="2.2" stroke-linecap="round" opacity="${front?.95:.45}"/>`;
+    if(front)extra+=r;else ropeBack=r}
+  return `${ADEFS}${props}${ropeBack}<g filter="url(#gsh)">${body}</g>${extra}`;
 }
 return{anatFig};})();
 const FC={arm:'#f07aa8',sh:'#ee5b55',ch:'#5d74f0',core:'#33c9ae',back:'#9b78ee',tr:'#f39a4e',leg:'#f5c24c',gl:'#f2775f',calf:'#b5dc4f',neck:'#7fd3f2',skin:'#4b4b4d'};
@@ -3620,7 +3632,9 @@ function figFit(A){const pts=[...Object.values(A._a),...Object.values(A._b)];if(
   let x0=Math.min(...pts.map(p=>p[0]))-60,x1=Math.max(...pts.map(p=>p[0]))+60,y0=Math.min(...pts.map(p=>p[1]))-50,y1=Math.max(...pts.map(p=>p[1]))+30;
   const w=x1-x0,h=y1-y0;if(w>h){y0-=(w-h)*.6;y1+=(w-h)*.4}else{x0-=(h-w)/2;x1+=(h-w)/2}
   $('#fig').setAttribute('viewBox',`${x0.toFixed(1)} ${y0.toFixed(1)} ${(x1-x0).toFixed(1)} ${(y1-y0).toFixed(1)}`)}
-function figSet(id){figA=ANIM[id]||ANIM.warm;figG=((Object.values(X).find(x=>x.a===id)||{}).g)||[];
+function figSet(id,groups){figA=ANIM[id]||ANIM.warm;figG=groups||((Object.values(X).find(x=>x.a===id)||{}).g)||[];
+  /* skipping intervals speed the rope up and down; always start each exercise at the normal speed */
+  if(id==='rope')figA.dn=figA.up=.3;
   if(!figA._n){const nm=figA.f==='side'?normSide:(x=>x);figA._a=nm(figA.A);figA._b=nm(figA.B);figA._n=1}
   figFit(figA);figT=0;drawFig(0)}
 function part(d,c,fib=true){return `<path d="${d}" fill="${c}"/><path d="${d}" fill="url(#fsd)"/>${fib?`<path d="${d}" fill="url(#ffb)"/>`:''}<path d="${d}" fill="none" stroke="#141414" stroke-width="1.3" stroke-linejoin="round"/>`}
@@ -3665,7 +3679,7 @@ function renderFront(J){
 }
 function drawFig(k){
   /* comic figure; the working muscles glow hardest at the toughest point of the rep */
-  $('#fig').innerHTML=COMIC.anatFig(figA,k,ropeT,figG,k,'wf');return;
+  $('#fig').innerHTML=COMIC.anatFig(figA,k,figT,figG,k,'wf');return;
   const a=figA._a,b=figA._b,J={};for(const key in a)J[key]=[lerp(a[key][0],b[key][0],k),lerp(a[key][1],b[key][1],k)];
   let props='';
   if(figA.box){const[x,y,w,h]=figA.box;props+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="#2b2826" stroke="rgba(255,255,255,.08)"/>`}
@@ -3758,7 +3772,7 @@ function showStep(first){
     const x=X[s.e],col=G[x.g[0]].c;
     $('#ex').style.setProperty('--ec',col);
     $('#exK').textContent=(s.b==='main'?'Main work':'Accessory')+', '+lowerNames(x.g);
-    $('#exName').textContent=x.n;$('#exTip').textContent=x.tip;figSet(x.a);
+    $('#exName').textContent=x.n;$('#exTip').textContent=x.tip;figSet(x.a,x.g);
     const setTxt=s.n===1?(x.rope?'10 minutes':'1 set'):x.round?`Round ${s.s} of ${s.n}`:`Set ${s.s} of ${s.n}`;
     if(x.s){
       const sd=x.sides?' ('+x.sides[(s.s-1)%4]+')':'';
@@ -3799,7 +3813,7 @@ function rest(s){
   const nTxt=nx.k==='work'?X[nx.e].n+', '+(X[nx.e].round?'round ':'set ')+nx.s+' of '+nx.n:'Cool-down';
   $('#ex').style.setProperty('--ec','#b9a8ff');
   $('#exK').textContent='Rest';$('#exName').textContent='Breathe and shake it out';$('#exTip').textContent='Up next: '+nTxt+'.';
-  if(nx.k==='work')figSet(X[nx.e].a);figPaused=!!sess.pausedAt;
+  if(nx.k==='work')figSet(X[nx.e].a,X[nx.e].g);figPaused=!!sess.pausedAt;
   $('#exRight').innerHTML=`<div class="mode" id="exMode"><i></i>Rest</div><div class="fc" id="flip"></div>
     <div style="font-size:14px;color:var(--ink-2)">Up next: <b style="font-weight:500;color:var(--ink)">${nTxt}</b></div>
     <button class="main-act" id="mainAct">Skip rest</button><div class="actions"><button class="pbtn" id="addBtn">+15 s</button><button class="pbtn" id="pauseBtn">${sess.pausedAt?'Resume':'Pause'}</button><button class="pbtn" id="restartBtn">Restart rest</button></div>`;
