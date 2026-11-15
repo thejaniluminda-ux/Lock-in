@@ -56,6 +56,21 @@ window.WEIGHTS={
       inorg:{g:['atom','bond','period','sblock','pblock','dblock','dblockx'],y:[12,13,10,12,12,12,11],mean:11.7,sd:0.9,days:28,perDay:0.42},
       calc:{g:['calc','calcx','redox'],y:[3,3,5,3,3,3,3],mean:3.3,sd:0.7,days:8,perDay:0.41}
     },
+    /* 2026 Paper II read part by part (marks printed on the paper). [question, part, marks, unit]. A = compulsory (4x100), B and C = choose 2 of 3 (150 each).
+       ⚠ Q5(a) 120 marks mixes energetics (i-iii, viii) and equilibrium (iv-vii): split 60/60 as a guess, no marking scheme.
+       ⚠ Q9(a) is mixed s/p/d cation tests: tagged dblock. Note: 2026 Q3 was all acid-base titration, not gas/kinetics as in 2022. */
+    p2y2026:[
+      ['Q1','a',32,'bond'],['Q1','b',21,'bond'],['Q1','c',32,'bond'],['Q1','d',15,'period'],
+      ['Q2','a',54,'pblock'],['Q2','b',24,'pblock'],['Q2','c',14,'sblock'],['Q2','d',8,'pblock'],
+      ['Q3','all',100,'equil'],
+      ['Q4','a',55,'org'],['Q4','b',24,'org'],['Q4','c',21,'org'],
+      ['Q5','a',60,'ener'],['Q5','a',60,'equil'],['Q5','b',30,'equil'],
+      ['Q6','a',90,'kin'],['Q6','b',30,'equil'],['Q6','c',30,'equil'],
+      ['Q7','a',75,'echem'],['Q7','b',47,'dblock'],['Q7','c',28,'dblock'],
+      ['Q8','a',30,'org'],['Q8','b',30,'org'],['Q8','c',20,'org'],['Q8','d',70,'org'],
+      ['Q9','a',75,'dblock'],['Q9','b',75,'calc'],
+      ['Q10','a',50,'ind'],['Q10','b',50,'ind'],['Q10','c',50,'ind']
+    ],
     p1Note:'Paper I only. Inorganic has a compulsory 100 marks in Paper II Q2, so low Paper I yield is not a reason to cut it. Single-unit splits inside a group (e.g. bond vs pblock) are noisy; trust the groups.',
     /* Paper II: question -> marks, compulsory?, units */
     p2:{
