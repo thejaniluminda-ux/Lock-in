@@ -1942,14 +1942,45 @@ function buildPlan(){
     if(!classesEnd&&allEmpty())classesEnd=k;
     days[k]=ev.map((e,i)=>Object.assign({id:k+'-'+i,date:k},e));
   }
+  /* plan v12 (16 Nov 2026, his request): morning fast, a free Saturday every other buffer week, room care.
+     1. Morning fast: breakfast becomes a 30-minute review block (Friday: 15 minutes). Eating window about 13:00-21:15.
+        Food notes go on the life blocks so the muscle-gain calories still get eaten: big lunch, a milk+peanut shake after the
+        workout, big dinner, milk and peanuts before 21:15 (about 2,900-3,100 kcal, 110-120 g protein).
+     2. Buffer weeks come every 4 weeks. Every other one, its Sunday becomes a free day (about every 8 weeks, none in June-August).
+        Only if that Sunday has no class, paper or live block, so no class ever moves.
+     3. Room care: a 10-minute desk reset at 22:45 every night, and a 1-hour deep clean taken from a buffer block in every buffer week. */
+  {const K=Object.keys(days).sort(),reid=k=>{days[k]=days[k].map((e,i)=>Object.assign(e,{id:k+'-'+i}))};
+    for(const k of K){const L=days[k];
+      const first=L.find(x=>x.s===375&&x.subj!=='life');
+      for(const e of L){
+        if(e.kind==='life'&&(e.title==='Breakfast'||e.title==='Quick breakfast at your desk'))Object.assign(e,{title:'සූත්‍ර සහ වැරදි සමාලෝචනය',sub:'Morning fast: formula quiz (Library ∑ Quiz me) and mistakes due (Papers). Water or plain tea only.',tag:'Fasting',subj:first&&first.subj!=='paper'?first.subj:'chem',kind:'study'});
+        else if(e.kind==='life'&&e.title==='Lunch')e.sub='Meal 1, the fast ends. Big plate: rice, dhal or kadala, fish or eggs, vegetables. Protein first.';
+        else if(e.kind==='life'&&(e.title==='Free time and dinner'||e.title==='Shower and dinner'))e.sub='Meal 2 by about 19:00. Then before 21:15: a glass of milk and a handful of peanuts.';
+        else if(e.kind==='life'&&e.title==='Screens off, sleep')e.sub='10-minute desk reset first: clear the desk, pack tomorrow’s books.'}
+      const wi=L.findIndex(x=>x.title==='Workout'),sh=wi>=0?L.find(x=>x.title==='Shower'&&x.s===L[wi].e):null;
+      if(sh)sh.sub='Then the shake: 500 ml milk, 2 tablespoons of peanuts or peanut butter, a banana.';
+}
+    /* buffer weeks (Mon-Thu buffer blocks, every 4 weeks): 1 hour of the last long buffer block becomes the room deep clean;
+       every other buffer week, its Sunday becomes the free day (Sundays have no classes, so nothing moves) */
+    const wk={};for(const k of K){const L=days[k];if(!L.some(x=>x.tag==='Buffer week'))continue;const d=new Date(k+'T00:00'),m=kOf(addD(d,-((d.getDay()+6)%7)));(wk[m]||(wk[m]=[])).push(k)}
+    Object.keys(wk).sort().forEach((m,i)=>{
+      const bl=[];for(const k of wk[m])for(const e of days[k])if(e.tag==='Buffer week'&&e.e-e.s>=120)bl.push([k,e]);
+      const last=bl.at(-1);if(last){const[k,e]=last;e.e-=60;days[k].push({date:k,s:e.e,e:e.e+60,title:'Room deep clean',sub:'One hour: floor, shelves, bed, sort your papers. A clear room is easier to focus in.',tag:'',subj:'life',kind:'life'});days[k].sort((a,c)=>a.s-c.s);reid(k)}
+      const sk=kOf(addD(new Date(m+'T00:00'),6)),S=days[sk];
+      if(i%2===0&&S&&sk<'2027-06-01'&&!S.some(x=>x.kind==='class'||x.kind==='paper'||x.fixed)){
+        days[sk]=[{s:360,e:375,title:'Wake, water, stretch',sub:'',tag:'',subj:'life',kind:'life'},
+          {s:375,e:1350,title:'Free day',sub:'Earned. No study, no workout, no guilt. Back to it tomorrow.',tag:'Free day',subj:'life',kind:'life',free:true},
+          {s:1350,e:1365,title:'Review and check tomorrow',sub:'',tag:'',subj:'life',kind:'review'},{s:1365,e:1380,title:'Screens off, sleep',sub:'10-minute desk reset first: clear the desk, pack tomorrow’s books.',tag:'',subj:'life',kind:'life'}].map(e=>Object.assign({date:sk},e));reid(sk)}});
+  }
+
   return {days,classesEnd,leftover:Object.fromEntries(Object.entries(Q).map(([n,q])=>[n,q.length])),mcuLeft:mcu.length,papersLeft:papers.length};
 }
 
 /* the plan lives in the browser; it is built once from the data above */
 const CKEY='lockin-plan-v2';
 let CS=null;
-try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=11)CS=s}catch(e){}
-if(!CS)CS={v:11,days:buildPlan().days,off:{},fresh:true};
+try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=12)CS=s}catch(e){}
+if(!CS)CS={v:12,days:buildPlan().days,off:{},fresh:true};
 /* if the browser's storage is full, say so loudly instead of silently losing the change */
 let _sfw=0;function storageFull(){const n=Date.now();if(n-_sfw<8000)return;_sfw=n;try{toast('Storage is full, so this change was NOT saved. Make a backup now, then delete some progress photos.')}catch(e){alert('Storage is full, so this change was NOT saved. Make a backup now.')}}
 const saveCS=()=>{try{localStorage.setItem(CKEY,JSON.stringify(CS))}catch(e){storageFull()}};
@@ -2068,7 +2099,7 @@ function renderBars(){
   $('#wkTot').innerHTML=`${(Math.round(H.reduce((a,b)=>a+b,0)*10)/10)} h<small>this week</small>`;
 }
 function renderStreak(){
-  let n=0;for(let d=new Date(today0);d>=START;d=addDays(d,-1)){const any=(CS.days[dkey(d)]||[]).some(e=>e.done&&e.kind!=='life'&&e.kind!=='review');if(any)n++;else if(+d!==+today0)break}
+  let n=0;for(let d=new Date(today0);d>=START;d=addDays(d,-1)){const L=CS.days[dkey(d)]||[];if(L.some(e=>e.free))continue;const any=L.some(e=>e.done&&e.kind!=='life'&&e.kind!=='review');if(any)n++;else if(+d!==+today0)break}
   $('#streakN').textContent=n;$('#streakL').textContent=preview?(Math.round((START-today0)/864e5)===1?'starts tomorrow':'starts '+DOWL[START.getDay()]):'day streak';
 }
 
@@ -2475,7 +2506,7 @@ $('#mNext').addEventListener('click',()=>{miniM=new Date(miniM.getFullYear(),min
 $('#mGrid').addEventListener('click',e=>{const b=e.target.closest('.md');if(!b)return;viewD=dOf(b.dataset.k);renderWeek();renderMini()});
 document.querySelectorAll('[data-f]').forEach(c=>c.addEventListener('change',()=>{filt[c.dataset.f]=c.checked;renderWeek()}));
 $('#cCreate').addEventListener('click',e=>{const tk=kOf(today0),k=curKeys.includes(tk)?tk:curKeys[0];openForm({date:k,s:1140,e:1200,title:'',sub:'',subj:'phy',tag:''},true,e.currentTarget.getBoundingClientRect())});
-$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:11,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
+$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:12,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
 /* ================= Report: weak-spot radar ================= */
 const UNITS={
   phy:[['Mechanics','Mechanics',16],['Waves','Waves',15],['Current electricity','Current el.',15],['Thermal physics','Thermal',14],['Light','Light',8],['Magnetic fields','Magnetism',8],['Electronics','Electronics',6],['Electrostatics','Electrostatics',5],['Matter and radiation','Matter & rad.',5],['Measurement','Measurement',5],['Mechanical properties','Mech. properties',4],['Gravitation','Gravitation',3]],
@@ -2765,13 +2796,15 @@ function rebuildOrder(keepPast){
     const m=e.unit?byKey[e.unit+'|'+e.title+'|'+(e.sub||'').includes('(part 2)')]:(days[k]||[]).find(x=>x.title===e.title&&!x.done);
     if(m)m.done=true;
   }
-  CS={v:11,days,off:{},slid:old.slid||[]};
+  CS={v:12,days,off:{},slid:old.slid||[]};
   for(const e of redo)cuPlace(cuItem(e));
   for(const k in (old.off||{}))if(k>=sk&&old.off[k]){CS.off[k]=true;(CS.days[k]||[]).filter(x=>x.kind!=='life'&&x.kind!=='review'&&!x.fixed&&!x.done&&!x.user).forEach(skipToCU);CS.days[k]=(CS.days[k]||[]).filter(x=>x.fixed||x.user)}
 }
 (function migrate(){
   if(CS.fresh){delete CS.fresh;applyBlueprint(CS.days);saveCS();return}
-  if(CS.v===11){applyBlueprint(CS.days);saveCS();return}
+  if(CS.v===12){applyBlueprint(CS.days);saveCS();return}
+  /* v11 to v12: morning fast (breakfast becomes review), a free Saturday every other buffer week, room care */
+  if(CS.v===11){rebuildOrder(true);saveCS();return}
   /* v10 to v11: plan starts Mon 16 Nov 2026 instead of Sun 15 Nov (days before the start are kept as they were) */
   if(CS.v===10){rebuildOrder(true);saveCS();return}
   /* v9 to v10: the old-unit practice slot follows exam marks vs time so far (classes unchanged, past days kept) */
@@ -2788,7 +2821,7 @@ function rebuildOrder(keepPast){
     for(const k in CS.days)if(k>=tk)retimeDay(k,CS.days[k]);
     CS.v=4;}
   if(CS.v===4){restartPlan();CS.v=9;saveCS();return}
-  const old=CS,fresh={v:11,days:applyBlueprint(buildPlan().days),off:old.off||{}};
+  const old=CS,fresh={v:12,days:applyBlueprint(buildPlan().days),off:old.off||{}};
   for(const k in old.days)for(const e of old.days[k]){
     if(e.user){(fresh.days[k]||(fresh.days[k]=[])).push(e);continue}
     if(e.done){const m=(fresh.days[k]||[]).find(x=>x.title===e.title&&!x.done);if(m)m.done=true}
