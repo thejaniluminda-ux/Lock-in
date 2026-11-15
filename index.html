@@ -257,7 +257,18 @@ body.page-rep #repPage{display:block}
 .rp-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:18px}
 .rp-h{font-size:clamp(44px,6vw,80px);font-weight:200;letter-spacing:-.04em;margin:0;line-height:.9}
 .rp-top .sub{margin:8px 0 0;font-size:13px;color:var(--ink-3)}
-.rp-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);grid-template-areas:"ck ck" "radar fix" "radar log";gap:16px}
+.rp-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);grid-template-areas:"ck ck" "wk wk" "radar fix" "radar log";gap:16px}
+.rp-wk{grid-area:wk}
+.wr-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
+@media(max-width:900px){.wr-g{grid-template-columns:1fr 1fr}}
+.wr-t{border-radius:18px;border:1px solid var(--edge);background:rgba(0,0,0,.18);padding:12px 14px}
+.wr-t small{display:block;color:var(--ink-3);font-size:12px}
+.wr-t b{display:block;font:200 28px/1.2 Sora,sans-serif;margin:4px 0 2px}
+.wr-t span{font-size:12.5px;color:var(--ink-2)}
+.wr-t .up{color:#7fe9a3}.wr-t .dn{color:#ff9a88}
+.wr-bar{height:6px;border-radius:99px;background:rgba(255,255,255,.08);margin-top:8px;overflow:hidden}.wr-bar i{display:block;height:100%;background:var(--lav)}
+.wr-s{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.wr-s div{font-size:11.5px;color:var(--ink-3)}.wr-s div b{display:block;font-size:14px;color:var(--ink);font-weight:500}
 .rp-ck{grid-area:ck}
 .ck-rows{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
 .ck-s{border-radius:18px;border:1px solid var(--edge);background:rgba(0,0,0,.18);padding:14px 16px;border-top:3px solid var(--sub)}
@@ -304,7 +315,7 @@ body.page-rep #repPage{display:block}
 .lg select,.lg input{background:rgba(255,255,255,.06);border:1px solid var(--edge);border-radius:10px;color:var(--ink);padding:8px 10px;font:inherit;font-size:13px;color-scheme:dark;min-width:0}
 .lg .pri-btn{margin-top:0}
 @media (max-width:900px){
-  .rp-grid{grid-template-columns:1fr;grid-template-areas:"ck" "radar" "fix" "log"}
+  .rp-grid{grid-template-columns:1fr;grid-template-areas:"ck" "wk" "radar" "fix" "log"}
   .rp-top{flex-direction:column;align-items:flex-start}
 }
 @media (max-width:760px){
@@ -1235,6 +1246,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
       </div>
       <div class="rp-grid">
         <section class="card rp-ck" aria-labelledby="ckT"><div class="head"><div><h2 id="ckT">On track?</h2><p class="sub" id="ckSub"></p></div></div><div id="ckBox"></div></section>
+        <section class="card rp-wk" aria-labelledby="wrT"><div class="head"><div><h2 id="wrT">Weekly report</h2><p class="sub" id="wrSub"></p></div></div><div id="wrBox"></div></section>
         <section class="card rp-radar" aria-labelledby="rdT"><div class="head"><div><h2 id="rdT">Weak-spot radar</h2><p class="sub" id="rpRS"></p></div></div><div id="radar"></div></section>
         <section class="card rp-fix" aria-labelledby="fxT"><div class="head"><div><h2 id="fxT">Fix these first</h2><p class="sub">Low score multiplied by how much of the paper the unit is worth</p></div></div>
           <ol id="fixList"></ol>
@@ -2321,8 +2333,37 @@ function renderCheck(){
   const cells=i=>CKP.map((c,j)=>`<td class="${j===ci?'now':''}">${c[i]}%</td>`).join('');
   $('#ckBox').innerHTML=`<div class="ck-rows">${rows}</div><table class="ck-tb"><tr><th>Checkpoint</th>${CKP.map((c,j)=>`<th class="${j===ci?'now':''}">${c[0]}</th>`).join('')}</tr><tr><td>A track (3 A's)</td>${cells(2)}</tr><tr><td>Top-100 pace</td>${cells(3)}</tr></table><p class="hint2">These targets are estimates. The A boundary of 75 is widely quoted but not officially confirmed, and Z-scores depend on how everyone else does. Jan = unit papers on finished units; Apr onwards = full papers; Jul = average of your last five.</p>`;
 }
+/* Weekly report: one screen for the week (Monday to today), compared with last week */
+function weekStats(mon,end){
+  let plan=0,done=0,byS={phy:[0,0],chem:[0,0],maths:[0,0]},focus=0,rec=[];
+  for(let d=new Date(mon);dkey(d)<=end;d.setDate(d.getDate()+1)){const k=dkey(d);
+    for(const e of (CS.days[k]||[]))if(e.kind!=='life'&&e.kind!=='review'){const h=(e.e-e.s)/60;plan+=h;if(e.done)done+=h;if(byS[e.subj]){byS[e.subj][0]+=h;if(e.done)byS[e.subj][1]+=h}}
+    focus+=((FO.log||{})[k]||{min:0}).min||0;
+    const C=cfGet();for(const u in C)for(const x of C[u])if(x.d===k)rec.push(x.r)}
+  return{plan,done,byS,focus,rec}}
+function renderWeekly(){
+  const t=new Date(today0),mon=new Date(t);mon.setDate(t.getDate()-((t.getDay()+6)%7));const tk=dkey(t),mk=dkey(mon);
+  const lm=new Date(mon);lm.setDate(mon.getDate()-7);const le=new Date(mon);le.setDate(mon.getDate()-1);
+  const W=weekStats(mon,tk),L=weekStats(lm,dkey(le));
+  const pct=W.plan?Math.round(W.done/W.plan*100):0,lpct=L.plan?Math.round(L.done/L.plan*100):null;
+  const diff=lpct==null?'':(pct>=lpct?`<span class="up">▲ ${pct-lpct}% vs last week</span>`:`<span class="dn">▼ ${lpct-pct}% vs last week</span>`);
+  let owe=0,od=null;for(const k in CS.days)for(const e of CS.days[k])if(e.cu&&!e.done){owe+=(e.e-e.s)/60;const d=e.cu.due||k;if(!od||d<od)od=d}
+  const recAvg=W.rec.length?(W.rec.reduce((a,b)=>a+b,0)/W.rec.length).toFixed(1):'–';
+  const marks=PP.log.filter(x=>x.t&&x.t>=mk&&x.t<=tk);
+  const mbNew=MB.filter(m=>m.at>=mk&&m.at<=tk).length,mbDueN=mbDueNow().length,mbMast=MB.filter(m=>m.ok).length;
+  const h1=x=>x.toFixed(1);
+  $('#wrSub').textContent=`${fmtD(mk)} to ${fmtD(tk)}${t.getDay()===0?' · full week':' · so far'}`;
+  $('#wrBox').innerHTML=`<div class="wr-g">
+    <div class="wr-t"><small>Study done vs planned</small><b>${h1(W.done)} / ${h1(W.plan)} h</b><span>${pct}% done ${diff}</span><div class="wr-bar"><i style="width:${Math.min(100,pct)}%"></i></div>
+      <div class="wr-s">${['phy','chem','maths'].map(s=>`<div style="color:var(--${s})">${s==='maths'?'Maths':SUBJ[s]}<b>${h1(W.byS[s][1])} / ${h1(W.byS[s][0])} h</b></div>`).join('')}</div></div>
+    <div class="wr-t"><small>Catch-up owed</small><b>${h1(owe)} h</b><span>${owe?`earliest due ${fmtD(od)}`:'Nothing owed. Clean week.'}</span></div>
+    <div class="wr-t"><small>Focus timer</small><b>${h1(W.focus/60)} h</b><span>${L.focus?`last week ${h1(L.focus/60)} h`:'counted from the Focus page'}</span></div>
+    <div class="wr-t"><small>Morning recall (1–5)</small><b>${recAvg}</b><span>${W.rec.length?`${W.rec.length} rating${W.rec.length>1?'s':''}${recAvg<=2.5?' · redo low ones from a blank page':''}`:'rate it after each 06:15 block'}</span></div>
+    <div class="wr-t"><small>Marks logged</small><b>${marks.length}</b><span>${marks.length?marks.map(x=>`${x.s==='maths'?'Maths':SUBJ[x.s]} ${x.y}: ${x.v}%`).join(' · '):'no paper marks this week'}</span></div>
+    <div class="wr-t"><small>Mistake bank</small><b>${mbDueN} due</b><span>${mbNew} new this week · ${mbMast} mastered</span></div></div>`;
+}
 function renderReport(){
-  renderCheck();
+  renderCheck();try{renderWeekly()}catch(e){}
   document.querySelectorAll('#rpSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===rpS));
   const U=UNITS[rpS],N=U.length,R0=128,col=`var(--${rpS})`;
   const ang=i=>-Math.PI/2+i*2*Math.PI/N,pt=(i,r)=>[Math.cos(ang(i))*r,Math.sin(ang(i))*r],f=n=>n.toFixed(1);
@@ -2972,6 +3013,7 @@ function alerts(){
   for(const x of (CS.slid||[]))if(x.d>=kOf(addD(today0,-7)))out.push({id:'slid-'+x.id,ic:'⚠️',t:x.why==='recording'?'No room for a recording':'No room in 14 days',s:x.why==='recording'?`${x.t}: find time to watch it yourself.`:`${x.t} slid forward. Your whole plan moved back one slot.`,go:'Calendar'});
   if(tmr.some(e=>e.kind==='paper'))out.push({id:'paper-'+tm,ic:'📝',t:'Paper day tomorrow',s:'Full paper in the morning. Sleep on time tonight.',go:'Papers'});
   if(tmr.some(e=>e.tag==='Buffer week')&&!td.some(e=>e.tag==='Buffer week'))out.push({id:'buf-'+tm,ic:'🧘',t:'Buffer week starts tomorrow',s:'Catch up anything skipped, or redo your weakest unit.',go:'Calendar'});
+  if(t.getDay()===0)out.push({id:'week-'+tk,ic:'📊',t:'Your weekly report is ready',s:'Hours done vs planned, catch-up owed, recall and marks, all on one screen.',go:'Report'});
   {const due=mbDueNow().length;if(due)out.push({id:'quiz-'+tk,ic:'📝',t:`${due} mistake${due===1?'':'s'} due for a re-test`,s:'Redo them without notes, then check the marking scheme.',act:'quiz'})}
   if(t.getDate()<=3)out.push({id:'month-'+tk.slice(0,7),ic:'🗓️',t:'New month',s:`This month in Maths: ${(BP.find(b=>b.m===tk.slice(0,7))||{t:[]}).t.map(x=>x[1]).join(', ')||'papers and revision'}. Check the teacher’s timetable.`,go:'Library'});
   const lb=localStorage.getItem('lockin-lastbackup'),age=lb?Math.round((today0-new Date(lb+'T00:00'))/864e5):99,started=today0>=START;
