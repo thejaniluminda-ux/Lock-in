@@ -744,6 +744,7 @@ body.in-hall .rail{display:none}
 .tbtn2:hover{background:rgba(185,168,255,.16)}
 .tbtn2:disabled{opacity:.4;cursor:default}
 #mbQuiz{white-space:nowrap}
+.mb-due{margin:4px 0 0;font-size:12px;color:var(--ink-3)}.mb-due b{color:#ffc977;font-weight:500}
 .lb-sub{margin-top:14px!important}
 
 .fo-tr{display:flex;gap:12px;align-items:center}
@@ -2888,37 +2889,47 @@ cfRender(true);
 const MKEY='lockin-mistakes-v1';
 let MB=lsGet(MKEY,[]);const saveMB=()=>lsSet(MKEY,MB);
 let mbShowAll=false;
+/* spaced re-tests: a mistake comes back 3, then 10, then 30 days later. "Still shaky" brings it back tomorrow
+   and starts the ladder again. Passing the 30-day re-test marks it mastered. Old mistakes start at step 0. */
+const MB_GAP=[3,10,30];
+const mbAdd=(k,n)=>{const d=new Date(k+'T00:00');d.setDate(d.getDate()+n);return dkey(d)};
+const mbDue=m=>m.due||mbAdd(m.at||dkey(new Date()),MB_GAP[0]);
+const mbDueNow=()=>MB.filter(m=>!m.ok&&mbDue(m)<=dkey(new Date()));
+function mbPass(m){const st=(m.st||0)+1;if(st>=MB_GAP.length){m.ok=true;m.st=st;m.due=null}else{m.st=st;m.due=mbAdd(dkey(new Date()),MB_GAP[st])}}
+function mbFail(m){m.st=0;m.ok=false;m.due=mbAdd(dkey(new Date()),1)}
 function renderMB(){
   const list=MB.filter(m=>m.s===ppS),open=list.filter(m=>!m.ok);
-  $('#mbSub').textContent=list.length?`${open.length} to redo · ${list.length-open.length} fixed`:'Every question you got wrong goes here. You get a quiz on them every Sunday.';
+  const dueN=open.filter(m=>mbDue(m)<=dkey(new Date())).length;
+  $('#mbSub').textContent=list.length?`${dueN} due today · ${open.length} learning · ${list.length-open.length} mastered`:'Every question you got wrong goes here. Each one comes back 3, 10 and 30 days later until you get it right every time.';
   const shown=(mbShowAll?list:open).slice().reverse();
-  $('#mbList').innerHTML=shown.map(m=>`<div class="mb-it${m.ok?' ok':''}" data-id="${m.id}"><div class="mb-q"><b>${esc(m.y||'')}${m.q?` · Q${esc(m.q)}`:''}</b>${m.t?`<span>${esc(m.t)}</span>`:''}</div>${m.w?`<p>${esc(m.w)}</p>`:''}<div class="mb-a"><button class="tbtn2" data-ok>${m.ok?'Redo again':'Got it now'}</button><button class="tbtn2 del" data-del aria-label="Delete">✕</button></div></div>`).join('')+
+  $('#mbList').innerHTML=shown.map(m=>`<div class="mb-it${m.ok?' ok':''}" data-id="${m.id}"><div class="mb-q"><b>${esc(m.y||'')}${m.q?` · Q${esc(m.q)}`:''}</b>${m.t?`<span>${esc(m.t)}</span>`:''}</div>${m.w?`<p>${esc(m.w)}</p>`:''}<p class="mb-due">${m.ok?'Mastered':mbDue(m)<=dkey(new Date())?'<b>Due now</b>':'Next re-test '+fmtD(mbDue(m))} · step ${Math.min((m.st||0)+1,3)} of 3</p><div class="mb-a"><button class="tbtn2" data-ok>${m.ok?'Redo again':'Mastered'}</button><button class="tbtn2 del" data-del aria-label="Delete">✕</button></div></div>`).join('')+
     (list.length-open.length&&!mbShowAll?`<button class="more" id="mbAll">Show ${list.length-open.length} fixed</button>`:'');
   $('#mbQuiz').disabled=!MB.some(m=>!m.ok);
 }
 $('#mbAdd').addEventListener('click',()=>{
   const y=$('#mbY').value.trim(),q=$('#mbQ').value.trim(),t=$('#mbT').value.trim(),w=$('#mbW').value.trim();
   if(!y&&!q&&!t){toast('Add the paper year or question number.');return}
-  MB.push({id:'m'+Date.now(),s:ppS,y,q,t,w,ok:false,at:dkey(new Date())});saveMB();
+  MB.push({id:'m'+Date.now(),s:ppS,y,q,t,w,ok:false,at:dkey(new Date()),st:0,due:mbAdd(dkey(new Date()),MB_GAP[0])});saveMB();
   ['#mbQ','#mbT','#mbW'].forEach(s=>$(s).value='');renderMB();toast('Saved to your mistake bank.');
 });
 $('#mbList').addEventListener('click',e=>{
   if(e.target.id==='mbAll'){mbShowAll=true;renderMB();return}
   const it=e.target.closest('.mb-it');if(!it)return;const m=MB.find(x=>x.id===it.dataset.id);if(!m)return;
-  if(e.target.closest('[data-del]')){MB=MB.filter(x=>x!==m)}else if(e.target.closest('[data-ok]'))m.ok=!m.ok;
+  if(e.target.closest('[data-del]')){MB=MB.filter(x=>x!==m)}else if(e.target.closest('[data-ok]')){if(m.ok){m.ok=false;m.st=0;m.due=mbAdd(dkey(new Date()),1)}else{m.ok=true;m.due=null}}
   saveMB();renderMB();
 });
 /* Sunday quiz */
 let qz=[],qi=0;
-function openQuiz(){qz=MB.filter(m=>!m.ok).sort(()=>Math.random()-.5).slice(0,10);qi=0;if(!qz.length){toast('No mistakes to redo. Nice.');return}$('#quiz').classList.add('show');showQ()}
+function openQuiz(){const due=mbDueNow();qz=(due.length?due:MB.filter(m=>!m.ok)).sort(()=>Math.random()-.5).slice(0,10);qi=0;
+  if(!qz.length){toast('No mistakes to redo. Nice.');return}if(!due.length)toast('Nothing is due today, so this is extra practice.');$('#quiz').classList.add('show');showQ()}
 function showQ(){
   const m=qz[qi],nm={phy:'Physics',chem:'Chemistry',maths:'Combined Maths'};
-  if(!m){$('#qzBody').innerHTML=`<h3>Quiz done</h3><p>${MB.filter(x=>!x.ok).length} still on the list for next Sunday.</p><div class="qz-a"><button class="pbtn pri" data-close>Close</button></div>`;if(typeof hop==='function'){hop();say('Quiz done! 🎉',3000)}return}
-  $('#qzBody').innerHTML=`<div class="qz-n">${qi+1} of ${qz.length}</div><h3>Redo ${esc(nm[m.s])} ${esc(m.y||'')}${m.q?`, question ${esc(m.q)}`:''}</h3>${m.t?`<p class="qz-t">${esc(m.t)}</p>`:''}<p class="qz-w">Last time: ${esc(m.w||'no note')}</p><p class="qz-h">Solve it on paper first, then check the marking scheme.</p><div class="qz-a"><button class="pbtn" data-r="0">Still shaky</button><button class="pbtn pri" data-r="1">Got it</button></div>`;
+  if(!m){$('#qzBody').innerHTML=`<h3>Quiz done</h3><p>${mbDueNow().length} still due. The rest come back on their next re-test day.</p><div class="qz-a"><button class="pbtn pri" data-close>Close</button></div>`;if(typeof hop==='function'){hop();say('Quiz done! 🎉',3000)}return}
+  $('#qzBody').innerHTML=`<div class="qz-n">${qi+1} of ${qz.length}</div><h3>Redo ${esc(nm[m.s])} ${esc(m.y||'')}${m.q?`, question ${esc(m.q)}`:''}</h3>${m.t?`<p class="qz-t">${esc(m.t)}</p>`:''}<p class="qz-w">Last time: ${esc(m.w||'no note')}</p><p class="qz-h">Solve it on paper first, then check the marking scheme. Step ${Math.min((m.st||0)+1,3)} of 3.</p><div class="qz-a"><button class="pbtn" data-r="0">Still shaky</button><button class="pbtn pri" data-r="1">Got it</button></div>`;
 }
 $('#quiz').addEventListener('click',e=>{
   if(e.target===$('#quiz')||e.target.closest('[data-close]')){$('#quiz').classList.remove('show');renderMB();renderBell();return}
-  const r=e.target.closest('[data-r]');if(!r)return;if(r.dataset.r==='1'){qz[qi].ok=true;saveMB()}qi++;showQ();
+  const r=e.target.closest('[data-r]');if(!r)return;if(r.dataset.r==='1')mbPass(qz[qi]);else mbFail(qz[qi]);saveMB();qi++;showQ();
 });
 $('#mbQuiz').addEventListener('click',openQuiz);
 
@@ -2961,7 +2972,7 @@ function alerts(){
   for(const x of (CS.slid||[]))if(x.d>=kOf(addD(today0,-7)))out.push({id:'slid-'+x.id,ic:'⚠️',t:x.why==='recording'?'No room for a recording':'No room in 14 days',s:x.why==='recording'?`${x.t}: find time to watch it yourself.`:`${x.t} slid forward. Your whole plan moved back one slot.`,go:'Calendar'});
   if(tmr.some(e=>e.kind==='paper'))out.push({id:'paper-'+tm,ic:'📝',t:'Paper day tomorrow',s:'Full paper in the morning. Sleep on time tonight.',go:'Papers'});
   if(tmr.some(e=>e.tag==='Buffer week')&&!td.some(e=>e.tag==='Buffer week'))out.push({id:'buf-'+tm,ic:'🧘',t:'Buffer week starts tomorrow',s:'Catch up anything skipped, or redo your weakest unit.',go:'Calendar'});
-  if(t.getDay()===0){const open=MB.filter(m=>!m.ok).length;if(open)out.push({id:'quiz-'+tk,ic:'📝',t:`Sunday mistake quiz: ${open} mistake${open===1?'':'s'}`,s:'Redo them in your Off duty slot, or any time today.',act:'quiz'})}
+  {const due=mbDueNow().length;if(due)out.push({id:'quiz-'+tk,ic:'📝',t:`${due} mistake${due===1?'':'s'} due for a re-test`,s:'Redo them without notes, then check the marking scheme.',act:'quiz'})}
   if(t.getDate()<=3)out.push({id:'month-'+tk.slice(0,7),ic:'🗓️',t:'New month',s:`This month in Maths: ${(BP.find(b=>b.m===tk.slice(0,7))||{t:[]}).t.map(x=>x[1]).join(', ')||'papers and revision'}. Check the teacher’s timetable.`,go:'Library'});
   const lb=localStorage.getItem('lockin-lastbackup'),age=lb?Math.round((today0-new Date(lb+'T00:00'))/864e5):99,started=today0>=START;
   if(started&&age>=7)out.push({id:'bk-'+tk,ic:'💾',t:'Back up your progress',s:lb?`Last backup ${age} days ago.`:'You haven’t backed up yet. It takes one click.',act:'backup'});
