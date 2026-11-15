@@ -744,6 +744,26 @@ b,.n,.lb-meta,.fo-nums b{font-variant-numeric:tabular-nums}
 .qz-w{font-size:13px;color:var(--ink-2);margin:0 0 6px}
 .qz-h{font-size:12px;color:var(--ink-3);margin:0}
 .qz-a{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+/* formula bank */
+.fb{padding:4px 18px 14px 20px;border-top:1px solid var(--edge)}
+.fb h4{display:flex;justify-content:space-between;align-items:center;margin:10px 0 6px;font-size:13px;font-weight:500}
+.fb h4 small{color:var(--ink-3);font-weight:400}
+.fb-r{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13.5px}
+.fb-r .n{font-family:var(--si);color:var(--ink)}
+.fb-r .f{font-family:"Cambria Math","Times New Roman",serif;font-size:15px;color:var(--lav)}
+.fb-r .f.empty{color:var(--ink-3);font-family:inherit;font-size:12.5px;font-style:italic}
+.fb-r input{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--edge);border-radius:10px;color:var(--ink);padding:6px 9px;font:inherit;font-size:13px}
+.fb-r .x{color:var(--ink-3);font-size:12px}
+.fb-add{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.fb-add input{flex:1 1 150px;min-width:0}
+.fb-add input{background:rgba(0,0,0,.25);border:1px solid var(--edge);border-radius:10px;color:var(--ink);padding:7px 10px;font:inherit;font-size:13px}
+.fb-s{position:relative}
+.fb-s input{width:200px;background:rgba(0,0,0,.25);border:1px solid var(--edge);border-radius:999px;color:var(--ink);padding:8px 14px;font:inherit;font-size:13px}
+#fbRes{position:absolute;right:0;top:calc(100% + 6px);width:min(420px,90vw);max-height:360px;overflow:auto;z-index:20;border-radius:16px;background:#24221f;border:1px solid var(--edge);box-shadow:0 20px 50px rgba(0,0,0,.5);display:none}
+#fbRes.show{display:block}
+#fbRes div{padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.05);font-size:13px}
+#fbRes div b{font-weight:500;font-family:var(--si)}#fbRes div i{display:block;font-style:normal;color:var(--lav);font-family:"Cambria Math",serif;font-size:15px}#fbRes div small{color:var(--ink-3)}
+.fq-f{font-family:"Cambria Math","Times New Roman",serif;font-size:22px;color:var(--lav);margin:12px 0 4px;min-height:30px}
 #hall{background:#0c0b0a;place-items:center}
 #hall .h-in{text-align:center}
 #hall .h-for{font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
@@ -1201,7 +1221,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
 <section id="libPage" aria-label="Library">
       <div class="pp-top">
         <div><h1 class="rp-h">Library</h1><p class="sub lb-sub" id="lbSub"></p></div>
-        <div class="lb-tools"><div class="seg" id="lbSeg" role="group" aria-label="Subject"><button data-s="phy" aria-pressed="true">Physics</button><button data-s="chem" aria-pressed="false">Chemistry</button><button data-s="maths" aria-pressed="false">Combined Maths</button></div><div class="seg" id="lbView" role="group" aria-label="View"><button data-v="cards" aria-pressed="true">Cards</button><button data-v="map" aria-pressed="false">Map</button></div></div>
+        <div class="lb-tools"><div class="seg" id="lbSeg" role="group" aria-label="Subject"><button data-s="phy" aria-pressed="true">Physics</button><button data-s="chem" aria-pressed="false">Chemistry</button><button data-s="maths" aria-pressed="false">Combined Maths</button></div><div class="fb-s"><input id="fbSearch" type="search" placeholder="Search formulas" aria-label="Search formulas"><div id="fbRes"></div></div><button class="tbtn2" id="fbQuizAll">∑ Quiz me</button><div class="seg" id="lbView" role="group" aria-label="View"><button data-v="cards" aria-pressed="true">Cards</button><button data-v="map" aria-pressed="false">Map</button></div></div>
       </div>
       <div id="lbList"></div>
     </section>
@@ -1325,6 +1345,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
   </div>
 </div>
 <div class="ovl" id="quiz" role="dialog" aria-label="Sunday quiz"><div class="qz" id="qzBody"></div></div>
+<div class="ovl" id="fqz" role="dialog" aria-label="Formula quiz"><div class="qz" id="fqBody"></div></div>
 <div class="ovl" id="hall" role="dialog" aria-label="Exam hall"><div class="h-in"><div class="h-for" id="hFor"></div><div id="hTime">0:00:00</div><p class="h-note">Exam-hall mode. No notes, no phone, no switching. Just you and the paper.</p><button class="pbtn" id="hEnd">Leave exam hall</button></div></div>
 <div id="calPop" role="dialog" aria-label="Block details"></div>
 <div id="calToast" role="status"><span></span><button>Undo</button></div>
@@ -2619,6 +2640,47 @@ function rebuildOrder(keepPast){
   CS=fresh;saveCS();
 })();
 
+/* ---------- Formula bank: formulas per unit (or Maths month), filled in by you, quizzed with spaced re-tests ---------- */
+const FBKEY='lockin-formulas-v1';let FB=null;const fbGet=()=>FB||(FB=lsGet(FBKEY,{}));const fbSave=()=>lsSet(FBKEY,fbGet());
+const fbAll=()=>{const o=[],F=fbGet();for(const u in F)for(const x of F[u])o.push(Object.assign({u},x));return o};
+const fbUnitName=u=>u.startsWith('m:')?((BP.find(b=>'m:'+b.m===u)||{}).n||u):((UNIT_BY[u]||{}).en||u);
+const fbDue=x=>x.f&&(x.due||dkey(new Date()))<=dkey(new Date());
+function fbList(u){const L=fbGet()[u]||[],filled=L.filter(x=>x.f).length;
+  return `<div class="fb" data-fbu="${esc(u)}"><h4>සූත්‍ර · Formulas <small>${filled} of ${L.length} filled${L.some(fbDue)?' · <a href="#" data-fbq="'+esc(u)+'">quiz this unit</a>':''}</small></h4>`+
+    L.map(x=>`<div class="fb-r" data-fbid="${x.id}"><span class="n">${esc(x.n)}</span>${x.f?`<span class="f">${esc(x.f)}</span>`:`<input data-fbfill placeholder="Fill in the formula" aria-label="Formula for ${esc(x.n)}">`}<button class="x" data-fbdel aria-label="Delete">✕</button></div>`).join('')+
+    `<div class="fb-add"><input data-fbn placeholder="Name (e.g. Newton’s 2nd law)"><input data-fbf placeholder="Formula (e.g. F = ma)"><button class="tbtn2" data-fbadd>Add</button></div></div>`}
+function fbHook(box){
+  box.addEventListener('click',e=>{const w=e.target.closest('.fb');if(!w)return;const u=w.dataset.fbu,F=fbGet();
+    if(e.target.closest('[data-fbadd]')){const n=w.querySelector('[data-fbn]').value.trim(),f=w.querySelector('[data-fbf]').value.trim();if(!n){toast('Give the formula a name.');return}
+      (F[u]||(F[u]=[])).push({id:'f'+Date.now(),n,f,st:0,due:f?dkey(new Date()):null});fbSave();renderLibrary();toast('Formula saved.');return}
+    if(e.target.closest('[data-fbdel]')){const id=e.target.closest('.fb-r').dataset.fbid;F[u]=(F[u]||[]).filter(x=>x.id!==id);fbSave();renderLibrary();return}
+    const q=e.target.closest('[data-fbq]');if(q){e.preventDefault();openFq(fbAll().filter(x=>x.u===q.dataset.fbq&&x.f))}});
+  box.addEventListener('change',e=>{const i=e.target.closest('[data-fbfill]');if(!i)return;const w=i.closest('.fb'),u=w.dataset.fbu,id=i.closest('.fb-r').dataset.fbid,x=(fbGet()[u]||[]).find(y=>y.id===id);
+    if(x&&i.value.trim()){x.f=i.value.trim();x.due=dkey(new Date());x.st=0;fbSave();renderLibrary()}});
+  box.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.closest('.fb-add')){e.preventDefault();e.target.closest('.fb').querySelector('[data-fbadd]').click()}});
+}
+/* quiz: name first, recall it, then reveal. Same ladder as mistakes: back in 3, 10, 30 days; shaky = tomorrow */
+let fq=[],fqi=0,fqShown=false;
+function openFq(list){fq=(list&&list.length?list:fbAll().filter(fbDue)).sort(()=>Math.random()-.5).slice(0,15);fqi=0;fqShown=false;
+  if(!fq.length){const any=fbAll().filter(x=>x.f);if(!any.length){toast('Add some formulas on the unit cards first.');return}fq=any.sort(()=>Math.random()-.5).slice(0,15);toast('Nothing is due, so this is extra practice.')}
+  $('#fqz').classList.add('show');showFq()}
+function showFq(){const x=fq[fqi];
+  if(!x){$('#fqBody').innerHTML=`<h3>Done</h3><p>${fbAll().filter(fbDue).length} formulas still due. The rest come back on their re-test day.</p><div class="qz-a"><button class="pbtn pri" data-fqclose>Close</button></div>`;hop();return}
+  $('#fqBody').innerHTML=`<div class="qz-n">${fqi+1} of ${fq.length} · ${esc(fbUnitName(x.u))}</div><h3 class="qz-t" style="font-size:18px;color:var(--ink)">${esc(x.n)}</h3>
+    <div class="fq-f">${fqShown?esc(x.f):''}</div><p class="qz-h">${fqShown?'Did you write it exactly?':'Write it on paper first, then reveal.'}</p>
+    <div class="qz-a">${fqShown?'<button class="pbtn" data-fqr="0">Shaky</button><button class="pbtn pri" data-fqr="1">Got it</button>':'<button class="pbtn pri" data-fqshow>Reveal</button>'}</div>`}
+$('#fqz').addEventListener('click',e=>{
+  if(e.target===$('#fqz')||e.target.closest('[data-fqclose]')){$('#fqz').classList.remove('show');renderLibrary();renderBell();return}
+  if(e.target.closest('[data-fqshow]')){fqShown=true;showFq();return}
+  const r=e.target.closest('[data-fqr]');if(!r)return;const x=fq[fqi],real=(fbGet()[x.u]||[]).find(y=>y.id===x.id);
+  if(real){const add=n=>{const d=new Date();d.setDate(d.getDate()+n);return dkey(d)};if(r.dataset.fqr==='1'){real.st=(real.st||0)+1;real.due=add([3,10,30,60][Math.min(real.st-1,3)])}else{real.st=0;real.due=add(1)}fbSave()}
+  fqi++;fqShown=false;showFq()});
+$('#fbQuizAll').addEventListener('click',()=>openFq());
+$('#fbSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase(),R=$('#fbRes');if(!q){R.classList.remove('show');return}
+  const hits=fbAll().filter(x=>(x.n+' '+(x.f||'')+' '+fbUnitName(x.u)).toLowerCase().includes(q)).slice(0,30);
+  R.innerHTML=hits.length?hits.map(x=>`<div><b>${esc(x.n)}</b>${x.f?`<i>${esc(x.f)}</i>`:'<small>not filled in yet</small>'}<small>${esc(fbUnitName(x.u))}</small></div>`).join(''):'<div><small>No formula matches.</small></div>';R.classList.add('show')});
+document.addEventListener('click',e=>{if(!e.target.closest('.fb-s'))$('#fbRes').classList.remove('show')});
+
 /* ---------- Library page ---------- */
 let lbS='phy',lbOpen=null;
 function unitBlocks(k){const out=[];for(const d in CS.days)for(const e of CS.days[d])if(e.unit===k&&e.kind==='class')out.push(e);return out.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.s-b.s)}
@@ -2644,7 +2706,7 @@ function renderLibrary(){
           return `<div class="lb-dep">${nd.length?`<span>Needs: ${nd.map(k=>`${esc(UNIT_BY[k].en)}${ok(k)?' ✓':''}`).join(', ')}</span>`:''}${ul.length?`<span>Unlocks: ${ul.map(k=>esc(UNIT_BY[k].en)).join(', ')}</span>`:''}</div>`})()}
       </button>
       ${rec?`<a class="lb-rec" href="${rec}" target="_blank" rel="noopener">▶ Recordings</a>`:''}
-      ${open?cfList(u.k):''}
+      ${open?cfList(u.k):''}${open?fbList(u.k):''}
       ${open&&STORY[u.k]?storyHtml(u.k):''}
       ${open?`<ol class="lb-days">${bl.map(e=>`<li class="${e.done?'dn':''}"><span class="dd">${fmtD(e.date)}</span><span class="dt">${esc(e.title)}</span><span class="ds">${e.done?'Done':e.date<tk?'Missed':''}</span></li>`).join('')||'<li><span class="dt">No days for this unit in the plan.</span></li>'}</ol>`:''}
     </article>`}).join('');
@@ -2669,7 +2731,7 @@ function renderMathsLib(box,tk){
         <div class="lb-bar"><i style="width:${bl.length?(d/bl.length*100).toFixed(1):0}%"></i></div>
       </div>
       ${b.rec?`<a class="lb-rec" href="${REC[b.rec]}" target="_blank" rel="noopener">▶ Recordings</a>`:''}
-      ${cfList('m:'+b.m)}
+      ${cfList('m:'+b.m)}${fbList('m:'+b.m)}
     </article>`}).join('');
   $('#lbSub').textContent=`Vikum Harshana’s 2027 revision plan · ${dn} of ${tot} classes done`;
   box.innerHTML=`<div class="lb-note"><span class="qt c26">2026 revision</span> Older recordings if a topic needs a second go: <a href="${REC.mPure26}" target="_blank" rel="noopener">Pure ↗</a> <a href="${REC.mApp26}" target="_blank" rel="noopener">Applied ↗</a></div><div class="lb-grid">${cards}</div>`;
@@ -2780,6 +2842,7 @@ function renderLibMap(box,tk){
     lbV='cards';lsSet(LVKEY,lbV);if(!M)lbOpen=k;renderLibrary();
     const el=document.getElementById('lb-'+k.replace(':','-'));if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('lm-flash');setTimeout(()=>el.classList.remove('lm-flash'),1700)}};
 }
+fbHook($('#lbList'));
 $('#lbView').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;lbV=b.dataset.v;lsSet(LVKEY,lbV);renderLibrary()});
 $('#lbSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;lbS=b.dataset.s;lbOpen=null;lmSel=null;renderLibrary()});
 $('#lbList').addEventListener('click',e=>{const b=e.target.closest('.lb-main[data-u]');if(!b)return;lbOpen=lbOpen===b.dataset.u?null:b.dataset.u;renderLibrary()});
@@ -3035,6 +3098,7 @@ function alerts(){
   if(tmr.some(e=>e.kind==='paper'))out.push({id:'paper-'+tm,ic:'📝',t:'Paper day tomorrow',s:'Tap 🏛 Exam hall on the paper block: it starts at 08:30 on its own. Full paper in the morning. Sleep on time tonight.',go:'Papers'});
   if(tmr.some(e=>e.tag==='Buffer week')&&!td.some(e=>e.tag==='Buffer week'))out.push({id:'buf-'+tm,ic:'🧘',t:'Buffer week starts tomorrow',s:'Catch up anything skipped, or redo your weakest unit.',go:'Calendar'});
   if(t.getDay()===0)out.push({id:'week-'+tk,ic:'📊',t:'Your weekly report is ready',s:'Hours done vs planned, catch-up owed, recall and marks, all on one screen.',go:'Report'});
+  {const fd=fbAll().filter(fbDue).length;if(fd)out.push({id:'fq-'+tk,ic:'∑',t:`${fd} formula${fd===1?'':'s'} due for a re-test`,s:'Library → ∑ Quiz me. Write each one from memory, then reveal.',go:'Library'})}
   {const due=mbDueNow().length;if(due)out.push({id:'quiz-'+tk,ic:'📝',t:`${due} mistake${due===1?'':'s'} due for a re-test`,s:'Redo them without notes, then check the marking scheme.',act:'quiz'})}
   if(t.getDate()<=3)out.push({id:'month-'+tk.slice(0,7),ic:'🗓️',t:'New month',s:`This month in Maths: ${(BP.find(b=>b.m===tk.slice(0,7))||{t:[]}).t.map(x=>x[1]).join(', ')||'papers and revision'}. Check the teacher’s timetable.`,go:'Library'});
   const lb=localStorage.getItem('lockin-lastbackup'),age=lb?Math.round((today0-new Date(lb+'T00:00'))/864e5):99,started=today0>=START;
