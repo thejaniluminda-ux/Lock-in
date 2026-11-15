@@ -1815,7 +1815,7 @@ function renderRoutine(){
   $('#rows').innerHTML=evs.length?evs.map(e=>{
     const rev=e.kind==='review',cls=rev?'review':e.kind==='paper'?'paper':e.subj,isNow=!preview&&viewKey===todayKey&&nowM>=e.s&&nowM<e.e;
     const rl=e.rec||recFor(e.title);
-    const second=[e.tag?`<span class="qt">${esc(e.tag)}</span>`:'',e.fixed?'<span class="qt live">LIVE</span>':'',e.sub?`<span>${esc(e.sub)}</span>`:'',rev?'<span>Night review, about a minute</span>':'',rl?`<a class="rec" href="${rl}" target="_blank" rel="noopener">▶ Recordings</a>`:'',e.title==='Workout'&&viewKey===todayKey?'<a class="rec" href="#" onclick="go(\'Workout\');return false">▶ Open workout</a>':''].filter(Boolean).join('');
+    const second=[e.tag?`<span class="qt">${esc(e.tag)}</span>`:'',e.fixed?'<span class="qt live">LIVE</span>':'',e.sub?`<span>${esc(e.sub)}</span>`:'',rev?'<span>Night review, about a minute</span>':'',rl?`<a class="rec" href="${rl}" target="_blank" rel="noopener">▶ Recordings</a>`:'',e.kind==='paper'&&/exam conditions/.test(e.sub||'')&&viewKey===todayKey&&!e.done?`<a class="rec hallgo" href="#" data-hall="${e.subj}">🏛 Exam hall</a>`:'',e.title==='Workout'&&viewKey===todayKey?'<a class="rec" href="#" onclick="go(\'Workout\');return false">▶ Open workout</a>':''].filter(Boolean).join('');
     return `<div class="r ${cls}${e.done?' done':''}${isNow?' now':''}${rev&&nudgeOn&&!e.done?' pulse':''}" data-id="${e.id}">`+
       `<span class="t">${e.e-e.s<=5?fm(e.s):fm(e.s)+'–'+fm(e.e)}</span><span class="bar"></span>`+
       `<span class="w"><span class="ti">${esc(e.title)}</span>${second?`<span class="si">${second}</span>`:''}</span>`+
@@ -1851,6 +1851,7 @@ function saveReview(){
   if(all){setMood('dance',7000);say('Whole day done! 🎉',3500)}else{setMood('cheer',2200);say('Good night, Theja 🌙',2600)}
 }
 $('#rows').addEventListener('click',e=>{
+  const hb=e.target.closest('[data-hall]');if(hb){e.preventDefault();startHall(hb.dataset.hall);return}
   if(e.target.closest('.rec'))return;
   const rb=e.target.closest('[data-rate]');if(rb){saveRate(rb.dataset.id,+rb.dataset.rate);return}
   if(e.target.closest('.rate'))return;
@@ -2976,7 +2977,7 @@ $('#mbQuiz').addEventListener('click',openQuiz);
 
 /* ---------- Exam-hall rehearsal ---------- */
 let ehI=null;
-function exitHall(){clearInterval(ehI);$('#hall').classList.remove('show');document.body.classList.remove('in-hall');try{if(document.fullscreenElement)document.exitFullscreen()}catch(e){}}
+function exitHall(){clearInterval(ehI);clearInterval(hallW);hallSeq=null;$('#hall').classList.remove('show');document.body.classList.remove('in-hall');try{if(document.fullscreenElement)document.exitFullscreen()}catch(e){}}
 $('#ptHall').addEventListener('click',async()=>{
   if(!ptTotal){toast('Set a time first.');return}
   if(!ptRun)$('#ptGo').click();
@@ -2985,7 +2986,27 @@ $('#ptHall').addEventListener('click',async()=>{
   const paint=()=>{const s=Math.max(0,Math.round(ptLeft));$('#hTime').textContent=`${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;$('#hFor').textContent=ptLabel||'Practice paper';$('#hall').classList.toggle('low',s<=600);if(s<=0){clearInterval(ehI);$('#hTime').textContent='Pens down'}};
   paint();clearInterval(ehI);ehI=setInterval(paint,500);
 });
-$('#hEnd').addEventListener('click',()=>{if(ptLeft>0&&!confirm('Leave the exam hall? The timer keeps running.'))return;exitHall()});
+/* Exam-hall paper day. Paper lengths: Physics and Chemistry Paper I 2 h, Paper II 3 h; Combined Maths Paper I and II 3 h each.
+   Start time defaults to 08:30 (a guess until the 2027 timetable is out; change it with hallStart in lockin-hall-start). */
+const EXP={phy:[['Paper I (MCQ)',120],['Paper II',180]],chem:[['Paper I (MCQ)',120],['Paper II',180]],maths:[['Paper I',180],['Paper II',180]]};
+const SNAME={phy:'Physics',chem:'Chemistry',maths:'Combined Maths'};
+let hallSeq=null,hallW=null;
+function hallOpen(){$('#hall').classList.add('show');document.body.classList.add('in-hall');try{if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}}
+const hms=s=>`${Math.floor(s/3600)}:${String(Math.floor(s%3600/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+function hallWait(label,until,then){clearInterval(hallW);clearInterval(ehI);hallOpen();$('#hall').classList.remove('low');
+  const tick=()=>{const s=Math.max(0,(until-Date.now())/1000);$('#hFor').textContent=label;$('#hTime').textContent=hms(s);if(s<=0){clearInterval(hallW);then()}};tick();hallW=setInterval(tick,500)}
+function hallPart(i){const P=hallSeq.parts[i];hallSeq.i=i;ptLabel=`${SNAME[hallSeq.sj]} ${P[0]}`;setTimer(P[1]);
+  if(!ptRun)$('#ptGo').click();hallOpen();
+  const paint=()=>{const s=Math.max(0,Math.round(ptLeft));$('#hTime').textContent=hms(s);$('#hFor').textContent=ptLabel;$('#hall').classList.toggle('low',s<=600);
+    if(s<=0){clearInterval(ehI);$('#hTime').textContent='Pens down';
+      if(hallSeq&&i+1<hallSeq.parts.length){const nx=hallSeq.parts[i+1];setTimeout(()=>hallWait(`Break. ${SNAME[hallSeq.sj]} ${nx[0]} starts in`,Date.now()+10*60000,()=>hallPart(i+1)),2500)}
+      else{hallSeq=null;toast('Exam done. Mark it and log your marks on the Papers page.')}}};
+  paint();clearInterval(ehI);ehI=setInterval(paint,500)}
+function startHall(sj){if(!EXP[sj])return;go('Papers');ppS=sj;try{renderLib()}catch(e){}
+  hallSeq={sj,parts:EXP[sj],i:0};const st=new Date(),[hh,mm]=String(lsGet('lockin-hall-start','08:30')).split(':');st.setHours(+hh,+mm,0,0);
+  if(Date.now()<st.getTime())hallWait(`${SNAME[sj]} ${EXP[sj][0][0]} starts at ${hh}:${mm}`,st.getTime(),()=>hallPart(0));
+  else hallPart(0)}
+$('#hEnd').addEventListener('click',()=>{if(hallW&&!ptRun){if(!confirm('Leave the exam hall? The exam won\'t start on its own.'))return;clearInterval(hallW);hallSeq=null;exitHall();return}if(ptLeft>0&&!confirm('Leave the exam hall? The timer keeps running.'))return;exitHall()});
 
 /* ---------- Backup ---------- */
 function backupData(){const o={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('lockin'))o[k]=localStorage.getItem(k)}return {app:'lock-in',at:new Date().toISOString(),data:o}}
@@ -3011,7 +3032,7 @@ function alerts(){
   for(const k in CS.days)for(const e of CS.days[k])if(e.cu&&!e.done){const left=Math.round((dOf(e.cu.due)-today0)/864e5);
     if(left<=3&&left>=0)out.push({id:'cu-'+e.id+'-'+tk,ic:'⏳',t:`Catch-up due in ${left} day${left===1?'':'s'}`,s:`${e.title} · ${fmtD(e.date)} ${hm(e.s)}`,go:'Calendar'})}
   for(const x of (CS.slid||[]))if(x.d>=kOf(addD(today0,-7)))out.push({id:'slid-'+x.id,ic:'⚠️',t:x.why==='recording'?'No room for a recording':'No room in 14 days',s:x.why==='recording'?`${x.t}: find time to watch it yourself.`:`${x.t} slid forward. Your whole plan moved back one slot.`,go:'Calendar'});
-  if(tmr.some(e=>e.kind==='paper'))out.push({id:'paper-'+tm,ic:'📝',t:'Paper day tomorrow',s:'Full paper in the morning. Sleep on time tonight.',go:'Papers'});
+  if(tmr.some(e=>e.kind==='paper'))out.push({id:'paper-'+tm,ic:'📝',t:'Paper day tomorrow',s:'Tap 🏛 Exam hall on the paper block: it starts at 08:30 on its own. Full paper in the morning. Sleep on time tonight.',go:'Papers'});
   if(tmr.some(e=>e.tag==='Buffer week')&&!td.some(e=>e.tag==='Buffer week'))out.push({id:'buf-'+tm,ic:'🧘',t:'Buffer week starts tomorrow',s:'Catch up anything skipped, or redo your weakest unit.',go:'Calendar'});
   if(t.getDay()===0)out.push({id:'week-'+tk,ic:'📊',t:'Your weekly report is ready',s:'Hours done vs planned, catch-up owed, recall and marks, all on one screen.',go:'Report'});
   {const due=mbDueNow().length;if(due)out.push({id:'quiz-'+tk,ic:'📝',t:`${due} mistake${due===1?'':'s'} due for a re-test`,s:'Redo them without notes, then check the marking scheme.',act:'quiz'})}
