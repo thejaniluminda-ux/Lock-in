@@ -3465,11 +3465,164 @@ const ANIM={
   cool:{f:frontSegs,dn:3,up:3,A:frontStand,B:M(frontStand,{lel:[182,62],lwr:[192,24],rel:[218,62],rwr:[208,24]})}
 };
 const lerp=(a,b,k)=>a+(b-a)*k,ease=k=>k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+/* ---------- comic-style exercise figure (approved demo 16 Nov 2026, workout-fig-demo.html): cel-shaded muscular body, ink outlines,
+   faceless head with white eyes, joggers and sneakers. The muscles the exercise trains glow in the Target-muscles colours. ---------- */
+const COMIC=(()=>{
+/* ---------- comic-style figure: cel-shaded grey skin, thick outlines, defined muscles, joggers and sneakers.
+   Working muscles glow in the Target-muscles colours. ---------- */
+const along=(a,b,t)=>[lerp(a[0],b[0],t),lerp(a[1],b[1],t)];
+const f1=v=>v.toFixed(1);
+const SKIN='#767d72',SKIN_SH='#4e554d',PANT='#4f534c',PANT_SH='#33372f',LINE='#141615',SHOE='#1c1d1d';
+let ACT=new Set(),PULSE=0;
+function nrm(a,b,fr){const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1;return[-dy/L*fr,dx/L*fr]}
+function B(a,b,t0,t1,side,off,w,fr){
+  const n=nrm(a,b,fr),p0=along(a,b,t0),p1=along(a,b,t1),m=along(a,b,(t0+t1)/2),o=[n[0]*side*off,n[1]*side*off];
+  const P0=[p0[0]+o[0]*.6,p0[1]+o[1]*.6],P1=[p1[0]+o[0]*.6,p1[1]+o[1]*.6];
+  const out=[m[0]+o[0]+n[0]*side*w,m[1]+o[1]+n[1]*side*w],inn=[m[0]+o[0]-n[0]*side*w*.55,m[1]+o[1]-n[1]*side*w*.55];
+  return{d:`M${f1(P0[0])} ${f1(P0[1])}Q${f1(out[0])} ${f1(out[1])} ${f1(P1[0])} ${f1(P1[1])}Q${f1(inn[0])} ${f1(inn[1])} ${f1(P0[0])} ${f1(P0[1])}Z`,
+    edge:`M${f1(P0[0])} ${f1(P0[1])}Q${f1(out[0])} ${f1(out[1])} ${f1(P1[0])} ${f1(P1[1])}`};
+}
+/* a muscle: a defining ink line (and a soft shadow) when resting; a coloured glow when it is working */
+function mus(x,g){const c=G[g].c,on=ACT.has(g),d=x.d||x,edge=x.edge||d;
+  const ink=`<path d="${edge}" fill="none" stroke="${LINE}" stroke-width="1.5" stroke-linecap="round" opacity=".85"/>`;
+  if(!on)return `<path d="${d}" fill="url(#mshade)"/>${ink}`;
+  return `<path d="${d}" fill="${c}" opacity="${f1(.25+.6*PULSE)}" filter="url(#mglow)"/><path d="${d}" fill="${c}" fill-opacity="${f1(.35+.4*PULSE)}"/>${ink}`}
+const circ=(x,y,r)=>`M${f1(x-r)} ${f1(y)}a${r} ${r} 0 1 0 ${2*r} 0a${r} ${r} 0 1 0 ${-2*r} 0Z`;
+/* one flat-coloured shape with two-tone cel shading and a thick ink outline */
+function toon(parts,uid,col,shade,far){
+  const fill=parts.map(d=>`<path d="${d}"/>`).join('');
+  return `<g opacity="${far?.6:1}"><mask id="m${uid}" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="330"><g fill="#fff">${fill}</g></mask>
+  <rect x="0" y="0" width="420" height="330" fill="${col}" mask="url(#m${uid})"/>
+  <g filter="url(#cel)" fill="#fff" style="color:${shade}">${fill}</g>
+  <g filter="url(#celhi)" fill="#fff">${fill}</g>
+  <g filter="url(#ink)" fill="#fff">${fill}</g></g>`;
+}
+function limb(a,b,w0,w1,Fr,Bk,fr){
+  const n=nrm(a,b,fr),dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,u=[dx/L,dy/L];
+  const bump=(t,list)=>list.reduce((s,[c,amp,sp])=>s+amp*Math.exp(-(((t-c)/sp)**2)),0);
+  const N=12,front=[],back=[];
+  for(let i=0;i<=N;i++){const t=i/N,c=along(a,b,t),h=lerp(w0,w1,t)/2;
+    const hf=h+bump(t,Fr||[]),hb=h+bump(t,Bk||[]);front.push([c[0]+n[0]*hf,c[1]+n[1]*hf]);back.push([c[0]-n[0]*hb,c[1]-n[1]*hb])}
+  const r1=w1/2,r0=w0/2,capB=[[b[0]+u[0]*r1*.7+n[0]*r1*.7,b[1]+u[1]*r1*.7+n[1]*r1*.7],[b[0]+u[0]*r1,b[1]+u[1]*r1],[b[0]+u[0]*r1*.7-n[0]*r1*.7,b[1]+u[1]*r1*.7-n[1]*r1*.7]];
+  const capA=[[a[0]-u[0]*r0*.7-n[0]*r0*.7,a[1]-u[1]*r0*.7-n[1]*r0*.7],[a[0]-u[0]*r0,a[1]-u[1]*r0],[a[0]-u[0]*r0*.7+n[0]*r0*.7,a[1]-u[1]*r0*.7+n[1]*r0*.7]];
+  return smooth([...front,...capB,...back.reverse(),...capA]);
+}
+function smooth(P){const n=P.length;let d=`M${f1(P[0][0])} ${f1(P[0][1])}`;
+  for(let i=0;i<n;i++){const p0=P[(i-1+n)%n],p1=P[i],p2=P[(i+1)%n],p3=P[(i+2)%n];
+    d+=`C${f1(p1[0]+(p2[0]-p0[0])/6)} ${f1(p1[1]+(p2[1]-p0[1])/6)} ${f1(p2[0]-(p3[0]-p1[0])/6)} ${f1(p2[1]-(p3[1]-p1[1])/6)} ${f1(p2[0])} ${f1(p2[1])}`}
+  return d+'Z'}
+/* fist at the end of the forearm, with a wristband */
+function fist(el,wr,fr){const dx=wr[0]-el[0],dy=wr[1]-el[1],L=Math.hypot(dx,dy)||1,tip=[wr[0]+dx/L*11,wr[1]+dy/L*11];return limb(wr,tip,13,11,[[.5,2,.3]],[[.4,1.5,.3]],fr)}
+function band(el,wr){const dx=wr[0]-el[0],dy=wr[1]-el[1],L=Math.hypot(dx,dy)||1,a=[wr[0]-dx/L*7,wr[1]-dy/L*7];return cap(...a,15,...wr,14)}
+/* sneaker: heel, toe box, white sole */
+function shoe(an,toe,fr){const dx=toe[0]-an[0],dy=toe[1]-an[1],L=Math.hypot(dx,dy)||1,heel=[an[0]-dx/L*8,an[1]-dy/L*8+2],tip=[toe[0]+dx/L*6,toe[1]+dy/L*6];
+  return{d:limb(heel,tip,15,11,[[.35,2.5,.3]],[[.7,-1,.25]],fr),sole:`M${f1(heel[0])} ${f1(heel[1]+5)}L${f1(tip[0])} ${f1(tip[1]+4)}`}}
+function shoeSvg(s,far){return `<path d="${s.d}" fill="${SHOE}" stroke="${LINE}" stroke-width="2" opacity="${far?.7:1}"/><path d="${s.sole}" stroke="#d9d9d9" stroke-width="2.4" stroke-linecap="round" opacity="${far?.4:.8}"/>`}
+/* faceless bald head with glowing white eyes */
+function headSide(x,y,s){return `M${x-14*s} ${y+3} C${x-15*s} ${y-15} ${x-3*s} ${y-21} ${x+6*s} ${y-18} C${x+14*s} ${y-15} ${x+16*s} ${y-6} ${x+15*s} ${y+3} C${x+15*s} ${y+12} ${x+10*s} ${y+20} ${x+2*s} ${y+20} C${x-5*s} ${y+20} ${x-13*s} ${y+14} ${x-14*s} ${y+3}Z`}
+function eyesSide(x,y,s){return `<path d="M${x+5*s} ${y-3} L${x+14*s} ${y-5} L${x+12*s} ${y+1}Z" fill="#fff" filter="url(#eyeglow)"/>`}
+function eyesFront(x,y){return `<path d="M${x-11} ${y-4} L${x-3} ${y-1} L${x-4} ${y+3} L${x-11} ${y}Z" fill="#fff" filter="url(#eyeglow)"/><path d="M${x+11} ${y-4} L${x+3} ${y-1} L${x+4} ${y+3} L${x+11} ${y}Z" fill="#fff" filter="url(#eyeglow)"/>`}
+/* joggers: baggy thigh and shin, cuffed at the ankle, with fold lines */
+function pantsSide(hip,kn,an,fr){return [limb(hip,kn,40,30,[[.4,3,.3]],[[.5,3,.3]],fr),limb(kn,an,30,22,[[.3,2,.3]],[[.4,2,.3]],fr)]}
+function folds(hip,kn,an,fr){const n=nrm(kn,an,fr),k=along(kn,an,.15),c=along(kn,an,.85),m=along(hip,kn,.6),nm=nrm(hip,kn,fr);
+  return `<path d="M${f1(k[0]-n[0]*8)} ${f1(k[1]-n[1]*8)} q${f1(n[0]*6+3)} ${f1(n[1]*6+3)} ${f1(n[0]*14)} ${f1(n[1]*14)}" stroke="${LINE}" stroke-width="1.3" fill="none" opacity=".7"/><path d="M${f1(m[0]+nm[0]*4)} ${f1(m[1]+nm[1]*4)} q4 6 ${f1(nm[0]*-10)} ${f1(nm[1]*-10+8)}" stroke="${LINE}" stroke-width="1.2" fill="none" opacity=".55"/><path d="${cap(...c,23,...an,21)}" fill="${PANT_SH}" stroke="${LINE}" stroke-width="1.6"/>`}
+function anatSide(J,fr,uid){
+  const dir=(J.toe[0]-J.an[0])>=0?1:-1;
+  const T=[J.sh,J.hip],A=[J.sh,J.el],F=[J.el,J.wr],N=[J.sh,J.hd];
+  let o='';
+  /* far side: leg in joggers, shoe, arm */
+  o+=toon(pantsSide(J.hip,J.fkn,J.fan,fr),uid+'fp',PANT,PANT_SH,1)+shoeSvg(shoe(J.fan,J.ftoe,fr),1);
+  o+=toon([limb(J.sh,J.fel,24,18,[[.55,4,.2]],[[.4,4,.25]],fr),limb(J.fel,J.fwr,18,13,[[.2,3.5,.2]],[[.15,2.5,.2]],fr),fist(J.fel,J.fwr,fr)],uid+'fa',SKIN,SKIN_SH,1)+`<path d="${band(J.fel,J.fwr)}" fill="${SHOE}" opacity=".7"/>`;
+  /* torso, neck, head */
+  o+=toon([limb(J.sh,J.hd,23,15,[],[],fr),limb(J.sh,J.hip,64,34,[[.2,10,.16],[.66,2,.25]],[[.22,7,.2],[1.0,6,.12]],fr),headSide(...J.hd,dir)],uid+'b',SKIN,SKIN_SH,0);
+  /* torso muscles */
+  let m='';
+  m+=mus(B(...T,0,.4,1,15,15,fr),"ch");
+  [[.42,.55],[.56,.69],[.7,.83]].forEach(([a,b])=>m+=mus(B(...T,a,b,1,16,4,fr),'core'));
+  [.38,.45,.52].forEach(t=>m+=mus(B(...T,t,t+.07,1,10,3,fr),'core'));
+  m+=mus(B(...T,.46,.9,1,5,6,fr),'core');
+  m+=mus(B(...T,.06,.72,-1,13,13,fr),'back');
+  m+=mus(B(J.hd,J.sh,.45,1.15,-1,9,12,fr),"tr");
+  m+=mus(B(...N,.05,.7,1,4,5,fr),'neck');
+  o+=m+eyesSide(...J.hd,dir);
+  /* near leg in joggers (covers hip), shoe */
+  o+=toon([...pantsSide(J.hip,J.kn,J.an,fr),limb(along(...T,.9),J.hip,34,40,[],[],fr)],uid+'np',PANT,PANT_SH,0)+folds(J.hip,J.kn,J.an,fr);
+  /* glute and leg glow shows through the joggers when they work */
+  let lm='';if(ACT.has('gl'))lm+=mus(B(...T,.86,1.14,-1,12,12,fr),'gl');
+  if(ACT.has('leg'))lm+=mus(B(J.hip,J.kn,.06,.9,1,9,10,fr),'leg')+mus(B(J.hip,J.kn,.14,.9,-1,8,9,fr),'leg');
+  if(ACT.has('calf'))lm+=mus(B(J.kn,J.an,.04,.55,-1,6,10,fr),'calf');
+  o+=lm+shoeSvg(shoe(J.an,J.toe,fr),0);
+  /* waistband and drawstring */
+  const w1=along(...T,.86),wn=nrm(...T,fr);o+=`<path d="M${f1(w1[0]-wn[0]*18)} ${f1(w1[1]-wn[1]*18)} L${f1(w1[0]+wn[0]*20)} ${f1(w1[1]+wn[1]*20)}" stroke="${LINE}" stroke-width="2"/><path d="M${f1(w1[0]+wn[0]*17)} ${f1(w1[1]+wn[1]*17)} l${f1(-wn[1]*6)} ${f1(wn[0]*6+4)}" stroke="#d9d9d9" stroke-width="1.4"/>`;
+  /* near arm on top: deltoid cap, biceps, triceps, forearm, fist, wristband */
+  o+=toon([limb(J.sh,J.el,31,20,[[.02,7,.14],[.58,7,.2]],[[.02,7,.14],[.4,6,.25]],fr),limb(J.el,J.wr,21,13,[[.2,4,.2]],[[.15,3,.2]],fr),fist(J.el,J.wr,fr)],uid+'a',SKIN,SKIN_SH,0);
+  let am=mus(B(...A,-.16,.48,1,3,13,fr),"sh")+mus(B(...A,-.16,.48,-1,3,13,fr),"sh")+mus(B(...A,.3,.95,1,6,10,fr),"arm")+mus(B(...A,.15,.92,-1,6,10,fr),"arm")+mus(B(...F,.02,.6,1,4,6,fr),'arm');
+  o+=am+`<path d="${band(J.el,J.wr)}" fill="${SHOE}" stroke="${LINE}" stroke-width="1.4"/>`;
+  return o;
+}
+function anatFront(J,uid){
+  ["lsh","lel","lwr"].forEach(k=>J[k]=[J[k][0]-13,J[k][1]]);["rsh","rel","rwr"].forEach(k=>J[k]=[J[k][0]+13,J[k][1]]);
+  const[nx,ny]=J.nk,hx=J.hd[0],hy=J.hd[1];
+  const torso=`M${J.lsh[0]-4} ${J.lsh[1]-4} Q${nx-12} ${ny-12} ${nx} ${ny-8} Q${nx+12} ${ny-12} ${J.rsh[0]+4} ${J.rsh[1]-4} Q${J.rsh[0]+4} ${ny+36} ${nx+15} ${J.pel[1]-26} L${nx+18} ${J.pel[1]+4} L${nx-18} ${J.pel[1]+4} L${nx-15} ${J.pel[1]-26} Q${J.lsh[0]-4} ${ny+36} ${J.lsh[0]-4} ${J.lsh[1]-4}Z`;
+  const head=`M${hx} ${hy-20} C${hx+13} ${hy-20} ${hx+15} ${hy-6} ${hx+13} ${hy+5} C${hx+11} ${hy+15} ${hx+6} ${hy+20} ${hx} ${hy+20} C${hx-6} ${hy+20} ${hx-11} ${hy+15} ${hx-13} ${hy+5} C${hx-15} ${hy-6} ${hx-13} ${hy-20} ${hx} ${hy-20}Z`;
+  let o='';
+  /* legs in joggers, shoes */
+  const legs=[];[['lhip','lkn','lan',-1],['rhip','rkn','ran',1]].forEach(([h,k,a,sd])=>legs.push(limb(J[h],J[k],30,23,[[.35,3,.3]],[[.4,1.5,.3]],-sd),limb(J[k],J[a],23,19,[[.3,2,.3]],[[.4,1,.3]],-sd)));
+  legs.push(`M${J.lhip[0]-17} ${J.pel[1]-8} L${J.rhip[0]+17} ${J.pel[1]-8} L${J.rhip[0]+15} ${J.pel[1]+10} Q${(J.lhip[0]+J.rhip[0])/2} ${J.pel[1]+2} ${J.lhip[0]-15} ${J.pel[1]+10}Z`);
+  o+=toon(legs,uid+'p',PANT,PANT_SH,0);
+  [['lhip','lkn','lan',-1],['rhip','rkn','ran',1]].forEach(([h,k,a,sd])=>{o+=folds(J[h],J[k],J[a],-sd)+shoeSvg(shoe(J[a],off(J[a],12*sd,5),-sd),0);
+    if(ACT.has('leg'))o+=mus(B(J[h],J[k],.06,.9,1,3,11,-sd),'leg')+mus(B(J[h],J[k],.6,.97,-1,4,6,-sd),'leg');
+    if(ACT.has('calf'))o+=mus(B(J[k],J[a],.06,.5,1,4,7,-sd),'calf')+mus(B(J[k],J[a],.06,.46,-1,4,7,-sd),'calf')});
+  o+=`<path d="M${J.lhip[0]-20} ${J.pel[1]-6} L${J.rhip[0]+20} ${J.pel[1]-6}" stroke="${LINE}" stroke-width="2"/><path d="M${nx-3} ${J.pel[1]-6} l-3 12 M${nx+3} ${J.pel[1]-6} l3 12" stroke="#d9d9d9" stroke-width="1.4"/>`;
+  /* torso, neck, head */
+  o+=toon([torso,cap(...J.nk,23,...J.hd,15),head],uid+'b',SKIN,SKIN_SH,0);
+  let m='';
+  m+=mus(`M${nx-8} ${ny-2} L${J.lsh[0]+6} ${J.lsh[1]-5} Q${nx-12} ${ny-13} ${nx-8} ${ny-2}Z`,'tr')+mus(`M${nx+8} ${ny-2} L${J.rsh[0]-6} ${J.rsh[1]-5} Q${nx+12} ${ny-13} ${nx+8} ${ny-2}Z`,'tr');
+  m+=mus({d:`M${nx-6} ${ny-17} Q${nx-3} ${ny-6} ${nx-1} ${ny+2} L${nx-5} ${ny+2} Q${nx-8} ${ny-8} ${nx-9} ${ny-16}Z`,edge:`M${nx-7} ${ny-16} Q${nx-4} ${ny-6} ${nx-2} ${ny+2}`},'neck')+mus({d:`M${nx+6} ${ny-17} Q${nx+3} ${ny-6} ${nx+1} ${ny+2} L${nx+5} ${ny+2} Q${nx+8} ${ny-8} ${nx+9} ${ny-16}Z`,edge:`M${nx+7} ${ny-16} Q${nx+4} ${ny-6} ${nx+2} ${ny+2}`},'neck');
+  [-1,1].forEach(s=>m+=mus({d:`M${nx+s*1} ${ny+6} Q${nx+s*28} ${ny+1} ${nx+s*33} ${ny+18} Q${nx+s*26} ${ny+40} ${nx+s*1} ${ny+36}Z`,edge:`M${nx+s*33} ${ny+18} Q${nx+s*26} ${ny+40} ${nx+s*1} ${ny+36}`},'ch'));
+  [-1,1].forEach(s=>[0,1,2].forEach(i=>m+=mus({d:`M${nx+s*24} ${ny+40+i*7} l${s*8} -3 l${-s*2} 6Z`,edge:`M${nx+s*24} ${ny+40+i*7} l${s*8} -3`},'core')));
+  [0,1,2].forEach(i=>[-1,1].forEach(s=>m+=mus(`M${nx+s*1.5} ${ny+41+i*13} q${s*11} -1 ${s*11} 2 v9 q0 2 ${-s*11} 2Z`,'core')));
+  [-1,1].forEach(s=>m+=mus({d:`M${nx+s*15} ${ny+44} Q${nx+s*25} ${ny+62} ${nx+s*17} ${ny+84} L${nx+s*14} ${ny+46}Z`,edge:`M${nx+s*15} ${ny+44} Q${nx+s*25} ${ny+62} ${nx+s*17} ${ny+84}`},'core'));
+  m+=`<path d="M${nx} ${ny+38} L${nx} ${ny+84}" stroke="${LINE}" stroke-width="1.4" opacity=".8"/>`;
+  o+=m+eyesFront(hx,hy);
+  /* arms on top */
+  const arms=[];[['lsh','lel','lwr',-1],['rsh','rel','rwr',1]].forEach(([s,e,w,sd])=>arms.push(limb(J[s],J[e],31,20,[[.03,8,.14],[.6,4,.2]],[[.55,6,.2]],-sd),limb(J[e],J[w],21,13,[[.2,4,.2]],[[.2,3,.2]],-sd),fist(J[e],J[w],-sd)));
+  o+=toon(arms,uid+'a',SKIN,SKIN_SH,0);
+  [['lsh','lel','lwr',-1],['rsh','rel','rwr',1]].forEach(([s,e,w,sd])=>{o+=mus(B(J[s],J[e],-.2,.48,1,4,13,-sd),"sh")+mus(B(J[s],J[e],.24,.9,-1,2,8,-sd),'arm')+mus(B(J[e],J[w],.04,.6,1,2,6,-sd),'arm')+`<path d="${band(J[e],J[w])}" fill="${SHOE}" stroke="${LINE}" stroke-width="1.4"/>`});
+  return o;
+}
+const ADEFS=`<defs>
+  <linearGradient id="mshade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset=".6" stop-color="#20241f" stop-opacity="0"/><stop offset="1" stop-color="#20241f" stop-opacity=".55"/></linearGradient>
+  <filter id="cel" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur in="SourceAlpha" stdDeviation="5" result="b"/><feDiffuseLighting in="b" surfaceScale="5" diffuseConstant="1.15" lighting-color="#fff" result="d"><feDistantLight azimuth="235" elevation="40"/></feDiffuseLighting><feColorMatrix in="d" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1 0 0 0 1" result="a"/><feComponentTransfer in="a" result="q"><feFuncA type="discrete" tableValues="0 0 0 .55 .55"/></feComponentTransfer><feFlood flood-color="#20241f"/><feComposite in2="q" operator="in" result="s"/><feComposite in="s" in2="SourceAlpha" operator="in"/></filter>
+  <filter id="celhi" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur in="SourceAlpha" stdDeviation="4" result="b"/><feSpecularLighting in="b" surfaceScale="5" specularConstant="1" specularExponent="10" lighting-color="#fff" result="s"><feDistantLight azimuth="235" elevation="50"/></feSpecularLighting><feColorMatrix in="s" type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0" result="a"/><feComponentTransfer in="a" result="q"><feFuncA type="discrete" tableValues="0 0 0 .2 .2"/></feComponentTransfer><feComposite in="q" in2="SourceAlpha" operator="in"/></filter>
+  <filter id="ink" x="-5%" y="-5%" width="110%" height="110%"><feMorphology in="SourceAlpha" operator="dilate" radius="2.4" result="d"/><feComposite in="d" in2="SourceAlpha" operator="out" result="e"/><feFlood flood-color="#141615"/><feComposite in2="e" operator="in"/></filter>
+  <filter id="mglow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>
+  <filter id="eyeglow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur in="SourceGraphic" stdDeviation="1.6" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="gsh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#000" flood-opacity=".45"/></filter></defs>`;
+function anatFig(A,k,ropeT,groups,pulse,uid){
+  ACT=new Set(groups||[]);PULSE=pulse;uid=uid||'u';
+  const a=A._a,b=A._b,J={};for(const key in a)J[key]=[lerp(a[key][0],b[key][0],k),lerp(a[key][1],b[key][1],k)];
+  let props='';
+  if(A.box){const[x,y,w,h]=A.box;props+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="#3a3734" stroke="${LINE}" stroke-width="2"/>`}
+  if(A.bar)props+=`<line x1="120" y1="40" x2="290" y2="40" stroke="#8a857e" stroke-width="7" stroke-linecap="round"/><line x1="120" y1="40" x2="120" y2="20" stroke="#5e5a55" stroke-width="5"/><line x1="290" y1="40" x2="290" y2="20" stroke="#5e5a55" stroke-width="5"/>`;
+  else props+=`<ellipse cx="210" cy="306" rx="150" ry="7" fill="rgba(0,0,0,.35)"/>`;
+  const body=A.f==='side'?anatSide(J,A.fr||1,uid):anatFront(J,uid);
+  let extra='';
+  if(A.bottles)[J.lwr,J.rwr].forEach(([x,y])=>extra+=`<rect x="${x-6}" y="${y-2}" width="12" height="22" rx="4" fill="#63d6ff" fill-opacity=".6" stroke="${LINE}" stroke-width="1.5"/>`);
+  if(A.rope){const cy=200+Math.cos(ropeT*Math.PI*2/0.6)*150;extra+=`<path d="M${J.lwr[0]} ${J.lwr[1]}Q200 ${cy} ${J.rwr[0]} ${J.rwr[1]}" fill="none" stroke="#e8e2da" stroke-width="2.4" opacity=".85"/>`}
+  return `${ADEFS}${props}<g filter="url(#gsh)">${body}</g>${extra}`;
+}
+return{anatFig};})();
 const FC={arm:'#f07aa8',sh:'#ee5b55',ch:'#5d74f0',core:'#33c9ae',back:'#9b78ee',tr:'#f39a4e',leg:'#f5c24c',gl:'#f2775f',calf:'#b5dc4f',neck:'#7fd3f2',skin:'#4b4b4d'};
-let figA=null,figT=0,figPaused=false,figLast=0,figRAF=0,ropeT=0;
-function figSet(id){figA=ANIM[id]||ANIM.warm;
+let figA=null,figT=0,figPaused=false,figLast=0,figRAF=0,ropeT=0,figG=[];
+/* zoom the view onto the figure: the box around every joint in both positions (and the bar or chair), padded */
+function figFit(A){const pts=[...Object.values(A._a),...Object.values(A._b)];if(A.bar)pts.push([120,20],[290,40]);if(A.box)pts.push([A.box[0],A.box[1]],[A.box[0]+A.box[2],A.box[1]+A.box[3]]);
+  let x0=Math.min(...pts.map(p=>p[0]))-60,x1=Math.max(...pts.map(p=>p[0]))+60,y0=Math.min(...pts.map(p=>p[1]))-50,y1=Math.max(...pts.map(p=>p[1]))+30;
+  const w=x1-x0,h=y1-y0;if(w>h){y0-=(w-h)*.6;y1+=(w-h)*.4}else{x0-=(h-w)/2;x1+=(h-w)/2}
+  $('#fig').setAttribute('viewBox',`${x0.toFixed(1)} ${y0.toFixed(1)} ${(x1-x0).toFixed(1)} ${(y1-y0).toFixed(1)}`)}
+function figSet(id){figA=ANIM[id]||ANIM.warm;figG=((Object.values(X).find(x=>x.a===id)||{}).g)||[];
   if(!figA._n){const nm=figA.f==='side'?normSide:(x=>x);figA._a=nm(figA.A);figA._b=nm(figA.B);figA._n=1}
-  figT=0;drawFig(0)}
+  figFit(figA);figT=0;drawFig(0)}
 function part(d,c,fib=true){return `<path d="${d}" fill="${c}"/><path d="${d}" fill="url(#fsd)"/>${fib?`<path d="${d}" fill="url(#ffb)"/>`:''}<path d="${d}" fill="none" stroke="#141414" stroke-width="1.3" stroke-linejoin="round"/>`}
 function circ(x,y,r,c,fib=true){return part(`M${(x-r).toFixed(1)} ${y.toFixed(1)}a${r} ${r} 0 1 0 ${2*r} 0a${r} ${r} 0 1 0 ${-2*r} 0Z`,c,fib)}
 function ell(x,y,rx,ry,c){return part(`M${(x-rx).toFixed(1)} ${y.toFixed(1)}a${rx} ${ry} 0 1 0 ${2*rx} 0a${rx} ${ry} 0 1 0 ${-2*rx} 0Z`,c)}
@@ -3511,6 +3664,8 @@ function renderFront(J){
   return o;
 }
 function drawFig(k){
+  /* comic figure; the working muscles glow hardest at the toughest point of the rep */
+  $('#fig').innerHTML=COMIC.anatFig(figA,k,ropeT,figG,k,'wf');return;
   const a=figA._a,b=figA._b,J={};for(const key in a)J[key]=[lerp(a[key][0],b[key][0],k),lerp(a[key][1],b[key][1],k)];
   let props='';
   if(figA.box){const[x,y,w,h]=figA.box;props+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="#2b2826" stroke="rgba(255,255,255,.08)"/>`}
