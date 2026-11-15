@@ -41,6 +41,22 @@ window.WEIGHTS={
   },
   chem:{
     src:'Paper II from 2022 Part A and 2025 Parts B, C. Paper I counted from qbank.js.',
+    /* Paper I analysis (15 Nov 2026), 7 complete years 2019-2023, 2025, 2026 (2024 left out: only 26/50 readable).
+       g = units grouped where single-unit tags are noisy; y = MCQs per year in order 2019,2020,2021,2022,2023,2025,2026;
+       mean, sd = MCQs per year; days = class days in the plan; perDay = mean MCQs per class day (yield).
+       Test: predicting 2026 from the 2019-2025 average missed by 1.05 MCQs per unit (blind guess: 2.17). */
+    p1:{
+      echem:{g:['echem'],y:[1,3,2,2,2,3,3],mean:2.3,sd:0.7,days:2,perDay:1.14},
+      ener:{g:['ener','enerx'],y:[6,3,2,2,3,5,5],mean:3.7,sd:1.5,days:4,perDay:0.93},
+      equil:{g:['equil','equilx'],y:[8,9,7,10,9,10,8],mean:8.7,sd:1.0,days:13,perDay:0.67},
+      ind:{g:['ind'],y:[5,4,6,6,6,5,5],mean:5.3,sd:0.7,days:9,perDay:0.59},
+      kin:{g:['kin'],y:[2,3,4,3,3,2,3],mean:2.9,sd:0.6,days:5,perDay:0.57},
+      org:{g:['org','isom','guna','orgx'],y:[10,9,11,10,9,10,11],mean:10.0,sd:0.8,days:18,perDay:0.56},
+      gas:{g:['gas','gasx'],y:[3,3,3,2,3,0,1],mean:2.1,sd:1.1,days:4,perDay:0.54},
+      inorg:{g:['atom','bond','period','sblock','pblock','dblock','dblockx'],y:[12,13,10,12,12,12,11],mean:11.7,sd:0.9,days:28,perDay:0.42},
+      calc:{g:['calc','calcx','redox'],y:[3,3,5,3,3,3,3],mean:3.3,sd:0.7,days:8,perDay:0.41}
+    },
+    p1Note:'Paper I only. Inorganic has a compulsory 100 marks in Paper II Q2, so low Paper I yield is not a reason to cut it. Single-unit splits inside a group (e.g. bond vs pblock) are noisy; trust the groups.',
     /* Paper II: question -> marks, compulsory?, units */
     p2:{
       Q1:[100,1,['atom','bond','period']],Q2:[100,1,['sblock','pblock','dblock']],Q3:[100,1,['gas','kin']],Q4:[100,1,['org','isom']],
