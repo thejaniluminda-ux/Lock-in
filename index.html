@@ -744,6 +744,12 @@ b,.n,.lb-meta,.fo-nums b{font-variant-numeric:tabular-nums}
 .qz-w{font-size:13px;color:var(--ink-2);margin:0 0 6px}
 .qz-h{font-size:12px;color:var(--ink-3);margin:0}
 .qz-a{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+/* past-paper question bank */
+.qb{padding:4px 18px 10px 20px;border-top:1px solid var(--edge)}
+.qb h4{display:flex;justify-content:space-between;align-items:center;margin:10px 0 6px;font-size:13px;font-weight:500}.qb h4 small{color:var(--ink-3);font-weight:400}
+.qb-r{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:5px 0;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04)}
+.qb-r b{font-weight:500}.qb-r span{color:var(--ink-2)}.qb-r a{color:var(--lav);font-size:12px;text-decoration:none}
+.qbq{background:rgba(185,168,255,.12)!important;color:var(--lav)!important}
 /* formula bank */
 .fb{padding:4px 18px 14px 20px;border-top:1px solid var(--edge)}
 .fb h4{display:flex;justify-content:space-between;align-items:center;margin:10px 0 6px;font-size:13px;font-weight:500}
@@ -1352,6 +1358,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
 
 <script src="atom-story.js"></script>
 <script src="dblock-story.js"></script>
+<script src="qbank.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 const app=$('#app'),intro=$('#intro');
@@ -1836,7 +1843,7 @@ function renderRoutine(){
   $('#rows').innerHTML=evs.length?evs.map(e=>{
     const rev=e.kind==='review',cls=rev?'review':e.kind==='paper'?'paper':e.subj,isNow=!preview&&viewKey===todayKey&&nowM>=e.s&&nowM<e.e;
     const rl=e.rec||recFor(e.title);
-    const second=[e.tag?`<span class="qt">${esc(e.tag)}</span>`:'',e.fixed?'<span class="qt live">LIVE</span>':'',e.sub?`<span>${esc(e.sub)}</span>`:'',rev?'<span>Night review, about a minute</span>':'',rl?`<a class="rec" href="${rl}" target="_blank" rel="noopener">▶ Recordings</a>`:'',e.kind==='paper'&&/exam conditions/.test(e.sub||'')&&viewKey===todayKey&&!e.done?`<a class="rec hallgo" href="#" data-hall="${e.subj}">🏛 Exam hall</a>`:'',e.title==='Workout'&&viewKey===todayKey?'<a class="rec" href="#" onclick="go(\'Workout\');return false">▶ Open workout</a>':''].filter(Boolean).join('');
+    const second=[e.tag?`<span class="qt">${esc(e.tag)}</span>`:'',e.fixed?'<span class="qt live">LIVE</span>':'',e.sub?`<span>${esc(e.sub)}</span>`:'',rev?'<span>Night review, about a minute</span>':'',rl?`<a class="rec" href="${rl}" target="_blank" rel="noopener">▶ Recordings</a>`:'',e.kind==='study'&&e.unit&&qbShort(e.unit)?`<span class="qt qbq" title="Past-paper questions on this unit">📄 ${esc(qbShort(e.unit))}</span>`:'',e.kind==='paper'&&/exam conditions/.test(e.sub||'')&&viewKey===todayKey&&!e.done?`<a class="rec hallgo" href="#" data-hall="${e.subj}">🏛 Exam hall</a>`:'',e.title==='Workout'&&viewKey===todayKey?'<a class="rec" href="#" onclick="go(\'Workout\');return false">▶ Open workout</a>':''].filter(Boolean).join('');
     return `<div class="r ${cls}${e.done?' done':''}${isNow?' now':''}${rev&&nudgeOn&&!e.done?' pulse':''}" data-id="${e.id}">`+
       `<span class="t">${e.e-e.s<=5?fm(e.s):fm(e.s)+'–'+fm(e.e)}</span><span class="bar"></span>`+
       `<span class="w"><span class="ti">${esc(e.title)}</span>${second?`<span class="si">${second}</span>`:''}</span>`+
@@ -2640,6 +2647,12 @@ function rebuildOrder(keepPast){
   CS=fresh;saveCS();
 })();
 
+/* ---------- Past-paper question bank (qbank.js): which Paper I questions test each unit ---------- */
+function qbFor(u){const Q=window.QBANK||{},out=[];for(const sj of ['chem','phy','maths'])for(const y of Object.keys(Q[sj]||{}).sort().reverse()){const qs=Object.entries(Q[sj][y]).filter(([,k])=>k===u).map(([n])=>+n).sort((a,b)=>a-b);if(qs.length)out.push({sj,y,qs})}return out}
+function qbLink(sj,y){const P=(((typeof LIB!=='undefined'&&LIB[sj])||{})[y]||{}).p||[];const f=P.find(x=>/Paper I\b|MCQ|Full/.test(x[0]))||P[0];return f?(/^https?:/.test(f[1])?f[1]:'https://drive.google.com/file/d/'+f[1]+'/view'):''}
+function qbList(u){const L=qbFor(u);if(!L.length)return '';const n=L.reduce((a,x)=>a+x.qs.length,0);
+  return `<div class="qb"><h4>Past-paper questions <small>${n} Paper I question${n>1?'s':''} on this unit</small></h4>${L.map(x=>{const l=qbLink(x.sj,x.y);return `<div class="qb-r"><b>${x.y} Paper I</b><span>${x.qs.map(q=>'Q'+q).join(', ')}</span>${l?`<a href="${l}" target="_blank" rel="noopener">Open ↗</a>`:''}</div>`}).join('')}</div>`}
+function qbShort(u){const L=qbFor(u);if(!L.length)return '';return L.slice(0,2).map(x=>`${x.y} Q${x.qs.slice(0,4).join(', Q')}`).join(' · ')}
 /* ---------- Formula bank: formulas per unit (or Maths month), filled in by you, quizzed with spaced re-tests ---------- */
 const FBKEY='lockin-formulas-v1';let FB=null;const fbGet=()=>FB||(FB=lsGet(FBKEY,{}));const fbSave=()=>lsSet(FBKEY,fbGet());
 const fbAll=()=>{const o=[],F=fbGet();for(const u in F)for(const x of F[u])o.push(Object.assign({u},x));return o};
@@ -2706,7 +2719,7 @@ function renderLibrary(){
           return `<div class="lb-dep">${nd.length?`<span>Needs: ${nd.map(k=>`${esc(UNIT_BY[k].en)}${ok(k)?' ✓':''}`).join(', ')}</span>`:''}${ul.length?`<span>Unlocks: ${ul.map(k=>esc(UNIT_BY[k].en)).join(', ')}</span>`:''}</div>`})()}
       </button>
       ${rec?`<a class="lb-rec" href="${rec}" target="_blank" rel="noopener">▶ Recordings</a>`:''}
-      ${open?cfList(u.k):''}${open?fbList(u.k):''}
+      ${open?cfList(u.k):''}${open?qbList(u.k):''}${open?fbList(u.k):''}
       ${open&&STORY[u.k]?storyHtml(u.k):''}
       ${open?`<ol class="lb-days">${bl.map(e=>`<li class="${e.done?'dn':''}"><span class="dd">${fmtD(e.date)}</span><span class="dt">${esc(e.title)}</span><span class="ds">${e.done?'Done':e.date<tk?'Missed':''}</span></li>`).join('')||'<li><span class="dt">No days for this unit in the plan.</span></li>'}</ol>`:''}
     </article>`}).join('');
