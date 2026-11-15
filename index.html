@@ -450,6 +450,12 @@ body.page-pap .top,body.page-pap .grid,body.page-pap .demo{display:none}
 #papPage{display:none}
 body.page-pap #papPage{display:block}
 .mq{margin-bottom:16px}
+.mq .head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.mm{width:min(760px,94vw);max-height:88vh;overflow:auto}
+.mm-top{display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:-1px;background:inherit;padding-bottom:8px;z-index:1}
+.mm-t{font-size:34px;font-weight:200;font-variant-numeric:tabular-nums}.mm-t.low{color:#ff8a7a}
+.mm-res{display:flex;align-items:baseline;gap:10px;margin:6px 0 12px}.mm-res b{font-size:46px;font-weight:200}.mm-res span{color:var(--ink-3);font-size:13px}
+.mm-u{display:grid;grid-template-columns:1fr auto;gap:8px;font-size:13px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05)}
 .mq-g{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px}
 .mq-next{border-radius:18px;padding:14px 16px;background:rgba(185,168,255,.08);border:1px solid rgba(185,168,255,.3);margin-bottom:10px}
 .mq-next .u{font-size:18px;font-weight:500;color:var(--lav)}.mq-next .w{font-size:12.5px;color:var(--ink-2);margin-top:4px;line-height:1.6}.mq-next .w b{color:var(--ink);font-weight:500}
@@ -1325,7 +1331,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
         <div class="seg" id="ppSeg" role="group" aria-label="Subject"><button data-s="phy" aria-pressed="true">Physics</button><button data-s="chem" aria-pressed="false">Chemistry</button><button data-s="maths" aria-pressed="false">Combined Maths</button></div>
       </div>
       <section class="card mq" id="mqCard" aria-labelledby="mqT">
-        <div class="head"><div><h2 id="mqT">What to study next</h2><p class="sub">Log every past Paper I question you try. Mastery × how often a unit is asked = where your next hour earns the most marks.</p></div></div>
+        <div class="head"><div><h2 id="mqT">What to study next</h2><p class="sub">Log every past Paper I question you try. Mastery × how often a unit is asked = where your next hour earns the most marks.</p></div><button class="tbtn2" id="mmGo">🎯 Mini-mock · 25 Q · 1 h</button></div>
         <div id="mqBody"></div>
       </section>
       <div class="pp-grid">
@@ -1388,6 +1394,7 @@ body.page-wo #woPage{display:block;animation:pageIn .45s cubic-bezier(.2,.8,.2,1
 </div>
 <div class="ovl" id="quiz" role="dialog" aria-label="Sunday quiz"><div class="qz" id="qzBody"></div></div>
 <div class="ovl" id="fqz" role="dialog" aria-label="Formula quiz"><div class="qz" id="fqBody"></div></div>
+<div class="ovl" id="mmock" role="dialog" aria-label="Mini-mock"><div class="qz mm" id="mmBody"></div></div>
 <div class="ovl" id="hall" role="dialog" aria-label="Exam hall"><div class="h-in"><div class="h-for" id="hFor"></div><div id="hTime">0:00:00</div><p class="h-note">Exam-hall mode. No notes, no phone, no switching. Just you and the paper.</p><button class="pbtn" id="hEnd">Leave exam hall</button></div></div>
 <div id="calPop" role="dialog" aria-label="Block details"></div>
 <div id="calToast" role="status"><span></span><button>Undo</button></div>
@@ -1893,7 +1900,7 @@ function renderRoutine(){
   $('#rows').innerHTML=evs.length?evs.map(e=>{
     const rev=e.kind==='review',cls=rev?'review':e.kind==='paper'?'paper':e.subj,isNow=!preview&&viewKey===todayKey&&nowM>=e.s&&nowM<e.e;
     const rl=e.rec||recFor(e.title);
-    const second=[e.tag?`<span class="qt">${esc(e.tag)}</span>`:'',e.fixed?'<span class="qt live">LIVE</span>':'',e.sub?`<span>${esc(e.sub)}</span>`:'',rev?'<span>Night review, about a minute</span>':'',rl?`<a class="rec" href="${rl}" target="_blank" rel="noopener">▶ Recordings</a>`:'',e.kind==='study'&&e.unit&&qbShort(e.unit)?`<span class="qt qbq" title="Past-paper questions on this unit">📄 ${esc(qbShort(e.unit))}</span>`:'',e.kind==='paper'&&/exam conditions/.test(e.sub||'')&&viewKey===todayKey&&!e.done?`<a class="rec hallgo" href="#" data-hall="${e.subj}">🏛 Exam hall</a>`:'',e.title==='Workout'&&viewKey===todayKey?'<a class="rec" href="#" onclick="go(\'Workout\');return false">▶ Open workout</a>':''].filter(Boolean).join('');
+    const second=[e.tag?`<span class="qt">${esc(e.tag)}</span>`:'',e.fixed?'<span class="qt live">LIVE</span>':'',e.sub?`<span>${esc(e.sub)}</span>`:'',rev?'<span>Night review, about a minute</span>':'',rl?`<a class="rec" href="${rl}" target="_blank" rel="noopener">▶ Recordings</a>`:'',e.kind==='study'&&e.unit&&qbShort(e.unit)?`<span class="qt qbq" title="Past-paper questions on this unit">📄 ${esc(qbShort(e.unit))}</span>`:'',e.tag==='Timed'&&e.subj!=='maths'&&viewKey===todayKey&&!e.done?`<a class="rec hallgo" href="#" data-mock="${e.subj}">🎯 Start mini-mock</a>`:'',e.kind==='paper'&&/exam conditions/.test(e.sub||'')&&viewKey===todayKey&&!e.done?`<a class="rec hallgo" href="#" data-hall="${e.subj}">🏛 Exam hall</a>`:'',e.title==='Workout'&&viewKey===todayKey?'<a class="rec" href="#" onclick="go(\'Workout\');return false">▶ Open workout</a>':''].filter(Boolean).join('');
     return `<div class="r ${cls}${e.done?' done':''}${isNow?' now':''}${rev&&nudgeOn&&!e.done?' pulse':''}" data-id="${e.id}">`+
       `<span class="t">${e.e-e.s<=5?fm(e.s):fm(e.s)+'–'+fm(e.e)}</span><span class="bar"></span>`+
       `<span class="w"><span class="ti">${esc(e.title)}</span>${second?`<span class="si">${second}</span>`:''}</span>`+
@@ -1929,6 +1936,7 @@ function saveReview(){
   if(all){setMood('dance',7000);say('Whole day done! 🎉',3500)}else{setMood('cheer',2200);say('Good night, Theja 🌙',2600)}
 }
 $('#rows').addEventListener('click',e=>{
+  const mk=e.target.closest('[data-mock]');if(mk){e.preventDefault();openMock(mk.dataset.mock,e.target.closest('[data-id]')?.dataset.id);return}
   const hb=e.target.closest('[data-hall]');if(hb){e.preventDefault();startHall(hb.dataset.hall);return}
   if(e.target.closest('.rec'))return;
   const rb=e.target.closest('[data-rate]');if(rb){saveRate(rb.dataset.id,+rb.dataset.rate);return}
@@ -3144,6 +3152,50 @@ $('#mqBody').addEventListener('click',e=>{const b=e.target.closest('[data-mq]');
   qlGet().push({id,r,u:b.dataset.u,t:Date.now()});lsSet(QLKEY,qlGet());
   if(r!=='ok'&&!MB.some(m=>m.qid===id&&!m.ok)){MB.push({id:'m'+Date.now(),qid:id,s:sj,y,q:n,t:MQN[b.dataset.u]||b.dataset.u,w:MQE[r],ok:false,at:dkey(new Date()),st:0,due:mbAdd(dkey(new Date()),MB_GAP[0])});saveMB();toast('Added to your mistake bank. It comes back in 3 days.')}
   renderMQ();try{renderMB()}catch(x){}});
+
+/* Mini-mock: 25 Paper I questions in 60 minutes (the real Paper I pace: 50 in 2 h). Slots per unit follow how often it is asked
+   (WEIGHTS), and inside a unit it prefers questions you have never tried, then ones you got wrong; ones you got right are left out.
+   Answers go into lockin-qlog-v1 (so mastery and the predicted score update) and wrong ones into the mistake bank. */
+let MM=null;
+function mmPick(sj){const G=mqGroups(sj);if(!G.length)return [];const last=mqLast(),tot=G.reduce((a,g)=>a+g.per,0);
+  const slots=G.map(g=>({g,n:Math.floor(g.per/tot*25),r:g.per/tot*25%1}));let left=25-slots.reduce((a,s)=>a+s.n,0);
+  slots.slice().sort((a,b)=>b.r-a.r).forEach(s=>{if(left>0){s.n++;left--}});
+  const sh=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  let out=[],spare=[];
+  for(const s of slots){const all=mqQs(sj,s.g),fresh=sh(all.filter(q=>!last[q.id])),wrong=sh(all.filter(q=>last[q.id]&&last[q.id]!=='ok'));
+    const pool=[...fresh,...wrong];out.push(...pool.slice(0,s.n).map(q=>Object.assign(q,{g:s.g.k})));spare.push(...pool.slice(s.n).map(q=>Object.assign(q,{g:s.g.k})))}
+  if(out.length<25)out.push(...sh(spare).slice(0,25-out.length));
+  return sh(out)}
+function openMock(sj,blockId){if(sj!=='phy'&&sj!=='chem'){toast('The mini-mock is for Physics and Chemistry Paper I.');return}
+  const qs=mmPick(sj);if(qs.length<5){toast('Not enough tagged questions left for a mock.');return}
+  MM={sj,qs,ans:{},end:Date.now()+60*60000,done:false,blockId};$('#mmock').classList.add('show');mmDraw();clearInterval(MM.tm);MM.tm=setInterval(mmTick,1000)}
+const mmLeft=()=>Math.max(0,Math.round((MM.end-Date.now())/1000));
+function mmTick(){if(!MM||MM.done)return;const s=mmLeft(),el=$('#mmClock');if(el){el.textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;el.classList.toggle('low',s<=600)}
+  if(s<=0){clearInterval(MM.tm);toast('Time is up. Pens down.');mmFinish(true)}}
+function mmDraw(){const n=Object.keys(MM.ans).length;
+  $('#mmBody').innerHTML=`<div class="mm-top"><div><div class="qz-n">${MM.sj==='phy'?'Physics':'Chemistry'} mini-mock · ${MM.qs.length} questions · open each paper with ↗</div><h3 class="qz-t" style="margin:4px 0 0">Answer on paper first, then mark each one</h3></div><div class="mm-t" id="mmClock"></div></div>`+
+    MM.qs.map((q,i)=>{const r=MM.ans[q.id],l=typeof qbLink==='function'?qbLink(MM.sj,q.y):'';return `<div class="mq-q"><span class="id">${i+1}. ${q.y} Q${q.n}${l?`<a href="${l}" target="_blank" rel="noopener">↗</a>`:''}</span><span class="bt">${[['ok','✓ Right','ok'],['concept','✗ Didn’t know','x'],['careless','✗ Careless','x'],['time','✗ Time','x']].map(([v,t,c])=>`<button class="${c}${r===v?' on':''}" data-mma="${q.id}" data-r="${v}">${t}</button>`).join('')}</span></div>`}).join('')+
+    `<div class="qz-a"><button class="pbtn" data-mmx>Quit</button><button class="pbtn pri" data-mmf>Finish (${n} of ${MM.qs.length} marked)</button></div>`;mmTick()}
+function mmFinish(timeUp){if(!MM||MM.done)return;MM.done=true;clearInterval(MM.tm);const t=Date.now(),L=qlGet();
+  for(const q of MM.qs){let r=MM.ans[q.id];if(!r&&timeUp)r='time';if(!r)continue;L.push({id:q.id,r,u:q.g,t,mock:1});
+    if(r!=='ok'&&!MB.some(m=>m.qid===q.id&&!m.ok))MB.push({id:'m'+t+q.n+q.y,qid:q.id,s:MM.sj,y:q.y,q:q.n,t:MQN[q.g]||q.g,w:MQE[r]+' (mini-mock)',ok:false,at:dkey(new Date()),st:0,due:mbAdd(dkey(new Date()),MB_GAP[0])})}
+  lsSet(QLKEY,L);saveMB();
+  const marked=MM.qs.filter(q=>MM.ans[q.id]||timeUp),right=MM.qs.filter(q=>MM.ans[q.id]==='ok').length,by={};
+  for(const q of marked){const b=by[q.g]||(by[q.g]={n:0,c:0});b.n++;if(MM.ans[q.id]==='ok')b.c++}
+  const used=60-Math.round(mmLeft()/60);
+  if(MM.blockId){for(const d in CS.days){const e=CS.days[d].find(x=>x.id===MM.blockId);if(e){e.done=true;saveCS();break}}}
+  $('#mmBody').innerHTML=`<div class="qz-n">${MM.sj==='phy'?'Physics':'Chemistry'} mini-mock done · ${used} min used</div>
+    <div class="mm-res"><b>${right}/${marked.length}</b><span>${marked.length?Math.round(right/marked.length*100):0}% · on a full Paper I that is about ${marked.length?Math.round(right/marked.length*50):0} of 50</span></div>
+    ${Object.entries(by).sort((a,b)=>a[1].c/a[1].n-b[1].c/b[1].n).map(([g,b])=>`<div class="mm-u"><span>${MQN[g]||g}</span><span>${b.c}/${b.n}</span></div>`).join('')}
+    <p class="qz-h" style="margin-top:12px">Every answer is in your log, so “What to study next” and the predicted score on the Papers page have updated. Wrong ones are in the mistake bank for 3 days from now.</p>
+    <div class="qz-a"><button class="pbtn pri" data-mmc>Close</button></div>`;
+  try{renderMQ();renderMB();renderRoutine();renderRings()}catch(e){}}
+$('#mmock').addEventListener('click',e=>{if(!MM)return;
+  const a=e.target.closest('[data-mma]');if(a){MM.ans[a.dataset.mma]=a.dataset.r;mmDraw();return}
+  if(e.target.closest('[data-mmf]')){const n=Object.keys(MM.ans).length;if(n<MM.qs.length&&!confirm(`${MM.qs.length-n} questions are not marked. They will be left out. Finish anyway?`))return;mmFinish(false);return}
+  if(e.target.closest('[data-mmx]')){if(confirm('Quit the mini-mock? Nothing will be saved.')){clearInterval(MM.tm);MM=null;$('#mmock').classList.remove('show')}return}
+  if(e.target.closest('[data-mmc]')){MM=null;$('#mmock').classList.remove('show')}});
+$('#mmGo').addEventListener('click',()=>openMock(ppS));
 
 /* Sunday quiz */
 let qz=[],qi=0;
