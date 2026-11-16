@@ -1,0 +1,91 @@
+/* Lock In · Shadow Protocol styles. Every rule is under html.shadow (or the mode button / overlays that only exist
+   when the mode is used), so normal mode renders exactly as before. */
+#shx{display:none}
+html.shadow body:not(.page-cal):not(.page-rep):not(.page-pap):not(.page-foc):not(.page-lib):not(.page-wo) #shx{display:block}
+html.shadow{--sh-v:#8f7bff;--sh-e:#e8b45a;--sh-ink:#ece8e1;--sh-2:#a8a199;--sh-3:#8a837b;--sh-line:rgba(255,255,255,.08);--sh-mono:ui-monospace,'Cascadia Mono',Consolas,monospace}
+html.shadow body{background:radial-gradient(1200px 700px at 70% -10%,rgba(143,123,255,.07),transparent 60%),#0f0e0d;background-attachment:fixed}
+html.shadow body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.035;background:repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 3px)}
+html.shadow #modeBtn{color:var(--sh-v)}
+html.shadow #modeBtn svg{filter:drop-shadow(0 0 6px rgba(143,123,255,.6))}
+
+#shx{margin:4px 0 18px;color:var(--sh-ink);position:relative;z-index:1}
+#shx .sh-k{font:500 11px/1.4 var(--sh-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--sh-3)}
+#shx .sh-top{display:flex;gap:24px;align-items:flex-end;justify-content:space-between;padding:20px 22px;border:1px solid var(--sh-line);border-radius:20px;background:linear-gradient(135deg,rgba(143,123,255,.08),rgba(255,255,255,.02) 50%)}
+#shx .sh-top>div:first-child{flex:1;min-width:0}
+#shx .sh-rank{display:flex;align-items:baseline;gap:14px;margin:6px 0 10px}
+#shx .sh-rank span{font:200 44px/1 Sora,sans-serif;letter-spacing:.02em}
+#shx .sh-rank b{font:500 15px var(--sh-mono);color:var(--sh-v)}
+#shx .sh-lv{height:6px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden;margin-bottom:8px;max-width:560px}
+#shx .sh-lv i{display:block;height:100%;background:linear-gradient(90deg,var(--sh-v),#b9a8ff);transform-origin:left;transition:transform .8s cubic-bezier(.2,.8,.2,1)}
+#shx .sh-baku{display:flex;align-items:center;gap:12px;max-width:380px}
+#shx .sh-owl{width:64px;height:64px;flex:none;filter:grayscale(.55) brightness(.85)}
+#shx .sh-owl svg{width:100%;height:100%}
+#shx .sh-baku p{margin:0;font:400 13.5px/1.5 Sora,sans-serif;color:var(--sh-2);border-left:2px solid var(--sh-v);padding-left:12px}
+
+#shx .sh-chk{margin-top:12px;padding:14px 18px;border:1px solid rgba(232,180,90,.3);border-radius:16px;background:rgba(232,180,90,.05);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+#shx .sh-chk b{font:500 14px Sora,sans-serif;flex:1;min-width:220px}
+#shx .sh-opts{display:flex;gap:8px;flex-wrap:wrap}
+#shx .sh-opts button,#shx .sh-btn{font:500 12.5px var(--sh-mono);color:var(--sh-ink);background:rgba(255,255,255,.05);border:1px solid var(--sh-line);border-radius:999px;padding:8px 14px;cursor:pointer;transition:background .2s,border-color .2s}
+#shx .sh-opts button:hover,#shx .sh-btn:hover{background:rgba(143,123,255,.16);border-color:rgba(143,123,255,.5)}
+#shx .sh-opts button:focus-visible,#shx .sh-btn:focus-visible,#shx input:focus-visible,#shx textarea:focus-visible{outline:2px solid var(--sh-v);outline-offset:2px}
+
+#shx .sh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-top:14px}
+#shx .sh-panel{border:1px solid var(--sh-line);border-radius:18px;padding:16px 18px;background:rgba(255,255,255,.025)}
+#shx .sh-panel h4{margin:0 0 12px;font:500 11px var(--sh-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--sh-3)}
+#shx .sh-m{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--sh-line)}
+#shx .sh-m:first-of-type{border-top:0}
+#shx .sh-m i{width:14px;height:14px;margin-top:3px;flex:none;border:1.5px solid var(--sh-3);transform:rotate(45deg);border-radius:2px}
+#shx .sh-m.mib i{border-color:var(--sh-e)}
+#shx .sh-m.ok i{background:var(--sh-v);border-color:var(--sh-v);box-shadow:0 0 10px rgba(143,123,255,.6)}
+#shx .sh-m span{display:block;font:500 10.5px var(--sh-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--sh-3)}
+#shx .sh-m b{display:block;font:400 14px/1.4 'Noto Sans Sinhala',Sora,sans-serif;margin-top:2px}
+#shx .sh-m.ok b{color:var(--sh-3);text-decoration:line-through;text-decoration-color:rgba(255,255,255,.25)}
+
+#shx .sh-gate h3{margin:6px 0 8px;font:400 19px/1.35 'Noto Sans Sinhala',Sora,sans-serif}
+#shx .sh-gate.now{border-left:2px solid var(--sh-v);padding-left:12px;margin-left:-14px}
+#shx .sh-gold{color:var(--sh-e)}
+#shx .sh-if{font:400 12.5px/1.5 Sora,sans-serif;color:var(--sh-2);margin:0 0 12px}
+#shx .sh-btn{background:rgba(143,123,255,.18);border-color:rgba(143,123,255,.5);padding:10px 16px}
+#shx .sh-ok{color:#5fe08a;font:500 12px var(--sh-mono);margin:0}
+#shx .sh-gate p{color:var(--sh-2);font-size:13px}
+
+#shx .sh-t{margin-bottom:14px}
+#shx .sh-tl{display:flex;justify-content:space-between;font:500 12.5px var(--sh-mono);margin-bottom:6px}
+#shx .sh-bar{position:relative;height:6px;border-radius:6px;background:rgba(255,255,255,.05);overflow:hidden}
+#shx .sh-bar i{position:absolute;inset:0;transform-origin:left;border-radius:6px}
+#shx .sh-bar .plan{background:rgba(255,255,255,.14)}
+#shx .sh-bar .done{background:var(--sh-v)}
+#shx .sh-t.behind .sh-bar .done{background:var(--sh-e)}
+#shx .sh-t p{margin:6px 0 0;font:400 12.5px/1.5 Sora,sans-serif;color:var(--sh-2)}
+#shx .sh-note{font:400 11.5px/1.5 Sora,sans-serif;color:var(--sh-3);margin:6px 0 0}
+
+#shx .sh-rec{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;align-content:start}
+#shx .sh-rec h4,#shx .sh-rec .sh-note{grid-column:1/-1}
+#shx .sh-rec b{display:block;font:300 26px/1 var(--sh-mono);color:var(--sh-ink)}
+#shx .sh-rec span{font:400 11.5px/1.4 Sora,sans-serif;color:var(--sh-3)}
+
+#shx .sh-goal label{display:block;font:500 10.5px var(--sh-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--sh-3);margin-bottom:10px}
+#shx .sh-goal input,#shx .sh-goal textarea{display:block;width:100%;box-sizing:border-box;margin-top:4px;font:400 13.5px Sora,sans-serif;color:var(--sh-ink);background:rgba(0,0,0,.25);border:1px solid var(--sh-line);border-radius:10px;padding:8px 10px;resize:vertical;text-transform:none;letter-spacing:0}
+#shx .sh-goal summary{cursor:pointer;font:400 12px Sora,sans-serif;color:var(--sh-2);margin:4px 0 10px}
+
+/* mode switch scan line */
+.sh-scan{position:fixed;inset:0;z-index:9999;pointer-events:none;background:linear-gradient(180deg,transparent 0,rgba(143,123,255,.0) 40%,rgba(143,123,255,.35) 50%,rgba(143,123,255,0) 60%,transparent 100%);background-size:100% 300%;animation:shScan .7s cubic-bezier(.6,0,.3,1) forwards}
+.sh-scan::after{content:'';position:absolute;inset:0;background:#0f0e0d;animation:shDim .7s ease forwards}
+@keyframes shScan{from{background-position:0 100%}to{background-position:0 0}}
+@keyframes shDim{0%{opacity:0}40%{opacity:.55}100%{opacity:0}}
+
+/* overlays: rank-up, first launch, sleep guard */
+.sh-ov{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;background:rgba(8,7,7,.86);backdrop-filter:blur(8px);opacity:0;transition:opacity .3s;cursor:pointer;color:#ece8e1}
+.sh-ov.on{opacity:1}
+.sh-ov .sh-k{font:500 11px ui-monospace,Consolas,monospace;letter-spacing:.14em;text-transform:uppercase;color:#8a837b}
+.sh-first,.sh-rk{text-align:center;max-width:460px;padding:24px}
+.sh-first h2{font:200 34px/1.2 Sora,sans-serif;margin:12px 0}
+.sh-first p{font:400 14px/1.6 Sora,sans-serif;color:#a8a199}
+.sh-rk{position:relative}
+.sh-rk h2{font:200 56px/1 Sora,sans-serif;letter-spacing:.06em;margin:14px 0}
+.sh-rk h2 span{display:inline-block;opacity:0;transform:translateY(12px);animation:shIn .5s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(.3s + var(--i)*.05s)}
+.sh-ring{position:absolute;left:50%;top:50%;width:200px;height:200px;margin:-100px 0 0 -100px;border:1px solid #8f7bff;border-radius:50%;opacity:0;animation:shRing 1.4s ease-out .15s forwards}
+@keyframes shIn{to{opacity:1;transform:none}}
+@keyframes shRing{0%{opacity:.8;transform:scale(.3)}100%{opacity:0;transform:scale(2.4)}}
+@media (prefers-reduced-motion:reduce){.sh-scan{display:none}.sh-rk h2 span{animation:none;opacity:1;transform:none}.sh-ring{display:none}#shx .sh-lv i{transition:none}}
+@media (max-width:700px){#shx .sh-top{flex-direction:column;align-items:flex-start}#shx .sh-rank span{font-size:34px}}

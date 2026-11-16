@@ -1244,7 +1244,8 @@ body.wo-enter #woPage .wcol>.card,body.wo-enter #woNudge{animation:woRise .55s c
 @media (max-width:760px){#woPage .wgrid{grid-template-columns:1fr}#woPage .wgrid>*{grid-column:1!important;grid-row:auto!important}#ex .ex-body{grid-template-columns:1fr;overflow:auto}#ex .ex-top,#ex .ex-prog,#ex .ex-body{padding-left:18px;padding-right:18px}#woPage .stats3,#woPage .tape{grid-template-columns:1fr 1fr}}
 
 </style>
-<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#1a1918"></head>
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#1a1918">
+<link rel="stylesheet" href="system.css"><script>try{if(localStorage.getItem("lockin-mode-v1")==="\"shadow\"")document.documentElement.classList.add("shadow")}catch(e){}</script></head>
 <body>
 <div class="bg"></div>
 
@@ -1270,6 +1271,7 @@ body.wo-enter #woPage .wcol>.card,body.wo-enter #woNudge{animation:woRise .55s c
     <div class="pill">
       <button class="nb" id="musicBtn" aria-label="YouTube Music"><svg viewBox="0 0 24 24"><path d="M9 18V5.5l11-2V16"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg><span class="tip">YouTube Music</span></button>
       <button class="nb" id="claudeBtn" aria-label="Ask Claude"><svg viewBox="0 0 24 24"><path d="M12 3.5v4.5M12 16v4.5M3.5 12H8M16 12h4.5M6 6l3 3M15 15l3 3M6 18l3-3M15 9l3-3"/></svg><span class="tip">Ask Claude</span></button>
+      <button class="nb" id="modeBtn" aria-label="Shadow Protocol" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg><span class="tip">Shadow Protocol</span></button>
       <button class="nb" id="fsBtn" aria-label="Full screen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="tip">Full screen</span></button>
     </div>
   </nav>
@@ -4520,6 +4522,7 @@ addEventListener('hashchange',()=>go(HASHP[location.hash]||'Home'));
 
 </script>
 
+<script src="system.js"></script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>
 </html>
