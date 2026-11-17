@@ -118,6 +118,10 @@ const svgI=p=>`<svg viewBox="0 0 24 24">${p}</svg>`;
 const ICO={full:svgI('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),x:svgI('<path d="M6 6l12 12M18 6 6 18"/>'),plus:svgI('<path d="M12 5v14M5 12h14"/>'),minus:svgI('<path d="M5 12h14"/>'),
   fit:svgI('<circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>'),all:svgI('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>')};
 const DOW3=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const SJC={phy:'#5b9dff',chem:'#4cd38a',maths:'#ff9f43',paper:'#c9c2b8'};
+/* edge labels sit on the curve's midpoint and are dropped if they would touch any node */
+const midOf=d=>{const v=d.match(/-?[\d.]+/g).map(Number);return[(v[0]+3*v[2]+3*v[4]+v[6])/8,(v[1]+3*v[3]+3*v[5]+v[7])/8]};
+const hitsAny=(x,y,w,h,B)=>B.some(([bx,by,bw,bh])=>x<bx+bw&&x+w>bx&&y<by+bh&&y+h>by);
 const segHtml=(n,f)=>Array.from({length:n},(_,i)=>`<i class="${i<f?'f':''}"></i>`).join('');
 const fmH=m=>`${Math.floor(m/60)}:${p2(Math.round(m)%60)}`;
 const nextRank=L=>RANKS.find(r=>r[0]>L)||[99,''];
@@ -178,7 +182,7 @@ function shell(){box.innerHTML=`<div class="sx-bar"><div class="sx-crumb">Shadow
     <section class="sx-pl sx-bp"><div class="sx-ph"><div><h3>Blueprint</h3><p>What today builds on, and what it unlocks</p></div><span class="sx-sp"></span><span class="sx-pill sx-unit" id="sxUnit"></span><button class="sx-ib" data-bpopen aria-label="Open the full blueprint">${ICO.full}</button></div>
       <div class="sx-graph" id="sxGraph"><div class="sx-cols" id="sxCols"></div><svg id="sxG"></svg></div>
       <div class="sx-leg"><span><i class="n"></i>now</span><span><i></i>done</span><span><i class="d"></i>ahead</span><span>Hatched = waiting on a missed block</span></div></section>
-    <div class="sx-col"><section class="sx-pl" id="sxMast"></section><section class="sx-pl sx-radio" id="sxRadio"></section></div></div>`;for(const k in PSIG)delete PSIG[k]}
+    <div class="sx-col"><section class="sx-pl" id="sxMast"></section><section class="sx-pl sx-rec" id="sxRec"></section><section class="sx-pl sx-radio" id="sxRadio"></section></div></div>`;for(const k in PSIG)delete PSIG[k]}
 function rankHtml(T,lv,rank){const [nl,nr]=nextRank(lv.L),S=shadow(),seg=14,f=Math.floor(lv.into/lv.need*seg);
   let race;if(!S.days.length)race=`<div class="sx-g"><b class="num">${fmH(S.youTot)}</b><span>verified today</span></div><p class="sx-cap">Your shadow is built from your own timed Focus sessions. It appears after your first full day of them.</p>`;
   else{const g=S.you-S.at(nowMin()),W=260,x=t=>((t-360)/(1380-360)*W).toFixed(1),mx=Math.max(60,S.at(1380),S.you)*1.1,y=v=>(38-(v/mx)*36).toFixed(1);
@@ -209,6 +213,8 @@ function mastHtml(){let G=[];try{const last=mqLast();for(const sj of ['chem','ph
     <div class="sx-rad"><svg viewBox="0 0 104 104"><defs><linearGradient id="sxSw" gradientUnits="userSpaceOnUse" x1="52" y1="52" x2="104" y2="52"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
       ${[50,34,18].map(r=>`<circle cx="52" cy="52" r="${r}" fill="none" stroke="rgba(255,255,255,.08)"/>`).join('')}${dots}<g class="sx-sweep"><path d="M52 52 L102 52 A50 50 0 0 0 ${52+50*Math.cos(-.7)} ${52+50*Math.sin(-.7)} Z" fill="url(#sxSw)"/></g></svg>
       <div class="sx-weak"><div class="h">Weakest now</div>${weak.map(g=>`<div><span>${esc2(MQN[g.k]||g.k)}</span><span>${g.n?Math.round(g.m*100)+'%':'untried'}</span></div>`).join('')}</div></div>`}
+function recHtml(){const P=['nights asleep','focus session','class','nights the phone','mistake','past-paper','workout','study block','full paper'],R=record().sort((a,b)=>P.findIndex(p=>a[1].startsWith(p))-P.findIndex(p=>b[1].startsWith(p))).slice(0,3);
+  return `<div class="sx-rh"><h3>The Record</h3><span>evidence, not promises</span></div>${R.length?`<div class="sx-rr">${R.map(([n,s])=>`<div><b class="num">${n}</b><span>${esc2(s)}</span></div>`).join('')}</div>`:'<p class="sx-cap">Empty for now. Finished sessions, early nights and fixed mistakes land here.</p>'}`}
 function radioHtml(){bakuLine();const L=(SYS.radio[todayK()]||[]).slice(-3),n=(SYS.msg[todayK()]||{n:0}).n;
   return `<div class="sx-who2"><div class="av">${typeof bkSvg==='function'?bkSvg('sleepy'):''}</div><div><b>Baku · race engineer</b><small>${n} of 4 messages today</small></div></div>
     <canvas class="sx-wave" id="sxWave"></canvas><div class="sx-tx">${L.length?L.map(l=>`<div><span>${l.t}</span>${esc2(l.text)}</div>`).join(''):'<div class="q">Radio quiet. Nothing to report yet.</div>'}</div>
@@ -222,14 +228,14 @@ function drawGraph(force){const g=box&&box.querySelector('#sxGraph');if(!g||!g.c
   box.querySelector('#sxCols').style.gridTemplateColumns=`repeat(${nc},1fr)`;box.querySelector('#sxCols').innerHTML=H0.cols.map(c=>`<span class="${c==='Today'?'today':''}">${c}</span>`).join('');
   g.querySelectorAll('.sx-nd').forEach(n=>n.remove());const pos={};
   for(const n of H0.nodes){const st=nodeState(n,H0.X),el=document.createElement('div');el.className='sx-nd '+st;el.dataset.i=n.i;const x=n._c*cw+8,y=off+n._r*rh;pos[n.i]=el;
-    el.style.left=x+'px';el.style.top=y+'px';el.style.width=(cw-14)+'px';
+    el.style.left=x+'px';el.style.top=y+'px';el.style.width=(cw-14)+'px';el.title=n.title;el.tabIndex=0;
     el.innerHTML=`<span class="sxp sxl"></span><span class="sxp sxr"></span><small><span>${nodeMeta(n,st)}</span>${st==='done'?'<i>✓</i>':''}</small><b class="si">${esc2(n.title)}</b>${st==='act'?`<div class="pb"><i style="width:${Math.round(Math.max(0,Math.min(1,(nowMin()-n.s)/(n.e-n.s)))*100)}%"></i></div>`:''}`;g.appendChild(el)}
-  const gr=g.getBoundingClientRect();let h='',flowI=-1,k=0;
+  const gr=g.getBoundingClientRect();let h='',flowI=-1,k=0;const boxes=Object.values(pos).map(el=>{const b=el.getBoundingClientRect();return[b.left-gr.left,b.top-gr.top,b.width,b.height]});
   for(const n of H0.nodes)for(const pi of n.par){if(!pos[pi])continue;const A=pos[pi].getBoundingClientRect(),B=pos[n.i].getBoundingClientRect();let d,x1,y1,x2,y2;
     if(B.left<A.right+10){x1=A.left+A.width/2-gr.left;y1=A.bottom-gr.top;x2=B.left+B.width/2-gr.left;y2=B.top-gr.top;if(y2<y1){y1=A.top-gr.top;y2=B.bottom-gr.top}d=`M${x1} ${y1} C${x1} ${(y1+y2)/2} ${x2} ${(y1+y2)/2} ${x2} ${y2}`}
     else{x1=A.right-gr.left;y1=A.top+A.height/2-gr.top;x2=B.left-gr.left;y2=B.top+B.height/2-gr.top;const dx=Math.max(30,(x2-x1)/2);d=`M${x1} ${y1} C${x1+dx} ${y1} ${x2-dx} ${y2} ${x2} ${y2}`}
     const P=graphAll()[pi],cls=H0.X&&pi===H0.X.i?'now':liveDone(P)&&(liveDone(n)||n.i===H0.X?.i)?'dn':'fut';if(cls==='now'&&flowI<0)flowI=k;
-    h+=`<path id="sxE${k}" class="sx-edge ${cls}" d="${d}"/>`;const lab=n.lab[pi];if(lab){const mx=(x1+x2)/2,my=(y1+y2)/2,w=lab.length*6.4+12;h+=`<rect class="sx-elb" x="${mx-w/2}" y="${my-9}" width="${w}" height="18" rx="5"/><text class="sx-elt" x="${mx}" y="${my+4}" text-anchor="middle">${lab}</text>`}k++}
+    h+=`<path id="sxE${k}" class="sx-edge ${cls}" d="${d}"/>`;const lab=n.lab[pi];if(lab){const [mx,my]=midOf(d),w=lab.length*6.4+12;if(!hitsAny(mx-w/2-4,my-13,w+8,26,boxes))h+=`<rect class="sx-elb" x="${mx-w/2}" y="${my-9}" width="${w}" height="18" rx="5"/><text class="sx-elt" x="${mx}" y="${my+4}" text-anchor="middle">${lab}</text>`}k++}
   box.querySelector('#sxG').innerHTML=h+'<circle id="sxFlow" class="sx-flow" r="3"/>';flow(flowI)}
 function flow(i){cancelAnimationFrame(flowRaf);const p=box.querySelector('#sxE'+i),c=box.querySelector('#sxFlow');if(!p||!c){c&&c.setAttribute('r',0);return}const L=p.getTotalLength();let t=0;
   const f=()=>{t=(t+.005)%1;const pt=p.getPointAtLength(t*L);c.setAttribute('cx',pt.x);c.setAttribute('cy',pt.y);if(!R_M()&&isShadow()&&!document.body.className.includes('page-'))flowRaf=requestAnimationFrame(f)};f()}
@@ -245,7 +251,7 @@ function render(force){if(!box||!isShadow()||!onHome())return;if(force||!box.que
   box.querySelector('#sxDay').innerHTML=new Date(todayK()+'T00:00')>EXAM_END?'Exam over':now()>=EXAM?`Exam day <b>${Math.round((new Date(todayK()+'T00:00')-EXAM)/864e5)+1}</b> / 26`:`Day <b>${dayNo()}</b> / ${daysTotal()}`;
   box.querySelector('#sxExam').innerHTML=now()<EXAM?`A/L in <b>${Math.ceil((EXAM-now())/864e5)}</b> days`:'A/L';box.querySelector('#sxClk').textContent=hm(nowMin());
   box.querySelector('.sx-tgt').innerHTML=P.course?`Target <b>${esc2(P.course)}</b>${P.z?' · Z '+esc2(P.z):' · Z —'}`:'Set your target';
-  setPanel('sxRank',rankHtml(T,lv,rank));setPanel('sxMis',misHtml());setPanel('sxMast',mastHtml());if(setPanel('sxRadio',radioHtml()))wave();
+  setPanel('sxRank',rankHtml(T,lv,rank));setPanel('sxMis',misHtml());setPanel('sxMast',mastHtml());setPanel('sxRec',recHtml());if(setPanel('sxRadio',radioHtml()))wave();
   requestAnimationFrame(()=>{drawGraph(force);if(!waveRaf)wave()});events(T,lv,rank)}
 /* ---------- moments: mission complete, level-up, rank-up, first launch ---------- */
 let queued=[];
@@ -292,52 +298,62 @@ function overlay(html,ms,done){const o=document.createElement('div');o.className
 
 /* ---------- blueprint full screen: every class, recording and study block, 2 days back to 8 ahead ---------- */
 let V={x:0,y:0,k:1},bpEl=null,WW=0,WH=0,FN=[];
-const GX=150,DW=232,NW=184,NH=74;
+const GX=150,DW=232,NW=184,NH=70,RH=86;
 function buildFull(){const G=graphAll(),tk=todayK(),X=focusNode(),d0=dk(add(now(),-2)),d1=dk(add(now(),8)),days=[];for(let i=-2;i<=8;i++)days.push(dk(add(now(),i)));
   const lanes=[['phy','Physics'],['chem','Chemistry'],['maths','Maths'],['paper','Papers']];const nodes=G.filter(n=>n.date>=d0&&n.date<=d1);const rowOf={},cells={};let y=70;const laneY=[];
   for(const [sj,name] of lanes){const L=nodes.filter(n=>(n.subj||'paper')===sj||(sj==='paper'&&n.kind==='paper'));if(!L.length)continue;let maxR=0;
-    for(const n of L){const c=days.indexOf(n.date);let r=n.par.map(pi=>rowOf[pi]).find(r=>r!=null&&!cells[sj+c+'_'+r]);if(r==null){r=0;while(cells[sj+c+'_'+r])r++}cells[sj+c+'_'+r]=1;rowOf[n.i]=r;n._fx=GX+c*DW+20;n._fy=y+r*96;maxR=Math.max(maxR,r)}
-    laneY.push([name,y]);y+=(maxR+1)*96+56}
+    for(const n of L){const c=days.indexOf(n.date);let r=n.par.map(pi=>rowOf[pi]).find(r=>r!=null&&!cells[sj+c+'_'+r]);if(r==null){r=0;while(cells[sj+c+'_'+r])r++}cells[sj+c+'_'+r]=1;rowOf[n.i]=r;n._fx=GX+c*DW+20;n._fy=y+r*RH;maxR=Math.max(maxR,r)}
+    laneY.push([name,y]);y+=(maxR+1)*RH+46}
   FN=nodes;WW=GX+days.length*DW+60;WH=y+20;return{days,laneY,X,nodes}}
 function openFull(){if(bpEl)return;const src=box.querySelector('.sx-bp').getBoundingClientRect(),W=innerWidth,H=innerHeight,F=buildFull(),tk=todayK();
   const o=document.createElement('div');o.className='sx-bpf';bpEl=o;o.setAttribute('role','dialog');o.setAttribute('aria-label','Full blueprint');
   const clip=r=>{o.style.setProperty('--ct',r.top+'px');o.style.setProperty('--cl',r.left+'px');o.style.setProperty('--cr',(W-r.right)+'px');o.style.setProperty('--cb',(H-r.bottom)+'px');o.style.setProperty('--cr2','18px')};clip(src);
-  const ids=new Set(F.nodes.map(n=>n.i));let e='';
+  const ids=new Set(F.nodes.map(n=>n.i));let e='';const boxes=F.nodes.map(n=>[n._fx,n._fy,NW,NH]);
   for(const n of F.nodes)for(const pi of n.par){if(!ids.has(pi))continue;const A=graphAll()[pi],ax=A._fx,ay=A._fy,bx=n._fx,by=n._fy;let d,x1,y1,x2,y2;
     if(bx<=ax){x1=ax+NW/2;y1=ay+(by>ay?NH:0);x2=bx+NW/2;y2=by+(by>ay?0:NH);const s=by>ay?1:-1;d=`M${x1} ${y1} C${x1} ${y1+30*s} ${x2} ${y2-30*s} ${x2} ${y2}`}
     else{x1=ax+NW;y1=ay+NH/2;x2=bx;y2=by+NH/2;const dx=Math.max(30,(x2-x1)/2);d=`M${x1} ${y1} C${x1+dx} ${y1} ${x2-dx} ${y2} ${x2} ${y2}`}
-    const cls=F.X&&pi===F.X.i?'now':liveDone(A)&&liveDone(n)?'dn':'fut';e+=`<path class="sx-edge ${cls}" d="${d}"/>`;const lab=n.lab[pi];if(lab){const mx=(x1+x2)/2,my=(y1+y2)/2,w=lab.length*6.4+12;e+=`<rect class="sx-elb" style="fill:#0a0b0a" x="${mx-w/2}" y="${my-9}" width="${w}" height="18" rx="5"/><text class="sx-elt" x="${mx}" y="${my+4}" text-anchor="middle">${lab}</text>`}}
+    const cls=F.X&&pi===F.X.i?'now':liveDone(A)&&liveDone(n)?'dn':'fut';e+=`<path class="sx-edge ${cls}" d="${d}"/>`;const lab=n.lab[pi];if(lab){const [mx,my]=midOf(d),w=lab.length*6.4+12;if(!hitsAny(mx-w/2-4,my-13,w+8,26,boxes))e+=`<rect class="sx-elb" style="fill:#0a0b0a" x="${mx-w/2}" y="${my-9}" width="${w}" height="18" rx="5"/><text class="sx-elt" x="${mx}" y="${my+4}" text-anchor="middle">${lab}</text>`}}
   let h=`<div class="sxb-hd"><div><h3>Blueprint</h3><p>${dLab(F.days[0])} – ${dLab(F.days.at(-1))} · every class, recording and study block, in the order it builds</p></div><span class="sx-sp"></span>
     <button class="sx-ib" data-z="out" aria-label="Zoom out">${ICO.minus}</button><span class="sxb-zm" id="sxZ">100%</span><button class="sx-ib" data-z="in" aria-label="Zoom in">${ICO.plus}</button><button class="sx-ib" data-z="now" aria-label="Centre on the current block">${ICO.fit}</button><button class="sx-ib" data-z="all" aria-label="Show the whole blueprint">${ICO.all}</button><button class="sx-ib" data-z="close" aria-label="Close (Esc)">${ICO.x}</button></div>
     <div class="sxb-vp" id="sxVp"><div class="sxb-world" id="sxW" style="width:${WW}px;height:${WH}px">`;
   F.days.forEach((d,i)=>h+=`<div class="sxb-dcol${d===tk?' today':''}" style="left:${GX+i*DW}px;width:${DW}px;height:${WH}px"></div>`);
   F.laneY.forEach(([n,y],i)=>h+=i?`<div class="sxb-lane" style="top:${y-30}px;width:${WW}px"></div>`:'');
   h+=`<svg style="position:absolute;inset:0;width:${WW}px;height:${WH}px;overflow:visible">${e}</svg>`;
-  for(const n of F.nodes){const st=nodeState(n,F.X);h+=`<div class="sx-nd ${st}" style="left:${n._fx}px;top:${n._fy}px;width:${NW}px;height:${NH}px"><span class="sxp sxl"></span><span class="sxp sxr"></span><small><span>${n.date===tk?'Today ':dLab(n.date)+' · '}${hm(n.s)}${st==='act'?' · now':st==='miss'?' · missed':''}</span>${st==='done'?'<i>✓</i>':''}</small><b class="si">${esc2(n.title)}</b></div>`}
+  for(const n of F.nodes){const st=nodeState(n,F.X);h+=`<div class="sx-nd ${st}" data-i="${n.i}" title="${esc2(n.title)}" style="left:${n._fx}px;top:${n._fy}px;width:${NW}px;height:${NH}px;--sj:${SJC[n.kind==='paper'?'paper':n.subj]||'#8b928d'}"><em class="sxq">${dLab(n.date).split(' ')[0]} ${hm(n.s)}</em><span class="sxp sxl"></span><span class="sxp sxr"></span><small><span>${n.date===tk?'Today ':dLab(n.date)+' · '}${hm(n.s)}${st==='act'?' · now':st==='miss'?' · missed':''}</span>${st==='done'?'<i>✓</i>':''}</small><b class="si">${esc2(n.title)}</b></div>`}
   h+=`</div><div class="sxb-rx" id="sxRx">${F.days.map(d=>`<span class="${d===tk?'today':''}">${d===tk?'<span class="sxb-lg">Today · </span>':''}${dLab(d)}</span>`).join('')}</div><div class="sxb-ry" id="sxRy">${F.laneY.map(([n])=>`<span>${n}</span>`).join('')}</div>
-    <div class="sxb-hint">Drag to move · scroll or + / − to zoom · Esc to close</div></div>`;
+    <div class="sxb-hint">Scroll or drag to move · Ctrl + scroll or + / − to zoom · click a block to read it · Esc to close</div><div class="sxb-sb" id="sxSb"><i></i></div></div>`;
   o.innerHTML=h;document.body.appendChild(o);o._lanes=F.laneY;centreNow(false);logI('blueprint:open');
   requestAnimationFrame(()=>requestAnimationFrame(()=>{['--ct','--cl','--cr','--cb'].forEach(p=>o.style.setProperty(p,'0px'));o.style.setProperty('--cr2','0px');o.classList.add('open')}));
   const vp=o.querySelector('#sxVp');let drag=null;
-  vp.addEventListener('pointerdown',ev=>{drag={x:ev.clientX,y:ev.clientY,vx:V.x,vy:V.y};vp.setPointerCapture(ev.pointerId);vp.classList.add('sxb-drag')});
-  vp.addEventListener('pointermove',ev=>{if(!drag)return;V.x=drag.vx+ev.clientX-drag.x;V.y=drag.vy+ev.clientY-drag.y;apply()});
-  vp.addEventListener('pointerup',()=>{drag=null;vp.classList.remove('sxb-drag')});
-  vp.addEventListener('wheel',ev=>{ev.preventDefault();const r=vp.getBoundingClientRect();zoomAt(ev.clientX-r.left,ev.clientY-r.top,Math.exp(-ev.deltaY*.0015))},{passive:false});
+  vp.addEventListener('pointerdown',ev=>{drag={x:ev.clientX,y:ev.clientY,vx:V.x,vy:V.y,t:ev.target,m:0};vp.setPointerCapture(ev.pointerId);vp.classList.add('sxb-drag')});
+  vp.addEventListener('pointermove',ev=>{if(!drag)return;drag.m=Math.max(drag.m,Math.abs(ev.clientX-drag.x)+Math.abs(ev.clientY-drag.y));V.x=drag.vx+ev.clientX-drag.x;V.y=drag.vy+ev.clientY-drag.y;apply()});
+  vp.addEventListener('pointerup',()=>{const d=drag;drag=null;vp.classList.remove('sxb-drag');if(d&&d.m<5){const nd=d.t.closest&&d.t.closest('.sx-nd');if(nd)nodeTip(+nd.dataset.i,nd)}});
+  vp.addEventListener('wheel',ev=>{ev.preventDefault();const r=vp.getBoundingClientRect();if(ev.ctrlKey||ev.metaKey){zoomAt(ev.clientX-r.left,ev.clientY-r.top,Math.exp(-ev.deltaY*.0015));return}if(ev.shiftKey){V.x-=ev.deltaY}else{V.x-=ev.deltaX;V.y-=ev.deltaY}apply()},{passive:false});
   o.querySelector('.sxb-hd').addEventListener('click',ev=>{const z=ev.target.closest('[data-z]')?.dataset.z;if(z==='in')zoomC(1.25);if(z==='out')zoomC(.8);if(z==='now')centreNow(true);if(z==='all')fitAll(true);if(z==='close')closeFull()})}
 const vpEl=()=>bpEl&&bpEl.querySelector('#sxVp');
 const fitK=()=>{const vp=vpEl();return Math.min(vp.clientWidth/WW,(vp.clientHeight-30)/WH)*.97};
 function clampV(){const vp=vpEl(),W=vp.clientWidth,H=vp.clientHeight,w=WW*V.k,h=WH*V.k,m=80;V.x=w<=W?(W-w)/2:Math.min(m,Math.max(W-w-m,V.x));V.y=h<=H-30?(H-h)/2+10:Math.min(m,Math.max(H-h-m,V.y))}
-function apply(anim){const w=bpEl&&bpEl.querySelector('#sxW');if(!w)return;clampV();w.classList.toggle('ov',V.k<.8);w.classList.toggle('tiny',V.k<.45);w.style.setProperty('--k',V.k);bpEl.querySelector('#sxRx').classList.toggle('short',V.k<.6);
+function apply(anim){const w=bpEl&&bpEl.querySelector('#sxW');if(!w)return;clampV();w.classList.toggle('ov',V.k<.75);w.classList.toggle('tiny',V.k<.45);w.style.setProperty('--k',V.k);bpEl.querySelector('#sxRx').classList.toggle('short',V.k<.6);
   const tr=anim&&!R_M()?'transform .45s cubic-bezier(.2,.8,.2,1)':'none';w.style.transition=tr;w.style.transform=`translate(${V.x}px,${V.y}px) scale(${V.k})`;
   [...bpEl.querySelectorAll('#sxRx>span')].forEach((s,i)=>{s.style.transition=tr;s.style.transform=`translateX(${V.x+(GX+i*DW+10)*V.k}px)`});
-  [...bpEl.querySelectorAll('#sxRy>span')].forEach((s,i)=>{s.style.transition=tr;s.style.transform=`translateY(${V.y+(bpEl._lanes[i][1]-34)*V.k}px)`});bpEl.querySelector('#sxZ').textContent=Math.round(V.k*100)+'%'}
+  [...bpEl.querySelectorAll('#sxRy>span')].forEach((s,i)=>{s.style.transition=tr;s.style.transform=`translateY(${V.y+(bpEl._lanes[i][1]-34)*V.k}px)`});bpEl.querySelector('#sxZ').textContent=Math.round(V.k*100)+'%';
+  const sb=bpEl.querySelector('#sxSb'),vp=vpEl(),H=WH*V.k,vh=vp.clientHeight;sb.style.display=H>vh+2?'block':'none';if(H>vh+2){const tr2=sb.clientHeight,th=Math.max(30,tr2*vh/H);sb.firstChild.style.height=th+'px';sb.firstChild.style.transform=`translateY(${(tr2-th)*Math.min(1,Math.max(0,(80-V.y)/(H-vh+160)))}px)`}}
 function zoomAt(px,py,f){const k=Math.min(2.2,Math.max(fitK(),V.k*f));V.x=px-(px-V.x)*k/V.k;V.y=py-(py-V.y)*k/V.k;V.k=k;apply()}
 function zoomC(f){const vp=vpEl();zoomAt(vp.clientWidth/2,vp.clientHeight/2,f);apply(true)}
 function fitAll(anim){V.k=fitK();clampV();apply(anim)}
-function centreNow(anim){const vp=vpEl(),n=FN.find(n=>nodeState(n,focusNode())==='act')||FN.find(n=>n.date===todayK())||FN[0];V.k=1;if(n){V.x=vp.clientWidth*.42-(n._fx+NW/2);V.y=vp.clientHeight/2-(n._fy+NH/2)}apply(anim)}
+function centreNow(anim){const vp=vpEl(),n=FN.find(n=>nodeState(n,focusNode())==='act')||FN.find(n=>n.date===todayK())||FN[0];V.k=1;if(n){V.x=vp.clientWidth*.42-(n._fx+NW/2);V.y=Math.min(20,Math.max(vp.clientHeight-WH-20,vp.clientHeight-(n._fy+NH)-60))}apply(anim)}
 function closeFull(){if(!bpEl)return;const o=bpEl,src=box.querySelector('.sx-bp').getBoundingClientRect(),W=innerWidth,H=innerHeight;o.classList.remove('open');
   o.style.setProperty('--ct',src.top+'px');o.style.setProperty('--cl',src.left+'px');o.style.setProperty('--cr',(W-src.right)+'px');o.style.setProperty('--cb',(H-src.bottom)+'px');o.style.setProperty('--cr2','18px');
   setTimeout(()=>{o.remove();bpEl=null},R_M()?0:520)}
+
+/* ---------- node tip: the full title on click ---------- */
+function nodeTip(i,el){document.querySelector('.sx-tip')?.remove();const n=graphAll()[i];if(!n)return;const st=nodeState(n,focusNode()),r=el.getBoundingClientRect(),t=document.createElement('div');t.className='sx-tip';
+  t.innerHTML=`<small style="--sj:${SJC[n.kind==='paper'?'paper':n.subj]||'#8b928d'}"><i></i>${SUBJ[n.subj]||'Paper'} · ${n.date===todayK()?'Today':dLab(n.date)} · ${hm(n.s)}–${hm(n.e)}</small><b>${esc2(n.title)}</b>${n.sub?`<p>${esc2(n.sub)}</p>`:''}
+    <span class="st">${{act:'Now',done:'Done',miss:'Missed',lock:'Waiting on a missed block','':'Ahead'}[st]}</span>${st==='act'?'<button class="sx-go" data-begin>Begin</button>':''}`;
+  document.body.appendChild(t);const w=t.offsetWidth,hh=t.offsetHeight;t.style.left=Math.max(10,Math.min(innerWidth-w-10,r.left+r.width/2-w/2))+'px';t.style.top=(r.bottom+8+hh>innerHeight?r.top-hh-8:r.bottom+8)+'px';
+  setTimeout(()=>{const off=ev=>{if(ev.target.closest&&ev.target.closest('[data-begin]'))return;if(!t.contains(ev.target)){t.remove();removeEventListener('pointerdown',off,true)}};addEventListener('pointerdown',off,true)},0)}
+document.addEventListener('click',e=>{if(e.target.closest('.sx-tip [data-begin]')){document.querySelector('.sx-tip')?.remove();if(bpEl)closeFull();logI('begin');try{(typeof vgo==='function'?vgo:go)('Focus');setTimeout(()=>{if(typeof fRun!=='undefined'&&!fRun&&fPhase==='focus')document.getElementById('fGo').click()},400)}catch(x){}}});
+addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelector('.sx-tip')?.remove()},true);
 
 /* ---------- target popover (his own words; stays in this browser) ---------- */
 function targetPop(){if(document.querySelector('.sx-pop'))return;const P=prof(),o=document.createElement('div');o.className='sx-pop';
@@ -366,7 +382,8 @@ document.addEventListener('click',e=>{
   const s=e.target.closest('[data-sleep]');if(s){const[d,b]=s.dataset.sleep.split('|');SYS.sleep[d]={b,t:Date.now()};saveSys();logI('check:sleep',{b});render();return}
   const n=e.target.closest('[data-phn]');if(n){const[d,v]=n.dataset.phn.split('|');SYS.phone[d]={night:v==='1'};saveSys();logI('check:phone-night',{v});render();return}
   const pm=e.target.closest('[data-phm]');if(pm){const[d,v]=pm.dataset.phm.split('|');SYS.phone[d].morning=v==='1';saveSys();logI('check:phone-morning',{v});render();return}
-  if(e.target.closest('[data-begin]')||e.target.closest('.sx-nd.act')){logI('begin');try{(typeof vgo==='function'?vgo:go)('Focus');setTimeout(()=>{if(typeof fRun!=='undefined'&&!fRun&&fPhase==='focus')document.getElementById('fGo').click()},400)}catch(x){}}});
+  const nd=e.target.closest('.sx-nd');if(nd&&!e.target.closest('[data-begin]')){nodeTip(+nd.dataset.i,nd);return}
+  if(e.target.closest('[data-begin]')){logI('begin');try{(typeof vgo==='function'?vgo:go)('Focus');setTimeout(()=>{if(typeof fRun!=='undefined'&&!fRun&&fPhase==='focus')document.getElementById('fGo').click()},400)}catch(x){}}});
 document.addEventListener('change',e=>{const f=e.target.closest('[data-prof]');if(!f)return;const P=prof();P[f.dataset.prof]=f.value.trim();wr(PK,P)});
 addEventListener('keydown',e=>{if(!bpEl)return;if(e.key==='Escape')closeFull();if(e.key==='+'||e.key==='=')zoomC(1.25);if(e.key==='-')zoomC(.8);const m={ArrowLeft:[80,0],ArrowRight:[-80,0],ArrowUp:[0,80],ArrowDown:[0,-80]}[e.key];if(m){V.x+=m[0];V.y+=m[1];apply(true)}});
 let rsT=0;addEventListener('resize',()=>{clearTimeout(rsT);rsT=setTimeout(()=>{if(onHome())drawGraph(true);if(bpEl)apply()},120)});
