@@ -439,7 +439,8 @@ function focBlk(){const{b,cur}=blockNow(),el=q1('#sxfBlk');if(!el)return;
   const ch=chainOf(nodeOf(b)),tk=todayK();
   el.innerHTML=`<div class="lbl">${cur?'Current block':'Next block · starts '+hm(b.s)}</div><h2 class="sxf-t si">${esc2(b.title)}</h2><div class="sxf-tm num${cur?' on':''}">${hm(b.s)} – ${hm(b.e)}</div><div class="sx2-cap"><i class="sx2-dot" style="--sj:${SJC[b.subj]||'#8b928d'}"></i>${SUBJ[b.subj]||'Paper'} · ${kind}</div>
     ${ch.length>1?`<div class="lbl" style="margin-top:14px">Blueprint chain</div><div class="sxf-ch">${ch.map(([n,r])=>{const dn=liveDone(n),miss=!dn&&(n.date<tk||(n.date===tk&&n.e<=nowMin()))&&r!=='now';
-      return `<div class="c ${r==='now'?'now':dn?'ok':miss?'miss':r==='unl'?'lock':''}"><span class="si">${esc2(n.title)}</span><small>${r==='now'?(cur?'now':hm(n.s)):r==='pre'?(dn?'done':miss?'missed':dayW(n.date)):r==='unl'?dayW(n.date)+' · unlocks':dayW(n.date)}</small></div>`}).join('')}</div>`:''}`}
+      return `<div class="c ${r==='now'?'now':dn?'ok':miss?'miss':r==='unl'?'lock':''}"><span class="si">${esc2(n.title)}</span><small>${r==='now'?(cur?'now':hm(n.s)):r==='pre'?(dn?'done':miss?'missed':dayW(n.date)):r==='unl'?dayW(n.date)+' · unlocks':dayW(n.date)}</small></div>`}).join('')}</div>`:''}
+    ${(()=>{const L=(CS.days[tk]||[]).filter(e=>isStudy(e)&&e.s>=b.e&&e!==b).sort((x,y)=>x.s-y.s).slice(0,3);return L.length?`<div class="lbl" style="margin-top:14px">Later today</div><div class="sxf-later">${L.map(e=>`<div><span class="num">${hm(e.s)}</span><i class="sx2-dot" style="--sj:${SJC[e.subj]||'#8b928d'}"></i><span class="si">${esc2(e.title)}</span></div>`).join('')}</div>`:''})()}`}
 function cfListF(){const el=q1('#sxfCfL');if(!el)return;const tk=todayK(),L=(typeof CF!=='undefined'?CF:[]).filter(x=>x.d===tk).slice(-3).reverse();
   el.innerHTML=L.map(x=>`<div class="q"><span class="num">${x.ok?'✓':'?'}</span><span>${esc2(x.q)}</span></div>`).join('');
   const s=q1('#sxfCfU'),src=q1('#cfUnit');if(s&&src&&document.activeElement!==s){s.innerHTML=src.innerHTML;s.value=src.value}}
@@ -447,8 +448,9 @@ function raceSvg(S,tk){const t0=360,t1=1380,X=t=>((t-t0)/(t1-t0)*260).toFixed(1)
   const shEnd=S.days.length?S.at(1440):0,vm=Math.max(60,shEnd,S.you+(fRun&&fPhase==='focus'?FMODES[fMode].f:0))*1.08,Y=v=>(80-v/vm*76).toFixed(1);
   let yp=`M${X(t0)} ${Y(0)}`,c=0;you.slice().sort((a,b)=>a[0]-b[0]).forEach(([t,v])=>{yp+=` L${X(t)} ${Y(c)} L${X(t)} ${Y(c+v)}`;c+=v});yp+=` L${X(Math.min(m,t1))} ${Y(c)}`;
   let sp='';if(S.days.length)for(let t=t0;t<=t1;t+=15)sp+=(sp?' L':'M')+X(t)+' '+Y(S.at(t));
-  const pend=fRun&&fPhase==='focus'?`<path class="pend" d="M${X(m)} ${Y(c)} L${X(Math.min(t1,m+fLeft/60))} ${Y(c+FMODES[fMode].f)}"/>`:'';
-  return `<svg viewBox="0 0 260 84" preserveAspectRatio="none" aria-hidden="true">${sp?`<path class="sl" d="${sp}"/>`:''}<path class="yl" d="${yp}"/>${pend}<line class="nl" x1="${X(m)}" x2="${X(m)}" y1="0" y2="84"/></svg>`}
+  const top=Math.round(vm/1.08/60*10)/10;
+  return `<div class="sxf-chart"><div class="yax num"><span>${fmH(vm/1.08)} h</span><span>0</span></div><svg viewBox="0 0 260 84" preserveAspectRatio="none" aria-hidden="true"><line class="gl" x1="0" x2="260" y1="4" y2="4"/><line class="gl" x1="0" x2="260" y1="80" y2="80"/>${sp?`<path class="sl" d="${sp}"/>`:''}<path class="yl" d="${yp}"/><line class="nl" x1="${X(m)}" x2="${X(m)}" y1="0" y2="84"/></svg></div>
+    <div class="sxf-ax num"><span>06</span><span>12</span><span>18</span><span>23</span></div><div class="sxf-leg"><span><i class="you"></i>You</span>${sp?'<span><i class="sh"></i>Shadow</span>':''}</div>`}
 function focRace(){const el=q1('#sxfRace');if(!el)return;const tk=todayK(),S=shadow(),m=nowMin(),sh=S.days.length?S.at(m):null,you=S.you;
   if(sh==null){el.innerHTML=`<div class="sx2-cap">Today vs your shadow · finished sessions only</div><div class="sxf-big num">${fmH(you)}</div><div class="sx2-cap">focused today</div>${you?raceSvg(S,tk):""}<p class="sxf-note">Your shadow forms from your best 3 of the last 7 days. Finish sessions today and tomorrow you race them.</p>`;return}
   const df=you-sh,f=FMODES[fMode].f;
@@ -463,8 +465,6 @@ function focSide(){const el=q1('#sxfSide');if(!el)return;const tk=todayK(),m=now
   const left=fRun?(fEnd-Date.now())/1000:fLeft,A=P2.A,line=(SYS.radio[tk]||[]).slice(-1)[0],day=(FO.log[tk]||{min:0}).min;
   el.innerHTML=`<div class="sx2-ph"><h3>This session</h3><p>What the system is watching</p></div>
     <div class="sx2-row"><span>Left the tab</span><b class="num${A.n?' warn':''}">${A.n?`${A.n} time${A.n>1?'s':''} · ${ssm(A.sec)}`:'0 times'}</b></div>
-    <div class="sx2-row"><span>${fRun?'Break at':'Break after'}</span><b class="num">${fRun?hm(m+Math.ceil(left/60)):FMODES[fMode].f+' min'}</b></div>
-    <div class="sx2-row"><span>Focused today</span><b class="num">${fmH(day)} h</b></div>
     ${line?`<div class="sxf-radio"><span class="num">${line.t}</span>${esc2(line.text)}</div>`:''}`}
 function sesInfo(){const tk=todayK(),{b,cur}=blockNow(),done=(FO.log[tk]||{n:0}).n,per=FMODES[fMode].f+FMODES[fMode].b;
   if(b&&cur){const inB=(SYS.ses[tk]||[]).filter(x=>x[0]>b.s&&x[0]<=b.e).length,tot=Math.max(inB+1,Math.round((b.e-b.s)/per));return{n:inB+1,tot,done}}return{n:done+1,tot:0,done}}
@@ -482,9 +482,9 @@ function focFull(){const D=q1('#sxFoc');if(!D)return;const brk=fPhase==='break',
 function focStrip(){const el=q1('#sxfStrip');if(!el)return;const tk=todayK(),t0=360,t1=1380,X=t=>((Math.min(t1,Math.max(t0,t))-t0)/(t1-t0)*100).toFixed(2)+'%',W=(a,b)=>((Math.min(t1,b)-Math.max(t0,a))/(t1-t0)*100).toFixed(2)+'%',m=nowMin();
   const bl=(CS.days[tk]||[]).filter(isStudy).map(e=>`<i class="b" style="left:${X(e.s)};width:${W(e.s,e.e)};--sj:${SJC[e.subj]||'#8b928d'}" title="${hm(e.s)}–${hm(e.e)} ${esc2(e.title)}"></i>`).join('');
   const ses=(SYS.ses[tk]||[]).map(([t,v])=>`<i class="s" style="left:${X(t-v)};width:${W(t-v,t)}" title="Finished ${hm(t)} · ${v} min"></i>`).join('');
-  const run=fRun&&fPhase==='focus'?`<i class="r" style="left:${X(m)};width:${W(m,m+fLeft/60)}"></i>`:'';
+  const st=m-(fTotal-(fRun?Math.max(0,(fEnd-Date.now())/1000):fLeft))/60,run=fRun&&fPhase==='focus'?`<i class="r" style="left:${X(st)};width:${W(st,st+fTotal/60)}" title="This session"></i>`:'';
   const n=(SYS.ses[tk]||[]).length,tot=(SYS.ses[tk]||[]).reduce((a,x)=>a+x[1],0);
-  el.innerHTML=`<div class="h"><span>Today</span><span class="num">${n} session${n===1?'':'s'} · ${fmH(tot)} h</span></div><div class="tl">${bl}${ses}${run}<i class="now" style="left:${X(m)}"></i></div><div class="ax num"><span>06</span><span>12</span><span>18</span><span>23</span></div>`}
+  el.innerHTML=`<div class="h"><span>Today</span><span class="num">${n} session${n===1?'':'s'} · ${fmH(tot)} h</span></div><div class="tl">${bl}${ses}${run}${run?'':`<i class="now" style="left:${X(m)}"></i>`}</div><div class="ax num"><span>06</span><span>12</span><span>18</span><span>23</span></div>`}
 function focTick(noFull){const D=q1('#sxFoc');if(!D)return;const left=fRun?Math.max(0,(fEnd-Date.now())/1000):fLeft,on=Math.round((fTotal?1-left/fTotal:0)*60);
   /* a new session starts: the time left jumped up or the phase changed */
   if(fPhase!==P2.prevPh||left>P2.prevLeft+2){if(fPhase==='focus')P2.A={n:0,sec:0};P2.prevPh=fPhase;if(!noFull){P2.prevLeft=left;focFull();return}}P2.prevLeft=left;
@@ -522,20 +522,20 @@ function calSide(){const side=q1('#calPage .cside');if(!side)return;let box=side
   box.innerHTML=`<section class="card sx2-cu"><h2>Catch-up owed</h2><div class="big num">${fmH(oh)}</div><p>${owe.length?`${owe.length} block${owe.length>1?'s':''} · due by ${fmtD(due)}${late?` · <b class="warn">${late} overdue</b>`:''}`:'Nothing owed. Keep it that way.'}</p></section>
     <section class="card sx2-wk"><h2>${wkLab}</h2><div class="sx2-row"><span>Blocks done</span><b class="num">${sd} / ${st}</b></div><div class="sx2-row"><span>Class hours</span><b class="num">${nf(cd)} / ${nf(ch)}</b></div><div class="sx2-row"><span>Focus, verified</span><b class="num">${fmH(foc)} h</b></div></section>`;
   const bar=q1('#calPage .cbar');if(bar&&!bar.querySelector('#sxLinks')){const b=document.createElement('button');b.id='sxLinks';b.type='button';b.className='tbtn sx2-only';bar.querySelector('#cFs')?.before(b);b.addEventListener('click',()=>{P2.links=!P2.links;P2.lkScrolled=0;calLinks()})}
-  const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide links':'Links for the current block';lb.setAttribute('aria-pressed',P2.links)}}
-function calLinks(){const cb=q1('#cBody');if(!cb)return;cb.querySelector('#sxLk')?.remove();cb.classList.toggle('sx-lk',P2.links);if(!P2.links&&q1('#sxLkMore'))q1('#sxLkMore').hidden=true;const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide links':'Links for the current block';lb.setAttribute('aria-pressed',P2.links)}
+  const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide chain':'Chain for the current block';lb.setAttribute('aria-pressed',P2.links)}}
+function calLinks(){const cb=q1('#cBody');if(!cb)return;cb.querySelector('#sxLk')?.remove();cb.querySelectorAll('.sx-step').forEach(x=>x.remove());cb.classList.toggle('sx-lk',P2.links);if(!P2.links&&q1('#sxLkMore'))q1('#sxLkMore').hidden=true;const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide chain':'Chain for the current block';lb.setAttribute('aria-pressed',P2.links)}
   if(!P2.links||!isShadow())return;const X=focusNode();if(!X)return;const G=graphAll(),S=new Set([X.i,...X.par,...X.kids]);X.kids.forEach(i=>G[i].kids.forEach(j=>{if(G[j].unit&&G[j].unit===G[i].unit)S.add(j)}));
   const elOf=n=>{if(!curKeys.includes(n.date))return null;return cb.querySelector(`.col[data-k="${n.date}"] .ev[data-id="${CSS.escape(String(n.id))}"]`)};
   const sc=q1('#cScroll'),hd=q1('#cHead');if(sc&&!P2.lkScrolled){P2.lkScrolled=1;let top=1e9;for(const i of S){const el=elOf(G[i]);if(el)top=Math.min(top,el.offsetTop)}if(top<1e9){sc.scrollTop=Math.max(0,top-8)}}
-  const r0=cb.getBoundingClientRect();let h='';const lit=new Set();
-  for(const i of S){const n=G[i];for(const pi of n.par){if(!S.has(pi))continue;const a=elOf(G[pi]),b=elOf(n);if(!a||!b)continue;lit.add(a);lit.add(b);const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
-    const x1=ra.right-r0.left,y1=ra.top+Math.min(ra.height/2,18)-r0.top,x2=rb.left-r0.left,y2=rb.top+Math.min(rb.height/2,18)-r0.top,dx=Math.max(30,Math.abs(x2-x1)/2),on=pi===X.i||i===X.i;
-    h+=`<path class="${on?'n':''}" d="M${x1.toFixed(1)} ${y1.toFixed(1)} C${(x1+dx).toFixed(1)} ${y1.toFixed(1)} ${(x2-dx).toFixed(1)} ${y2.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}"/><circle class="${on?'n':''}" cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="3"/>`}}
+  /* no lines across the grid (they crossed other blocks' text): the chain's blocks are numbered in order instead,
+     and everything else is dimmed */
+  cb.querySelectorAll('.sx-step').forEach(x=>x.remove());const lit=new Set(),chain=[...S].map(i=>G[i]).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.s-b.s);
+  chain.forEach((n,i)=>{const el=elOf(n);if(!el)return;lit.add(el);const b=document.createElement('span');b.className='sx-step'+(n.i===X.i?' n':'');b.textContent=i+1;b.title=`Step ${i+1} of ${chain.length}${n.i===X.i?' · now':''}`;el.appendChild(b)});
   cb.querySelectorAll('.ev').forEach(e=>e.classList.toggle('sx-dim',!lit.has(e)));
-  if(!h){toast&&toast('The current block has no links in this week.');return}
+  if(lit.size<2){toast&&toast('The current block has no links in this week.');return}const h='';
   const sc2=q1('#cScroll');if(sc2){const vb=sc2.getBoundingClientRect().bottom,below=[...lit].filter(e=>e.getBoundingClientRect().top>vb-8);let mk=q1('#sxLkMore');if(!mk){mk=document.createElement('button');mk.id='sxLkMore';mk.type='button';q1('#calPage .cmain').appendChild(mk);mk.addEventListener('click',()=>{const t=[...document.querySelectorAll('#cBody .ev:not(.sx-dim)')].map(e=>e.offsetTop).filter(y=>y>q1('#cScroll').scrollTop+q1('#cScroll').clientHeight-40).sort((a,b)=>a-b)[0];if(t!=null)q1('#cScroll').scrollTop=t-40;setTimeout(calLinks,60)})}
-    mk.hidden=!below.length;mk.innerHTML=`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4"/></svg>${below.length} more linked block${below.length>1?'s':''} below`}
-  cb.insertAdjacentHTML('beforeend',`<svg id="sxLk" aria-hidden="true">${h}</svg>`)}
+    mk.hidden=!below.length;mk.innerHTML=`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4"/></svg>${below.length} more step${below.length>1?"s":""} below`}
+}
 
 /* ================= LIBRARY ================= */
 const WARN='<svg class="sxw" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5 14 13H2z"/><path d="M8 6.5v3M8 11.2v.1"/></svg>';
@@ -546,15 +546,15 @@ function libUnit(u,tk,X){const bl=unitBlocks(u.k),d=bl.filter(e=>e.done).length,
   return{u,bl,d,xs,xd,nx,st}}
 const stLab=(I)=>({now:'NOW',today:'CLASS TODAY',prog:'IN PROGRESS',late:'OVERDUE',done:'DONE'})[I.st]||(I.nx?'NEXT '+fmtD(I.nx.date).toUpperCase():'NOT IN PLAN');
 function libCard(I){const{u,bl,d,xs,xd}=I,nd=unitNeeds(u.k).filter(k=>UNIT_BY[k]),ul=unitUnlocks(u.k).filter(k=>!isX(UNIT_BY[k])),ok=k=>{const b=unitBlocks(k);return b.length&&b.every(e=>e.done)};
-  return `<article class="sxl-card st-${I.st}" style="--sj:${SJC[u.subj]}"><button type="button" class="lb-main sxl-main" data-u="${u.k}" aria-expanded="false">
+  return `<article class="sxl-card st-${I.st}${I.wide?' wide':''}" style="--sj:${SJC[u.subj]}"><button type="button" class="lb-main sxl-main" data-u="${u.k}" aria-expanded="false">
     <div class="t"><div><h4 class="si${u.si.length>16?' long':''}" title="${esc2(u.si)}">${esc2(u.si)}</h4><div class="en"><i class="sx2-dot"></i>${esc2(u.en)}</div></div><span class="state num">${stLab(I)}</span></div>
     <div class="segs">${segHtml(Math.min(bl.length,30)||1,bl.length?Math.round(d/bl.length*Math.min(bl.length,30)):0)}</div>
     <div class="m"><span><b class="num">${d}</b> / ${bl.length} days</span>${xs.length?`<span>+ extras <b class="num">${xd}/${xs.length}</b></span>`:''}${u.tag?`<span>${esc2(u.tag)}</span>`:''}${cfOpen(u.k)?`<span class="cfq">? ${cfOpen(u.k)} open</span>`:''}</div>
-    ${nd.length||ul.length?`<div class="dep">${nd.map(k=>`<span class="chip${ok(k)?' ok':''}">${ok(k)?'✓ ':''}needs ${esc2(UNIT_BY[k].en.replace(/ extras$/,''))}</span>`).join('')}${ul.slice(0,2).map(k=>`<span class="chip">unlocks ${esc2(UNIT_BY[k].en)}</span>`).join('')}</div>`:''}</button></article>`}
+    ${nd.length||ul.length?`<div class="dep">${nd.map(k=>`<span class="chip${ok(k)?' ok':''}">${ok(k)?'✓ ':''}needs ${esc2(UNIT_BY[k].en.replace(/ extras$/,''))}</span>`).join('')}${ul.length?`<span class="chip ul" title="Unlocks: ${esc2(ul.map(k=>UNIT_BY[k].en).join(', '))}">unlocks ${esc2(ul.slice(0,2).map(k=>UNIT_BY[k].en).join(', '))}${ul.length>2?` +${ul.length-2}`:''}</span>`:''}</div>`:''}</button></article>`}
 function libShadow(){const box=q1('#lbList');if(!box)return;const tk=todayK(),X=focusNode();let ok=lbOpen&&UNIT_BY[lbOpen];if(ok&&isX(UNIT_BY[lbOpen]))lbOpen=lbOpen.slice(0,-1);
   const I=CLASSES.filter(u=>u.subj===lbS&&!isX(u)).map(u=>libUnit(u,tk,X));
   if(lbOpen&&UNIT_BY[lbOpen]){box.innerHTML=libOpen(I.find(x=>x.u.k===lbOpen)||libUnit(UNIT_BY[lbOpen],tk,X),tk,X);return}
-  const prog=I.filter(x=>['now','late','today','prog'].includes(x.st)).sort((a,b)=>['now','late','today','prog'].indexOf(a.st)-['now','late','today','prog'].indexOf(b.st)),nx=I.filter(x=>x.st==='next').sort((a,b)=>(a.nx?.date||'9')<(b.nx?.date||'9')?-1:1),dn=I.filter(x=>x.st==='done');
+  const prog=I.filter(x=>['now','late','today','prog'].includes(x.st)).sort((a,b)=>['now','late','today','prog'].indexOf(a.st)-['now','late','today','prog'].indexOf(b.st)),nx=I.filter(x=>x.st==='next').sort((a,b)=>(a.nx?.date||'9')<(b.nx?.date||'9')?-1:1),dn=I.filter(x=>x.st==='done');prog.forEach(x=>x.wide=prog.length<=2);
   box.innerHTML=`<div class="sxl-grid">${prog.length?`<div class="sxl-sect">In progress</div>${prog.map(libCard).join('')}`:''}${nx.length?`<div class="sxl-sect">Coming up</div>${nx.map(libCard).join('')}`:''}${dn.length?`<div class="sxl-sect">Done</div>${dn.map(libCard).join('')}`:''}</div>`}
 function libOpen(I,tk,X){const{u,bl,d,xs,xd,nx}=I,k=u.k,rec=REC[u.rec||k]||'',S=(window.SUMMARY||{})[k],st=typeof STORY!=='undefined'&&STORY[k];
   const tabs=[['days','Days'],S?['sum','සාරාංශය']:null,st?['story','Story']:null,['fb','Formulas'],['qb','Past questions'],['cf','Confused'+(cfOpen(k)?' · '+cfOpen(k):'')]].filter(Boolean);
@@ -583,9 +583,9 @@ function mapPost(){const svg=q1('#lmSvg');if(!svg)return;const X=focusNode(),tk=
 /* ---------- Library map in Signal style: dark nodes, thin lines, done lit, current glowing, locked dim ---------- */
 const SM={V:{x:0,y:0,k:1},sel:{},fs:false,drag:null,D:null};
 function shareOf(u,s){try{const W=window.WEIGHTS;if(!W)return null;
-  if(s==='phy'){const p=W.phy.units[u.k];return p?{v:Math.round(p.pct),t:'of Paper I'}:null}
-  if(s==='chem'){const g=Object.values(W.chem.p1).find(g=>(g.g||[]).includes(u.k));if(!g)return null;const v=g.mean/50*100/((g.g||[1]).length);return{v:Math.max(1,Math.round(v)),t:'of Paper I',ap:(g.g||[]).length>1}}}catch(e){}return null}
-function mastOf(u,s){try{const last=mqLast(),g=mqGroups(s).find(g=>g.units.includes(u.k));if(!g)return null;const m=mqMast(s,g,last);return m.n?Math.round(m.m*100):null}catch(e){return null}}
+  if(s==='phy'){const p=W.phy.units[u.k];return p?{v:Math.round(p.pct),t:'of Paper I',ap:true}:null}
+  if(s==='chem'){const g=Object.values(W.chem.p1).find(g=>(g.g||[]).includes(u.k));if(!g)return null;const v=g.mean/50*100/((g.g||[1]).length);return{v:Math.max(1,Math.round(v)),t:'of Paper I',ap:true}}}catch(e){}return null}
+function mastOf(u,s){try{const last=mqLast(),g=mqGroups(s).find(g=>g.units.includes(u.k));if(!g)return null;const m=mqMast(s,g,last);return m.n>=3?Math.round(m.m*100):null}catch(e){return null}}
 function mapData(){const s=lbS,U=lmUnits(s),by=Object.fromEntries(U.map(u=>[u.k,u])),tk=todayK(),X=focusNode(),M=s==='maths';
   let cur=X&&X.date===tk?(M?(X.subj==='maths'?'m:'+tk.slice(0,7):null):(X.unit||'').replace(/x$/,'')):null;
   const st={};U.forEach(u=>{st[u.k]=lmState(u,tk,by)[0]});if(!cur||!by[cur])cur=(U.find(u=>st[u.k]==='now')||{}).k||null;
@@ -608,7 +608,8 @@ function mapData(){const s=lbS,U=lmUnits(s),by=Object.fromEntries(U.map(u=>[u.k,
       const v=Object.fromEntries(L[c].map(k=>[k,bc(k)]));L[c].sort((a,b)=>v[a]-v[b]);L[c].forEach((k,i)=>o[k]=i)}
     const n=cross();if(n<bestN){bestN=n;best=JSON.stringify(L)}}
   Object.assign(L,JSON.parse(best));
-  for(let c=0;c<nL;c++){let y=40;L[c].forEach(k=>{if(k[0]==='~'){pos[k]=[40+c*GX,y];y+=DY}else{pos[k]=[40+c*GX,y];y+=GY}})}
+  const lh=c=>L[c].reduce((a,k)=>a+(k[0]==='~'?DY:GY),0),maxH=Math.max(...[...Array(nL).keys()].map(lh));
+  for(let c=0;c<nL;c++){let y=40+Math.round((maxH-lh(c))/2);L[c].forEach(k=>{if(k[0]==='~'){pos[k]=[40+c*GX,y];y+=DY}else{pos[k]=[40+c*GX,y];y+=GY}})}
   const P=Object.values(pos),W=Math.max(...P.map(p=>p[0]))+NW+40,H=Math.max(...U.map(u=>pos[u.k][1]))+NH+40;
   return{s,U,by,st,cur,pos,NW,NH,W,H,M,seg,crossings:bestN,dep}}
 function mapHtml(){const D=mapData(),{U,by,st,cur,pos,NW,NH,s,M}=D;SM.D=D;const sel=SM.sel[s]&&by[SM.sel[s]]?SM.sel[s]:cur||(U[0]||{}).k;SM.sel[s]=sel;
@@ -622,15 +623,15 @@ function mapHtml(){const D=mapData(),{U,by,st,cur,pos,NW,NH,s,M}=D;SM.D=D;const 
     const p=(paths[key]=paths[key]||[]);if(!p.length)p.push(`M${xs} ${y1}`);else p.push(`L${xs} ${y1}`);
     if(Math.abs(y2-y1)<1)p.push(`L${xe} ${y2}`);else{const r=Math.min(8,Math.abs(y2-y1)/2),sg=y2>y1?1:-1;p.push(`L${x.lane-r} ${y1} Q${x.lane} ${y1} ${x.lane} ${y1+sg*r} L${x.lane} ${y2-sg*r} Q${x.lane} ${y2} ${x.lane+r} ${y2} L${xe} ${y2}`)}
     if(b[0]==='~')p.push(`L${pos[b][0]+NW} ${y2}`)}
-  let e='';for(const key in paths){const[k,u]=key.split('>');const lit=st[k]==='done',hot=lit&&u===cur;e+=`<path class="${hot?'hot':lit?'lit':''}" d="${paths[key].join(' ')}"/>`}
+  let e='';for(const key in paths){const[k,u]=key.split('>');const lit=st[k]==='done',hot=lit&&u===cur;e+=`<path data-a="${esc2(k)}" data-b="${esc2(u)}" class="${hot?'hot':lit?'lit':''}${k===sel||u===sel?' on':''}" d="${paths[key].join(' ')}"/>`}
   const nodes=U.map(u=>{const[x,y]=pos[u.k],sv=st[u.k],dn=u.bl.filter(b=>b.done).length,n=u.bl.length,sh=M?null:shareOf(u,s),ms=M||!(dn||sv==='now'||u.k===cur)?null:mastOf(u,s),c=u.k===cur?'cur':sv;
     const tag=c==='cur'?'NOW':sv==='done'?'DONE':sv==='lock'?'LOCKED':sv==='now'?'IN PROGRESS':(u.bl[0]?fmtD(u.bl[0].date).toUpperCase():'');
     const xs=u.xs&&u.xs.length?u.xs.flatMap(x=>x.bl):[];
     return `<button type="button" class="sxm-n st-${c}${u.k===sel?' sel':''}" data-mk="${esc2(u.k)}" style="left:${x}px;top:${y}px;width:${NW}px;height:${NH}px" title="${esc2(u.si)} · ${esc2(u.en)}">
       <span class="r1"><i class="sx2-dot"></i><span class="en">${esc2(u.en)}</span><span class="tg num">${tag}</span></span><b class="si">${esc2(u.si)}</b>
-      <span class="r3"><span><b class="num">${dn}/${n}</b> ${M?'classes':'days'}${xs.length?` · +extras <b class="num">${xs.filter(b=>b.done).length}/${xs.length}</b>`:''}</span><span>${ms!=null?`mastery <b class="num">${ms}%</b>`:sh?`<b class="num">${sh.ap?'≈':''}${sh.v}%</b> of paper`:''}</span></span>
+      <span class="r3"><span><b class="num">${dn}/${n}</b> ${M?'classes':'days'}${xs.length?` · +extras <b class="num">${xs.filter(b=>b.done).length}/${xs.length}</b>`:''}</span><span>${ms!=null?`group mastery <b class="num">${ms}%</b>`:sh?`<b class="num">${sh.ap?'≈':''}${sh.v}%</b> of paper`:''}</span></span>
       <span class="pb"><i style="width:${n?Math.round(dn/n*100):0}%"></i></span></button>`}).join('');
-  return `<div class="sxm${SM.fs?' fs':''}" id="sxm"><div class="sxm-vp" id="sxmVp" tabindex="0" aria-label="Unit map. Drag or scroll to move, Ctrl and scroll to zoom."><div class="sxm-w" id="sxmW" style="width:${D.W}px;height:${D.H}px"><svg class="sxm-e" width="${D.W}" height="${D.H}" aria-hidden="true">${e}</svg>${nodes}</div></div>
+  return `<div class="sxm${SM.fs?' fs':''}" id="sxm"><span class="sxm-more" aria-hidden="true">Drag or scroll to see more</span><div class="sxm-vp" id="sxmVp" tabindex="0" aria-label="Unit map. Drag or scroll to move, Ctrl and scroll to zoom."><div class="sxm-w" id="sxmW" style="width:${D.W}px;height:${D.H}px"><svg class="sxm-e" width="${D.W}" height="${D.H}" aria-hidden="true">${e}</svg>${nodes}</div></div>
     <div class="sxm-tb"><button type="button" class="sx2-btn sm" data-mz="out" aria-label="Zoom out">−</button><span class="num" id="sxmZ">100%</span><button type="button" class="sx2-btn sm" data-mz="in" aria-label="Zoom in">+</button><button type="button" class="sx2-btn sm" data-mz="fit">Fit</button><button type="button" class="sx2-btn sm" data-mz="fs">${SM.fs?'Exit full screen':'Full screen'}</button><div class="sxm-leg"><span><i class="l-cur"></i>Now</span><span><i class="l-done"></i>Done</span><span><i class="l-next"></i>Open</span><span><i class="l-lock"></i>Locked</span><span class="h">Line: finish this to start that · % = share of Paper I, or your mastery once you log questions</span></div></div>
     <aside class="sxm-side" id="sxmSide">${mapSide(sel)}</aside></div>`}
 function mapSide(k){const D=SM.D,u=D&&D.by[k];if(!u)return '';const sv=k===D.cur?'cur':D.st[k],dn=u.bl.filter(b=>b.done).length,sh=D.M?null:shareOf(u,D.s),ms=D.M?null:mastOf(u,D.s),kids=D.U.filter(x=>x.d.includes(k));
@@ -641,17 +642,17 @@ function mapSide(k){const D=SM.D,u=D&&D.by[k];if(!u)return '';const sv=k===D.cur
     ${sh?`<div class="sx2-row"><span>Share of Paper I</span><b class="num">${sh.ap?'≈':''}${sh.v}%</b></div>`:''}${!D.M?`<div class="sx2-row"><span>Mastery</span><b class="num">${ms!=null?ms+'%':'not tried'}</b></div>`:''}
     <div class="lbl">Needs</div><div class="chips">${ch(u.d.filter(x=>D.by[x]).map(x=>D.by[x]))}</div><div class="lbl">Unlocks</div><div class="chips">${ch(kids)}</div>
     ${D.M?'':`<button type="button" class="sx2-btn sxm-open" data-mopen="${esc2(k)}">Open unit card</button>`}`}
-function mapApply(){const w=q1('#sxmW');if(!w)return;const V=SM.V;w.style.transform=`translate(${V.x}px,${V.y}px) scale(${V.k})`;q1('#sxmZ').textContent=Math.round(V.k*100)+'%';q1('#sxm').classList.toggle('ov',V.k<.7)}
+function mapApply(){const w=q1('#sxmW');if(!w)return;const V=SM.V;w.style.transform=`translate(${V.x}px,${V.y}px) scale(${V.k})`;q1('#sxmZ').textContent=Math.round(V.k*100)+'%';q1('#sxm').classList.toggle('ov',V.k<.7);const vp=q1('#sxmVp');if(vp&&SM.D)q1('#sxm').classList.toggle('more',SM.D.W*V.k+V.x>vp.clientWidth+4)}
 function mapClamp(){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,w=D.W*V.k,h=D.H*V.k,cw=vp.clientWidth,chh=vp.clientHeight;
   V.x=w<=cw?(cw-w)/2:Math.min(0,Math.max(cw-w,V.x));V.y=h<=chh?Math.min((chh-h)/2,20):Math.min(0,Math.max(chh-h,V.y))}
 function mapZoom(f,cx,cy){const vp=q1('#sxmVp'),V=SM.V;if(cx==null){cx=vp.clientWidth/2;cy=vp.clientHeight/2}const k=Math.min(1.6,Math.max(.4,V.k*f));V.x=cx-(cx-V.x)*k/V.k;V.y=cy-(cy-V.y)*k/V.k;V.k=k;mapClamp();mapApply()}
-function mapFit(centre){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,f=Math.min(vp.clientWidth/D.W,vp.clientHeight/D.H);V.k=centre?1:Math.min(1,f);
+function mapFit(centre){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,f=Math.min(vp.clientWidth/D.W,vp.clientHeight/D.H);V.k=centre?Math.max(.8,Math.min(1,f)):Math.min(1,f);
   const c=D.pos[SM.sel[D.s]];V.x=0;V.y=0;if(centre&&c&&V.k>f){if((c[0]+D.NW)*V.k>vp.clientWidth*.85)V.x=vp.clientWidth/2-(c[0]+D.NW/2)*V.k;V.y=vp.clientHeight/2-(c[1]+D.NH/2)*V.k}mapClamp();mapApply()}
 function mapRender(){const box=q1('#lbList');if(!box)return;box.innerHTML=mapHtml();requestAnimationFrame(()=>mapFit(true))}
 function mapWire(){document.addEventListener('click',e=>{if(!isShadow()||!q1('#sxm'))return;
     const z=e.target.closest('[data-mz]');if(z){const v=z.dataset.mz;if(v==='in')mapZoom(1.2);else if(v==='out')mapZoom(1/1.2);else if(v==='fit')mapFit(false);else{SM.fs=!SM.fs;q1('#sxm').classList.toggle('fs',SM.fs);document.body.classList.toggle('sx-mapfs',SM.fs);z.textContent=SM.fs?'Exit full screen':'Full screen';requestAnimationFrame(()=>mapFit(true))}return}
     const o=e.target.closest('[data-mopen]');if(o){SM.fs=false;document.body.classList.remove('sx-mapfs');lbV='cards';try{lsSet(LVKEY,'cards')}catch(x){}lbOpen=o.dataset.mopen;renderLibrary();return}
-    const n=e.target.closest('[data-mk]');if(n&&!(SM.moved)){SM.sel[SM.D.s]=n.dataset.mk;document.querySelectorAll('.sxm-n').forEach(b=>b.classList.toggle('sel',b.dataset.mk===n.dataset.mk));q1('#sxmSide').innerHTML=mapSide(n.dataset.mk)}},true);
+    const n=e.target.closest('[data-mk]');if(n&&!(SM.moved)){SM.sel[SM.D.s]=n.dataset.mk;document.querySelectorAll('.sxm-n').forEach(b=>b.classList.toggle('sel',b.dataset.mk===n.dataset.mk));q1('#sxmSide').innerHTML=mapSide(n.dataset.mk);document.querySelectorAll('.sxm-e path').forEach(p=>p.classList.toggle('on',p.dataset.a===n.dataset.mk||p.dataset.b===n.dataset.mk))}},true);
   document.addEventListener('pointerdown',e=>{const vp=e.target.closest&&e.target.closest('#sxmVp');SM.moved=false;if(!vp||e.button)return;SM.drag={x:e.clientX,y:e.clientY,vx:SM.V.x,vy:SM.V.y,m:0}});
   addEventListener('pointermove',e=>{const d=SM.drag;if(!d)return;d.m=Math.max(d.m,Math.abs(e.clientX-d.x)+Math.abs(e.clientY-d.y));if(d.m<5)return;SM.moved=true;q1('#sxmVp')?.classList.add('drag');SM.V.x=d.vx+e.clientX-d.x;SM.V.y=d.vy+e.clientY-d.y;mapClamp();mapApply()});
   addEventListener('pointerup',()=>{q1('#sxmVp')?.classList.remove('drag');SM.drag=null});
@@ -713,7 +714,16 @@ function repShadow(){if(!isShadow())return;const T=['phy','chem','maths'].map(s=
     const dl=d=>`${d.getDate()} ${M3[d.getMonth()]}${d.getFullYear()!==2027?' '+d.getFullYear():''}`,ld=r.last?new Date(r.last+'T00:00'):null;
     const v=r.state==='wait'?`${r.done}<small>/${r.due}</small>`:r.fin?dl(r.fin):'—';
     const s2=r.state==='wait'?`classes done of due · ${r.total} in the plan · pace shows after day 7`:r.fin&&ld?`finish at this pace · plan ${dl(ld)} · ${r.gap>3?r.gap+' days late':r.gap<-3?(-r.gap)+' days early':'on plan'}`:`no classes ticked in 14 days · ${r.done}/${r.due} due done`;
-    return tile(`<i class="sx2-dot" style="--sj:${SJC[s]}"></i>${SUBJ[s]}`,v,esc2(s2),{warn:r.state==='behind'})}).join(''))}
+    if(s==='maths'){const tk=todayK();let due=0,dn=0,tot=0;for(const k in CS.days)for(const e of CS.days[k])if(e.subj==='maths'&&e.kind==='class'){tot++;if(k<tk||(k===tk&&e.e<=nowMin())){due++;if(e.done)dn++}}
+      return tile(`<i class="sx2-dot" style="--sj:${SJC[s]}"></i>${SUBJ[s]}`,`${dn}<small>/${due}</small>`,`live and recorded classes ticked of those held so far · ${tot} in the plan`,{warn:due>1&&dn<due-1})}
+    return tile(`<i class="sx2-dot" style="--sj:${SJC[s]}"></i>${SUBJ[s]}`,v,esc2(s2),{warn:r.state==='behind'})}).join(''));
+  /* one focal point: the next checkpoint; the empty mini-mock chart becomes a compact tile */
+  const tk=todayK(),ck=CKP.find(c=>c[1]>=tk)||CKP[CKP.length-1],dl=Math.max(0,Math.round((new Date(ck[1]+'T00:00')-new Date(tk+'T00:00'))/864e5));
+  let mocks=0;try{mocks=new Set(qlGet().filter(x=>x.mock).map(x=>String(x.t).slice(0,8))).size}catch(e){}
+  let nt=null;for(const k of Object.keys(CS.days).sort()){if(k<tk)continue;const e=CS.days[k].find(e=>e.tag==='Timed');if(e){nt=k;break}}
+  strip('sxCk','#sxTraj',tile('Next checkpoint',`${dl}<small> days</small>`,`${ck[0]} checkpoint (${fmtD(ck[1])}) · A track ${ck[2]}% · top-100 pace ${ck[3]}%`,{on:true})+
+    tile('Mini-mocks',String(mocks),mocks?'25 Paper I questions in 60 minutes, scored out of 50':`none yet · first one ${nt?fmtD(nt):'on a Sunday timed block'} (Sunday timed block, or Papers)`));
+  const px=q1('#px');if(px)px.classList.toggle('sx-empty',!mocks)}
 /* ---------- Workout ---------- */
 function woData(){let S;try{S=JSON.parse(localStorage.getItem('lockin-workout-v1')||'{}')}catch(e){S={}}const L=(S.logs||[]).filter(l=>l&&l.d);const tk=todayK(),n=now();
   const mon=d=>{const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return x},wd=(n.getDay()+6)%7,m0=mon(n);

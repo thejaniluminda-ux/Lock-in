@@ -450,12 +450,45 @@ html:not(.shadow) #sxLkMore{display:none}
 html.shadow #calPage .cmain{position:relative}
 /* Library: long Sinhala names */
 .sxl-main h4.long{font-size:15px;line-height:22px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* ---- review fixes 17 Nov ---- */
+#sxFoc .sxf-tm.on{color:var(--sx-i2)}
+#sxFoc .sxf-ch .c span{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#sxFoc .sxf-later div{display:flex;align-items:baseline;gap:8px;padding:5px 0;font-size:13.5px;color:var(--sx-i2);border-top:1px solid var(--sx-ln)}#sxFoc .sxf-later div:first-child{border-top:0}
+#sxFoc .sxf-later .num{font-size:12px;color:var(--sx-i3);flex:none;width:40px}#sxFoc .sxf-later .si{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#sxFoc .sxf-later .sx2-dot{flex:none;margin-right:0}
+#sxFoc .sxf-cf .in{align-items:center}
+#sxFoc.run:not(.brk) #sxfGo{background:var(--sx-p2);color:var(--sx-ink);box-shadow:inset 0 1px rgba(255,255,255,.08),0 0 0 1px var(--sx-ln2)}
+#sxFoc .sxf-race{flex:1;display:flex;flex-direction:column}
+#sxFoc .sxf-chart{display:grid;grid-template-columns:auto 1fr;gap:6px;flex:1;min-height:84px;max-height:220px;margin-top:12px}
+#sxFoc .sxf-chart svg{width:100%;height:100%;margin:0}#sxFoc .sxf-chart .gl{stroke:rgba(255,255,255,.06);stroke-width:1;vector-effect:non-scaling-stroke}
+#sxFoc .yax{display:flex;flex-direction:column;justify-content:space-between;font-size:10.5px;color:var(--sx-i3);text-align:right}
+#sxFoc .sxf-ax{display:flex;justify-content:space-between;margin:4px 0 0 34px;font-size:10.5px;color:var(--sx-i3)}
+#sxFoc .sxf-leg{display:flex;gap:14px;margin:8px 0 4px;font-size:12px;color:var(--sx-i2)}#sxFoc .sxf-leg i{display:inline-block;width:14px;height:0;border-top:2px solid var(--sx-ink);margin-right:6px;vertical-align:3px}#sxFoc .sxf-leg i.sh{border-top:2px dashed var(--sx-mut)}
+#sxFoc .sxf-side{flex:0 0 auto}
+#sxFoc .sxf-strip .s{background:var(--sx-i2);opacity:.9}
+/* Calendar chain steps */
+html.shadow #cBody .ev .sx-step{position:absolute;right:5px;top:5px;z-index:3;min-width:18px;height:18px;padding:0 5px;border-radius:9px;display:grid;place-items:center;font:600 11px var(--sx-mono);color:var(--sx-ink);background:var(--sx-p3);box-shadow:0 0 0 1px var(--sx-ln2)}
+html.shadow #cBody .ev .sx-step.n{color:#07140c;background:var(--sx-acc);box-shadow:none}
+html.shadow #sxLinks[aria-pressed="true"]{box-shadow:inset 0 0 0 1px var(--sx-ink)}
+html.shadow #calPage .cbody{margin-top:16px}
+html.shadow #calPage .create{padding:8px 14px;font-size:13px}
+html.shadow #calPage .cside .card{padding:12px 14px}
+/* Library cards */
+html.shadow .sxl-card.wide{grid-column:span 2}
+.sxl-main h4{min-height:52px}.sxl-main h4.long{min-height:44px}
+.sxl-main .chip.ul{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+/* Map */
+.sxm-e path{transition:opacity .2s}.sxm-e path:not(.on){opacity:.45}.sxm-e path.on{stroke:rgba(236,238,236,.75);stroke-dasharray:none}.sxm-e path.on.hot{stroke:var(--sx-acc)}
+.sxm-tb{align-items:center}.sxm-tb .num{line-height:28px}
+.sxm-more{display:none}
+html.shadow .sxm.more .sxm-more{display:block;position:absolute;right:330px;top:12px;z-index:3;padding:6px 12px;border-radius:999px;font:500 12px var(--font);color:var(--sx-i2);background:rgba(10,11,10,.85);box-shadow:0 0 0 1px var(--sx-ln2);pointer-events:none}
+html.shadow .sxm.more .sxm-vp::after{content:'';position:absolute;right:0;top:0;bottom:0;width:60px;background:linear-gradient(90deg,transparent,rgba(18,20,19,.95));pointer-events:none}
+html.shadow #cBody .ev:has(.sx-step) .et{padding-right:24px}
 /* ===/P2=== */
 
 /* ===P3=== */
 /* ================= PHASE 3: Papers, Workout, Report (Shadow mode only, except the .mq-r .p bug fix) ================= */
 .mq-r .p{position:static;animation:none;pointer-events:auto;font-weight:400}
-#sxPap,#sxTraj,#sxWo{display:none}
+#sxPap,#sxTraj,#sxWo,#sxCk{display:none}
 html.shadow body.page-pap main,html.shadow body.page-rep main,html.shadow body.page-wo main{padding-top:12px;position:relative}
 html.shadow body.page-pap main>.top,html.shadow body.page-rep main>.top,html.shadow body.page-wo main>.top{position:absolute;right:30px;top:12px;z-index:6;margin:0;padding:0;display:block!important;min-height:0}
 html.shadow body.page-pap main>.top>:not(.corner),html.shadow body.page-rep main>.top>:not(.corner),html.shadow body.page-wo main>.top>:not(.corner),
@@ -526,9 +559,27 @@ html.shadow #repPage .rp-grid>.card{border-radius:18px;padding:18px 20px}
 html.shadow #repPage .rp-grid h2{font:600 15px var(--font)!important;letter-spacing:0!important;text-transform:none!important;color:var(--sx-ink)!important}
 html.shadow #repPage .rp-grid .sub,html.shadow #repPage .rp-grid p{color:var(--sx-i3)}
 html.shadow #repPage .rp-grid b,html.shadow #repPage .rp-grid .big,html.shadow #repPage .rp-grid [class*="num"]{font-family:var(--sx-mono);font-weight:400}
-html.shadow #repPage .ck-c,html.shadow #repPage .rp-ck .card,html.shadow #repPage .rp-ck [class*="ck-"]{border-top-color:transparent!important}
+html.shadow #repPage .ck-s{border:1px solid var(--sx-ln);border-top:2px solid var(--sub);background:var(--sx-p2)}
 html.shadow #repPage table td,html.shadow #repPage table th{border-color:var(--sx-ln)!important}
 html.shadow #repPage table th:nth-child(2),html.shadow #repPage table td:nth-child(2){background:rgba(255,255,255,.035)!important}
 html.shadow #repPage #radar svg *{stroke:rgba(255,255,255,.14)}html.shadow #repPage #radar text{fill:var(--sx-i2)!important;stroke:none!important}
 html.shadow #repPage .pbtn.pri,html.shadow #repPage #addRev{background:var(--sx-ink)!important;color:#0a0b0a!important;box-shadow:none!important}
+/* ---- review fixes 17 Nov ---- */
+html.shadow #sxCk{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+html.shadow #px.sx-empty{display:none}
+html.shadow #px .hx-card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.008)),var(--sx-p1);border-color:var(--sx-ln);backdrop-filter:none}
+html.shadow #px .hx-card h3,html.shadow #repPage h3.rp-k{font:600 15px var(--font);letter-spacing:0;text-transform:none;color:var(--sx-ink)}
+html.shadow #repPage table{table-layout:fixed;width:100%}
+html.shadow #repPage #addRev{background:transparent!important;color:var(--sx-ink)!important;box-shadow:inset 0 0 0 1px var(--sx-ln2)!important}
+html.shadow #repPage #radar text{paint-order:stroke;stroke:#121413!important;stroke-width:4px!important;stroke-linejoin:round}
+/* Papers */
+@media (min-width:1500px){html.shadow #papPage .mq-g>div:first-child{display:grid;grid-template-columns:1fr 1fr;column-gap:28px;align-content:start}html.shadow #papPage .mq-g>div:first-child>.mq-next,html.shadow #papPage .mq-g>div:first-child>p{grid-column:1/-1}}
+html.shadow #papPage>.pp-grid>div:first-child>.sx3-sec small{display:none}
+html.shadow #ptimer .pt-card{width:46px;height:66px;font-size:44px}
+html.shadow #ptGo{background:var(--sx-ink)!important;color:#0a0b0a!important;border-color:transparent!important}
+html.shadow #papPage .mq-r{grid-template-columns:minmax(0,150px) minmax(0,1fr) 40px 78px}html.shadow #papPage .mq-r .p{text-align:right}
+html.shadow #papPage>.pp-grid>div:first-child{grid-row:4/span 2}
+html.shadow #papPage>#sx3s3{grid-column:1/-1;grid-row:6}html.shadow #papPage>.pp-grid>section{grid-column:1/-1;grid-row:7}
+html.shadow #papPage .legend2 i,html.shadow #papPage .fchip i{background:var(--sx-i2)!important;box-shadow:none!important}html.shadow #papPage .fchip.fp i{background:var(--sx-ink)!important}html.shadow #papPage .fchip.fg i,html.shadow #papPage .legend2 i:last-child{background:transparent!important;box-shadow:inset 0 0 0 1.5px var(--sx-i2)!important}
+html.shadow .sx3-t .s{font-family:var(--font),var(--si);font-size:13px}
 /* ===/P3=== */
