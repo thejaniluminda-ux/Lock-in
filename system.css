@@ -431,3 +431,7 @@ html.shadow body.sx-mapfs .rail,html.shadow body.sx-mapfs main>.top{display:none
 /* bug fix 17 Nov 2026 (both modes): the mastery "x/paper" label used the floating "+1" .p class and sat on the unit name */
 .mq-r .p{position:static;animation:none;pointer-events:auto;font-weight:400}
 /* ===/P2=== */
+
+/* speed trial switch (Shadow Focus) */
+#sxFoc .sxf-sp{display:flex;align-items:center;gap:10px;margin:-4px 0 10px;font-size:12.5px;color:var(--sx-i3)}#sxFoc .sxf-sp[hidden]{display:none}
+#sxFoc .sxf-sp .sx2-seg button{padding:4px 11px;font-size:12px}
