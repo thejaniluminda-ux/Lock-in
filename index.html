@@ -948,6 +948,12 @@ body.cal-fs .cmain{height:100%}
 .ds-f{padding:12px 18px;border-top:1px solid var(--edge)}
 /* finish-early prompt */
 #fin{position:fixed;left:50%;bottom:26px;z-index:62;display:flex;gap:12px;align-items:center;padding:10px 12px 10px 18px;border-radius:999px;background:rgba(36,34,32,.96);border:1px solid rgba(185,168,255,.35);box-shadow:0 18px 50px rgba(0,0,0,.55);font-size:13px;transform:translate(-50%,140%);opacity:0;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s ease;pointer-events:none}
+#v13chk{position:fixed;inset:0;z-index:95;display:grid;place-items:center;background:rgba(0,0,0,.55);padding:16px}
+.v13c{width:min(760px,100%);max-height:calc(100vh - 32px);display:flex;flex-direction:column;gap:10px;padding:20px 22px;border-radius:20px;background:#1e1d1b;border:1px solid var(--edge);box-shadow:0 30px 80px rgba(0,0,0,.6);color:var(--ink)}
+.v13c h2{margin:0;font-size:20px;font-weight:500}.v13c p{margin:0;color:var(--ink-2);font-size:14px}
+.v13t{overflow:auto;min-height:0;border-radius:12px;border:1px solid var(--edge)}.v13t table{width:100%;border-collapse:collapse;font-size:13px}
+.v13t th,.v13t td{text-align:left;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.06)}.v13t th{position:sticky;top:0;background:#262422;color:var(--ink-3);font-weight:500}
+.v13c .pbtn{align-self:flex-end}
 #partQ{position:fixed;left:50%;bottom:26px;z-index:63;display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:min(720px,calc(100vw - 32px));padding:10px 12px 10px 18px;border-radius:22px;background:rgba(36,34,32,.97);border:1px solid rgba(185,168,255,.35);box-shadow:0 18px 50px rgba(0,0,0,.55);font-size:13px;transform:translate(-50%,140%);opacity:0;pointer-events:none;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s}
 #partQ.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}#partQ span{flex:1 1 260px}
 #partQ input{width:92px;font:inherit;font-variant-numeric:tabular-nums;padding:7px 10px;border-radius:10px;border:1px solid var(--edge);background:rgba(0,0,0,.25);color:var(--ink)}
@@ -1836,7 +1842,7 @@ const BP=[
 /* the 06:15 consolidation is retrieval practice: recall first, then check, then questions (testing effect) */
 const CONS_HOW='blank page 15 min (write everything you remember), check your notes 10 min, then 5 questions. Tick it and rate your recall 1–5';
 const PAIR={cur:'therm',therm:'cur'};
-function buildPlan(){
+function buildPlan(hist){
   const p2=n=>String(n).padStart(2,'0'),kOf=d=>`${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`,addD=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
   /* expand units into class items, grouped into four queues */
   /* every class item knows exactly which items must come before it */
@@ -1851,7 +1857,7 @@ function buildPlan(){
       if(u.need&&u.need[i])deps.push(u.need[i]);
       Q[u.subj+u.track].push({unit:u.k,iid:`${u.k}:${i+1}`,deps:[...new Set(deps)],w:u.w||5,x:!!u.at,subj:u.subj,h,day:!!u.day,title:nm,sub:list.length>1?`${u.en}, ${i+1} of ${list.length}`:u.en,tag:u.tag,rec:REC[u.rec||u.k]||''})});
   }
-  const ok=it=>it.deps.every(d=>taken.has(d));
+  const ok=it=>it.deps.every(d=>taken.has(d))&&(!hist||CURK>=hist.sk||hist.taken.has(it.iid));
   const papers=[];/* unit past-paper question tasks waiting for a study slot */
   const last={phy:null,chem:null};
   const done={phy:[],chem:[]},fin={phy:[],chem:[]},mDone=[],pc={phy:0,chem:0,maths:0};
@@ -1865,7 +1871,7 @@ function buildPlan(){
       for(const p of ((W.chem||{}).p2y2026||[]))T[p[3]]=(T[p[3]]||0)+p[2]/20;
       const U=(W.phy||{}).units||{};for(const k in U)T[k]=(U[k].pct+9)/2}catch(e){}return T})();
   const tg=u=>TGT[u]!=null?TGT[u]:/x$/.test(u)?.3*(TGT[u.slice(0,-1)]||0):1;
-  const gH={},WKP={},PHYCAP=18,SATC=true;let CURW=0;/* plan v13: Physics classes capped at 18 h a week; SATC = Saturday class until January */
+  const gH={},WKP={},PHYCAP=18,SATC=true;let CURW=0,CURK='';/* plan v13: Physics classes capped at 18 h a week; SATC = Saturday class until January */
   const mAdd=t=>{const i=mDone.findIndex(x=>x.en===t.en);if(i>=0)mDone.splice(i,1);mDone.push(t)};/* classes taken so far, finished units, Maths topics covered */
   const lastSubj={A:'chem',B:'phy'};/* alternate Physics and Chemistry inside each track */
   const chain={};/* the unit each track+subject is working through, so a unit runs day after day */
@@ -1909,7 +1915,7 @@ function buildPlan(){
   const next2ok=d=>[1,2].some(i=>{const x=addD(d,i),w=x.getDay();if(x>=JULY||isBufD(x))return false;return (w>=1&&w<=5)||(w===6&&x<new Date(2027,0,1))});
   for(let d=new Date(START);d<=EXAM;d=addD(d,1)){
     const k=kOf(d),w=d.getDay(),ev=[];
-    const wkIdx=Math.floor((addD(d,-((w+6)%7))-new Date(2026,10,9))/6048e5);CURW=wkIdx;
+    const wkIdx=Math.floor((addD(d,-((w+6)%7))-new Date(2026,10,9))/6048e5);CURW=wkIdx;CURK=k;
     const july=d>=JULY,buffer=!july&&wkIdx>0&&wkIdx%4===0&&wkIdx<=24&&!allEmpty();/* plan v13: buffers 7 Dec, 4 Jan, 1 Feb, 1 Mar, 29 Mar, 26 Apr *//* no buffer week in June: finishing classes comes first */
     const L=(s,e,t,x)=>ev.push(Object.assign({s,e,title:t,sub:'',tag:'',subj:'life',kind:'life'},x||{}));
     const add=(s,e,subj,kind,c,x)=>(kind==='class'&&subj==='phy'&&(WKP[CURW]=(WKP[CURW]||0)+(e-s)/60),c.unit&&(gH[c.unit]=(gH[c.unit]||0)+(e-s)),ev.push(Object.assign({s,e,subj,kind,title:c.title,sub:c.sub||'',tag:c.tag||'',rec:c.rec||'',unit:c.unit||''},c.iid?{iid:c.iid,deps:c.deps}:{},x||{})));
@@ -2902,8 +2908,12 @@ function restartPlan(){
 /* v5 to v6: rebuild in blueprint order (prerequisites first, big units early, consolidation, spaced recaps).
    Ticks follow their class (matched by unit and title), your own blocks and finished catch-ups stay,
    unfinished catch-ups are placed again, and days off stay off. */
-function rebuildOrder(keepPast){
-  const old=CS,days=applyBlueprint(buildPlan().days),tk=dkey(new Date()),sk=keepPast&&tk>kOf(START)?tk:kOf(START);
+function rebuildOrder(keepPast,keepToday){
+  /* keepToday (v13): today stays exactly as it is, so nothing ticked today can be lost; the rebuild starts tomorrow */
+  const tk=dkey(keepToday?addDays(new Date(),1):new Date()),sk=keepPast&&tk>kOf(START)?tk:kOf(START),old=CS;
+  const base=x=>String(x||'').replace(/[ab]$/,''),pastIid=new Set(),oldIid=new Set();
+  for(const k in old.days)for(const e of old.days[k])if(e.iid){oldIid.add(base(e.iid));if(k<sk)pastIid.add(base(e.iid))}
+  const days=applyBlueprint(buildPlan(keepToday?{sk,taken:pastIid}:null).days);
   /* v6 to v7: days before today stay exactly as they were */
   if(keepPast)for(const k in old.days)if(k<sk)days[k]=old.days[k];
   const byKey={};for(const k in days)for(const x of days[k])if(x.unit)byKey[x.unit+'|'+x.title+'|'+(x.sub||'').includes('(part 2)')]=x;
@@ -2915,17 +2925,35 @@ function rebuildOrder(keepPast){
     if(!e.done)continue;
     const m=e.unit?byKey[e.unit+'|'+e.title+'|'+(e.sub||'').includes('(part 2)')]:(days[k]||[]).find(x=>x.title===e.title&&!x.done);
     if(m)m.done=true;
+    else if(keepToday)(days[k]||(days[k]=[])).push(Object.assign({},e,{user:true,sub:(e.sub||'')+' · kept from your old plan'}));
   }
   CS={v:13,days,off:{},slid:old.slid||[]};
+  if(keepToday){const back=[];for(const k of Object.keys(CS.days).sort())if(k>=sk)for(const e of CS.days[k])if(e.kind==='class'&&e.iid&&!e.fixed&&!oldIid.has(base(e.iid))&&!back.some(b=>b.iid===base(e.iid)))back.push({iid:base(e.iid),title:e.title,to:k});CS.repaired=back}
   for(const e of redo)cuPlace(cuItem(e));
   for(const k in (old.off||{}))if(k>=sk&&old.off[k]){CS.off[k]=true;(CS.days[k]||[]).filter(x=>x.kind!=='life'&&x.kind!=='review'&&!x.fixed&&!x.done&&!x.user).forEach(skipToCU);CS.days[k]=(CS.days[k]||[]).filter(x=>x.fixed||x.user)}
 }
+/* plan v13 migration proof: every ticked block as date | time | unit | title */
+function v13Ticks(P){const o=[];for(const k of Object.keys(P.days||{}).sort())for(const e of P.days[k])if(e.done&&e.kind!=='life'&&e.kind!=='review')o.push({k,s:e.s,unit:e.unit||'',title:e.title,kind:e.kind});return o}
+function v13Report(){let R;try{R=JSON.parse(localStorage.getItem('lockin-v13-check')||'null')}catch(e){}if(!R||R.seen)return;
+  const key=x=>x.k+'|'+x.unit+'|'+x.title,A=new Set(R.after.map(key)),lost=R.before.filter(x=>!A.has(key(x))),cls=R.before.filter(x=>x.kind==='class');
+  const row=x=>`<tr><td style="white-space:nowrap">${esc(fmtD(x.k))}</td><td>${hm(x.s)}</td><td class="si">${esc(x.title)}</td><td>${A.has(key(x))?'kept':'<b style="color:#ff8a7a">missing</b>'}</td></tr>`;
+  const d=document.createElement('div');d.id='v13chk';d.setAttribute('role','dialog');d.setAttribute('aria-label','Plan update check');
+  d.innerHTML=`<div class="v13c"><h2>Plan updated to v13</h2><p>${lost.length?`<b style="color:#ff8a7a">${lost.length} ticked block${lost.length>1?'s are':' is'} missing.</b> Your old plan is saved; restore your backup and tell Claude.`:`All ${R.before.length} ticked blocks are kept (${cls.length} class day${cls.length===1?'':'s'}). Before ${R.before.length}, after ${R.after.length}.`}</p>
+    ${(R.back||[]).length?`<p>${R.back.length} class${R.back.length>1?'es':''} the old bug had dropped ${R.back.length>1?'are':'is'} back in your plan: ${R.back.map(b=>`<span class="si">${esc(b.title)}</span> (${esc(b.to)})`).join(', ')}.</p>`:''}
+    <div class="v13t"><table><thead><tr><th>Date</th><th>Time</th><th>Ticked block</th><th>After</th></tr></thead><tbody>${R.before.map(row).join('')||'<tr><td colspan="4">Nothing ticked yet.</td></tr>'}</tbody></table></div>
+    <button class="pbtn pri" id="v13ok">OK</button></div>`;
+  document.body.appendChild(d);d.querySelector('#v13ok').addEventListener('click',()=>{R.seen=true;try{localStorage.setItem('lockin-v13-check',JSON.stringify(R))}catch(e){}d.remove()})}
 (function migrate(){
   if(CS.fresh){delete CS.fresh;applyBlueprint(CS.days);saveCS();return}
   if(CS.v===13){applyBlueprint(CS.days);saveCS();return}
   /* v12 to v13 (his Option 2): Physics and Chemistry at a steady pace from 23 Nov, 5 class days (Mon-Fri, at most 8 h),
      no class on Saturday, a 3 h recording after the Friday Maths class, buffer weeks up to 26 Apr. Past days and ticks are kept. */
-  if(CS.v===12){rebuildOrder(true);saveCS();return}
+  if(CS.v===12){
+    /* safety: keep the old plan, rebuild, then compare every ticked block before and after (shown once on Home) */
+    try{localStorage.setItem('lockin-plan-v2-pre13',JSON.stringify(CS))}catch(e){}
+    const before=v13Ticks(CS);rebuildOrder(true,true);saveCS();const after=v13Ticks(CS);
+    try{localStorage.setItem('lockin-v13-check',JSON.stringify({t:Date.now(),before,after,back:CS.repaired||[],seen:false}))}catch(e){}
+    return}
   /* v11 to v12: morning fast (breakfast becomes review), a free Saturday every other buffer week, room care */
   if(CS.v===11){rebuildOrder(true);saveCS();return}
   /* v10 to v11: plan starts Mon 16 Nov 2026 instead of Sun 15 Nov (days before the start are kept as they were) */
@@ -2952,6 +2980,7 @@ function rebuildOrder(keepPast){
   CS=fresh;saveCS();
 })();
 
+setTimeout(()=>{try{v13Report()}catch(e){}},3500);/* shown once, after the intro */
 /* ---------- Past-paper question bank (qbank.js): which Paper I questions test each unit ---------- */
 function qbFor(u){const Q=window.QBANK||{},out=[];for(const sj of ['chem','phy','maths'])for(const y of Object.keys(Q[sj]||{}).sort().reverse()){const qs=Object.entries(Q[sj][y]).filter(([,k])=>k===u).map(([n])=>+n).sort((a,b)=>a-b);if(qs.length)out.push({sj,y,qs})}return out}
 function qbLink(sj,y){const P=(((typeof LIB!=='undefined'&&LIB[sj])||{})[y]||{}).p||[];const f=P.find(x=>/Paper I\b|MCQ|Full/.test(x[0]))||P[0];return f?(/^https?:/.test(f[1])?f[1]:'https://drive.google.com/file/d/'+f[1]+'/view'):''}
