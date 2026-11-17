@@ -427,4 +427,7 @@ html.shadow .lm-chip{background:var(--sx-p2);color:var(--sx-i2)}
 .sxm.ov .sxm-n .r1,.sxm.ov .sxm-n .r3,.sxm.ov .sxm-n .pb{display:none}
 .sxm.ov .sxm-n{justify-content:center}.sxm.ov .sxm-n b.si{font-size:24px;line-height:32px;height:auto;max-height:64px}
 html.shadow body.sx-mapfs .rail,html.shadow body.sx-mapfs main>.top{display:none!important}
+
+/* bug fix 17 Nov 2026 (both modes): the mastery "x/paper" label used the floating "+1" .p class and sat on the unit name */
+.mq-r .p{position:static;animation:none;pointer-events:auto;font-weight:400}
 /* ===/P2=== */
