@@ -1748,7 +1748,7 @@ $('#fsBtn').addEventListener('click',async()=>{
 const dkey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const addDays=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
 /* ================= Lock In data + scheduler ================= */
-const START=new Date(2026,10,16)/* starts Mon 16 Nov 2026 (his request; was Sun 15 Nov, nothing was done 11-15 Nov) */,EXAM=new Date(2027,7,3),CLASSES_BY=new Date(2027,5,27),JULY=new Date(2027,6,1);
+const START=new Date(2026,10,16)/* starts Mon 16 Nov 2026 (his request; was Sun 15 Nov, nothing was done 11-15 Nov) */,EXAM=new Date(2027,7,3),CLASSES_BY=new Date(2027,4,26),JULY=new Date(2027,6,1);
 const REC={mech:'https://t.me/Sci_Link/1007',therm:'https://t.me/Sci_Link/876',cur:'https://t.me/Sci_Link/1094',wave:'https://t.me/Sci_Link/1184',light:'https://t.me/Sci_Link/1214',mag:'https://t.me/Sci_Link/1207',elec:'https://t.me/Sci_Link/1255',matter:'https://t.me/Sci_Link/1354',estat:'https://t.me/Sci_Link/1448',mprop:'https://t.me/Sci_Link/1524',grav:'https://t.me/Sci_Link/1645',
   calc:'https://t.me/Sci_Link/855',redox:'https://www.youtube.com/live/Swwr_vNYU5s',bond:'https://t.me/Sci_Link/884',sblock:'https://youtu.be/G23RPKI--MY',pblock:'https://t.me/Sci_Link/865',dblock:'https://t.me/Sci_Link/865',period:'https://t.me/Sci_Link/858',kin:'https://t.me/Sci_Link/937',ener:'https://t.me/Sci_Link/1040',gas:'https://t.me/Sci_Link/1113',org:'https://t.me/Sci_Link/2194',isom:'https://youtu.be/upeffNyWyPA',guna:'https://youtube.com/live/Ibfn2DWZHog',equil:'https://t.me/Sci_Link/1331',echem:'https://t.me/Sci_Link/1498',ind:'https://t.me/Sci_Link/1227',
   mSep:'https://t.me/Vikumlk/213',mOct:'https://t.me/Vikumlk/214',mNov:'https://t.me/Vikumlk/234',mPure26:'https://t.me/Vikumlk/117',mApp26:'https://t.me/Vikumlk/119'};
@@ -2204,7 +2204,7 @@ function renderRings(){
       `<text x="43" y="48" text-anchor="middle" class="pct">${Math.round(p*100)}%</text></svg><div class="lbl">${n}</div><div class="num">${d} of ${tt} classes</div></div>`}).join('');
   /* projected finish: the last Physics/Chemistry class still in the plan */
   let endK='';for(const k in CS.days)if(CS.days[k].some(e=>e.kind==='class'&&e.subj!=='maths'&&!e.done)&&k>endK)endK=k;
-  const sub=$('#ringSub');if(sub&&endK){const late=endK>dkey(CLASSES_BY);const ed=new Date(endK+'T00:00');sub.innerHTML=`Classes finish <b style="color:${late?'#ff8a7a':'var(--green)'};font-weight:500">${DOW[ed.getDay()]} ${ed.getDate()} ${MON[ed.getMonth()].slice(0,3)}</b>${late?' · past late June, skip less':' · on track for late June'}`}
+  const sub=$('#ringSub');if(sub&&endK){const late=endK>dkey(CLASSES_BY);const ed=new Date(endK+'T00:00');sub.innerHTML=`Classes finish <b style="color:${late?'#ff8a7a':'var(--green)'};font-weight:500">${DOW[ed.getDay()]} ${ed.getDate()} ${MON[ed.getMonth()].slice(0,3)}</b>${late?' · past 26 May, skip less':' · on track for 26 May'}`}
 }
 function renderBars(){
   const wk0=addDays(today0,-((today0.getDay()+6)%7)),MAXH=12,GOAL=8,ti=(today0.getDay()+6)%7;
@@ -3001,7 +3001,9 @@ document.addEventListener('click',e=>{if(!e.target.closest('.fb-s'))$('#fbRes').
 
 /* ---------- Library page ---------- */
 let lbS='phy',lbOpen=null;
-function unitBlocks(k){const out=[];for(const d in CS.days)for(const e of CS.days[d])if(e.unit===k&&e.kind==='class')out.push(e);return out.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.s-b.s)}
+function unitBlocks(k){const out=[],p2={};for(const d in CS.days)for(const e of CS.days[d])if(e.part===2&&e.unit===k)p2[e.iid]=e;
+  /* plan v13: a split recording counts as one class day, done only when both parts are ticked */
+  for(const d in CS.days)for(const e of CS.days[d])if(e.unit===k&&e.kind==='class'&&e.part!==2){if(e.part===1){const t=p2[String(e.iid).replace(/a$/,'b')];out.push(Object.assign({},e,{title:e.title.replace(/ · Part 1$/,' · Part 1 + Part 2'),done:!!(e.done&&(!t||t.done))}))}else out.push(e)}return out.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.s-b.s)}
 function renderLibrary(){
   document.querySelectorAll('#lbSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===lbS));
   const box=$('#lbList'),tk=dkey(today0);
@@ -3389,7 +3391,7 @@ function renderMQ(){const box=$('#mqBody');if(!box)return;const sj=ppS;
    <div><div class="mq-big"><b>${Math.round(exp)}</b><span>of 50 predicted on Paper I today · likely ${Math.max(0,Math.round(exp-1.6*sd))}–${Math.min(50,Math.round(exp+1.6*sd))}</span></div>
     <p class="sub" style="margin:4px 0 0">${tried} questions logged. ${tried<40?'Below about 40 this is mostly a guess; it sharpens as you log.':'Test it: sit a full timed Paper I and compare.'}${sj==='phy'?' Physics weights come from one paper (2026).':''}</p>
     <div class="mq-h">Mastery by unit (grey = fewer than 3 tries)</div>
-    ${[...G].sort((a,b)=>b.per-a.per).map(g=>{const c=g.n<3?'rgba(255,255,255,.18)':g.m>=.75?'#5fe08a':g.m>=.5?'#ffcf6b':'#ff8a7a';return `<div class="mq-r"><span>${MQN[g.k]||g.k}</span><span class="mq-bar"><i style="width:${(g.m*100).toFixed(0)}%;background:${c}"></i></span><span class="m">${g.n?Math.round(g.m*100)+'%':'–'}</span><span class="p">${g.per.toFixed(1)}/paper</span></div>`}).join('')}
+    ${[...G].sort((a,b)=>b.per-a.per).map(g=>{const c=g.n<3?'rgba(255,255,255,.18)':g.m>=.75?'#5fe08a':g.m>=.5?'#ffcf6b':'#ff8a7a';return `<div class="mq-r"><span>${MQN[g.k]||g.k}</span><span class="mq-bar"><i style="width:${g.n?(g.m*100).toFixed(0):0}%;background:${c}"></i></span><span class="m">${g.n?Math.round(g.m*100)+'%':'–'}</span><span class="p">${g.per.toFixed(1)}/paper</span></div>`}).join('')}
     <div class="mq-h">Why you lose marks</div>
     <div class="mq-fix">${wr.length?Object.keys(MQE).map(t=>`${MQE[t]}<span class="tg">${cnt(t)}</span>`).join('')+'<br>Biggest leak: '+tip[big]:'Log some wrong answers to see the pattern.'}</div></div></div>`}
 $('#mqBody').addEventListener('click',e=>{const b=e.target.closest('[data-mq]');if(!b)return;const id=b.dataset.mq,r=b.dataset.r,[sj,y,n]=id.split('-');
