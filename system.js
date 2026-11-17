@@ -414,7 +414,7 @@ function focBuild(){const P=document.getElementById('focPage');if(!P||P.querySel
       <div class="sx2-seg" id="sxfModes" role="group" aria-label="Session length"><button type="button" data-m="pomo">25 / 5</button><button type="button" data-m="deep">50 / 10</button></div>
       <div class="sxf-face"><svg viewBox="0 0 400 400" id="sxfRing" aria-hidden="true">${tk}<circle cx="200" cy="200" r="152" fill="none" stroke="rgba(255,255,255,.05)"/></svg>
         <div class="sxf-in"><div class="st" id="sxfSt"></div><b class="num" id="sxfTm" aria-live="off"></b><div class="sub" id="sxfSub"></div><div class="sxf-dots" id="sxfDots"></div></div></div>
-      <div class="sxf-brk">Stand up. Water. Eyes off the screen.</div>
+      <div class="sxf-brk">Stand up. Water. Eyes off the screen.</div><div class="sxf-strip" id="sxfStrip" aria-label="Today's study blocks and finished sessions"></div>
       <div class="sxf-sj" id="sxfSj" role="group" aria-label="Studying">${['phy','chem','maths'].map(s=>`<button type="button" data-s="${s}" style="--sj:${SJC[s]}"><i></i>${SUBJ[s]}</button>`).join('')}</div>
       <div class="sxf-ctl"><button type="button" class="sx2-btn" id="sxfReset">Reset</button><button type="button" class="sx2-btn pri" id="sxfGo"></button><button type="button" class="sx2-btn" id="sxfQuit">Quit</button></div></section>
     <div class="sx2-col"><section class="sx2-pl sxf-race" id="sxfRace"></section><section class="sx2-pl sxf-side" id="sxfSide"></section></div>`;
@@ -477,7 +477,14 @@ function focFull(){const D=q1('#sxFoc');if(!D)return;const brk=fPhase==='break',
   const sj=(typeof b2FSubj!=='undefined'&&b2FSubj)||(curBlock()||{}).subj;D.querySelectorAll('#sxfSj button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===sj));
   q1('#sxfGo').textContent=q1('#fGo').textContent;const qb=q1('#sxfQuit'),armed=Date.now()-P2.quitT<4000;
   qb.textContent=brk?'Skip break':armed?'Tap again to quit':'Quit';qb.classList.toggle('warn',armed&&!brk);qb.disabled=!brk&&full;q1('#sxfReset').disabled=full;
-  focBlk();cfListF();focRace();focSide();focTick(true)}
+  focBlk();cfListF();focRace();focSide();focStrip();focTick(true)}
+/* today 06:00-23:00: study blocks as faint bars, finished sessions as solid marks, the running session in green, now as a line */
+function focStrip(){const el=q1('#sxfStrip');if(!el)return;const tk=todayK(),t0=360,t1=1380,X=t=>((Math.min(t1,Math.max(t0,t))-t0)/(t1-t0)*100).toFixed(2)+'%',W=(a,b)=>((Math.min(t1,b)-Math.max(t0,a))/(t1-t0)*100).toFixed(2)+'%',m=nowMin();
+  const bl=(CS.days[tk]||[]).filter(isStudy).map(e=>`<i class="b" style="left:${X(e.s)};width:${W(e.s,e.e)};--sj:${SJC[e.subj]||'#8b928d'}" title="${hm(e.s)}–${hm(e.e)} ${esc2(e.title)}"></i>`).join('');
+  const ses=(SYS.ses[tk]||[]).map(([t,v])=>`<i class="s" style="left:${X(t-v)};width:${W(t-v,t)}" title="Finished ${hm(t)} · ${v} min"></i>`).join('');
+  const run=fRun&&fPhase==='focus'?`<i class="r" style="left:${X(m)};width:${W(m,m+fLeft/60)}"></i>`:'';
+  const n=(SYS.ses[tk]||[]).length,tot=(SYS.ses[tk]||[]).reduce((a,x)=>a+x[1],0);
+  el.innerHTML=`<div class="h"><span>Today</span><span class="num">${n} session${n===1?'':'s'} · ${fmH(tot)} h</span></div><div class="tl">${bl}${ses}${run}<i class="now" style="left:${X(m)}"></i></div><div class="ax num"><span>06</span><span>12</span><span>18</span><span>23</span></div>`}
 function focTick(noFull){const D=q1('#sxFoc');if(!D)return;const left=fRun?Math.max(0,(fEnd-Date.now())/1000):fLeft,on=Math.round((fTotal?1-left/fTotal:0)*60);
   /* a new session starts: the time left jumped up or the phase changed */
   if(fPhase!==P2.prevPh||left>P2.prevLeft+2){if(fPhase==='focus')P2.A={n:0,sec:0};P2.prevPh=fPhase;if(!noFull){P2.prevLeft=left;focFull();return}}P2.prevLeft=left;
@@ -516,7 +523,7 @@ function calSide(){const side=q1('#calPage .cside');if(!side)return;let box=side
     <section class="card sx2-wk"><h2>${wkLab}</h2><div class="sx2-row"><span>Blocks done</span><b class="num">${sd} / ${st}</b></div><div class="sx2-row"><span>Class hours</span><b class="num">${nf(cd)} / ${nf(ch)}</b></div><div class="sx2-row"><span>Focus, verified</span><b class="num">${fmH(foc)} h</b></div></section>`;
   const bar=q1('#calPage .cbar');if(bar&&!bar.querySelector('#sxLinks')){const b=document.createElement('button');b.id='sxLinks';b.type='button';b.className='tbtn sx2-only';bar.querySelector('#cFs')?.before(b);b.addEventListener('click',()=>{P2.links=!P2.links;P2.lkScrolled=0;calLinks()})}
   const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide links':'Links for the current block';lb.setAttribute('aria-pressed',P2.links)}}
-function calLinks(){const cb=q1('#cBody');if(!cb)return;cb.querySelector('#sxLk')?.remove();cb.classList.toggle('sx-lk',P2.links);const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide links':'Links for the current block';lb.setAttribute('aria-pressed',P2.links)}
+function calLinks(){const cb=q1('#cBody');if(!cb)return;cb.querySelector('#sxLk')?.remove();cb.classList.toggle('sx-lk',P2.links);if(!P2.links&&q1('#sxLkMore'))q1('#sxLkMore').hidden=true;const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide links':'Links for the current block';lb.setAttribute('aria-pressed',P2.links)}
   if(!P2.links||!isShadow())return;const X=focusNode();if(!X)return;const G=graphAll(),S=new Set([X.i,...X.par,...X.kids]);X.kids.forEach(i=>G[i].kids.forEach(j=>{if(G[j].unit&&G[j].unit===G[i].unit)S.add(j)}));
   const elOf=n=>{if(!curKeys.includes(n.date))return null;return cb.querySelector(`.col[data-k="${n.date}"] .ev[data-id="${CSS.escape(String(n.id))}"]`)};
   const sc=q1('#cScroll'),hd=q1('#cHead');if(sc&&!P2.lkScrolled){P2.lkScrolled=1;let top=1e9;for(const i of S){const el=elOf(G[i]);if(el)top=Math.min(top,el.offsetTop)}if(top<1e9){sc.scrollTop=Math.max(0,top-8)}}
@@ -526,6 +533,8 @@ function calLinks(){const cb=q1('#cBody');if(!cb)return;cb.querySelector('#sxLk'
     h+=`<path class="${on?'n':''}" d="M${x1.toFixed(1)} ${y1.toFixed(1)} C${(x1+dx).toFixed(1)} ${y1.toFixed(1)} ${(x2-dx).toFixed(1)} ${y2.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}"/><circle class="${on?'n':''}" cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="3"/>`}}
   cb.querySelectorAll('.ev').forEach(e=>e.classList.toggle('sx-dim',!lit.has(e)));
   if(!h){toast&&toast('The current block has no links in this week.');return}
+  const sc2=q1('#cScroll');if(sc2){const vb=sc2.getBoundingClientRect().bottom,below=[...lit].filter(e=>e.getBoundingClientRect().top>vb-8);let mk=q1('#sxLkMore');if(!mk){mk=document.createElement('button');mk.id='sxLkMore';mk.type='button';q1('#calPage .cmain').appendChild(mk);mk.addEventListener('click',()=>{const t=[...document.querySelectorAll('#cBody .ev:not(.sx-dim)')].map(e=>e.offsetTop).filter(y=>y>q1('#cScroll').scrollTop+q1('#cScroll').clientHeight-40).sort((a,b)=>a-b)[0];if(t!=null)q1('#cScroll').scrollTop=t-40;setTimeout(calLinks,60)})}
+    mk.hidden=!below.length;mk.innerHTML=`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4"/></svg>${below.length} more linked block${below.length>1?'s':''} below`}
   cb.insertAdjacentHTML('beforeend',`<svg id="sxLk" aria-hidden="true">${h}</svg>`)}
 
 /* ================= LIBRARY ================= */
@@ -538,7 +547,7 @@ function libUnit(u,tk,X){const bl=unitBlocks(u.k),d=bl.filter(e=>e.done).length,
 const stLab=(I)=>({now:'NOW',today:'CLASS TODAY',prog:'IN PROGRESS',late:'OVERDUE',done:'DONE'})[I.st]||(I.nx?'NEXT '+fmtD(I.nx.date).toUpperCase():'NOT IN PLAN');
 function libCard(I){const{u,bl,d,xs,xd}=I,nd=unitNeeds(u.k).filter(k=>UNIT_BY[k]),ul=unitUnlocks(u.k).filter(k=>!isX(UNIT_BY[k])),ok=k=>{const b=unitBlocks(k);return b.length&&b.every(e=>e.done)};
   return `<article class="sxl-card st-${I.st}" style="--sj:${SJC[u.subj]}"><button type="button" class="lb-main sxl-main" data-u="${u.k}" aria-expanded="false">
-    <div class="t"><div><h4 class="si">${esc2(u.si)}</h4><div class="en"><i class="sx2-dot"></i>${esc2(u.en)}</div></div><span class="state num">${stLab(I)}</span></div>
+    <div class="t"><div><h4 class="si${u.si.length>16?' long':''}" title="${esc2(u.si)}">${esc2(u.si)}</h4><div class="en"><i class="sx2-dot"></i>${esc2(u.en)}</div></div><span class="state num">${stLab(I)}</span></div>
     <div class="segs">${segHtml(Math.min(bl.length,30)||1,bl.length?Math.round(d/bl.length*Math.min(bl.length,30)):0)}</div>
     <div class="m"><span><b class="num">${d}</b> / ${bl.length} days</span>${xs.length?`<span>+ extras <b class="num">${xd}/${xs.length}</b></span>`:''}${u.tag?`<span>${esc2(u.tag)}</span>`:''}${cfOpen(u.k)?`<span class="cfq">? ${cfOpen(u.k)} open</span>`:''}</div>
     ${nd.length||ul.length?`<div class="dep">${nd.map(k=>`<span class="chip${ok(k)?' ok':''}">${ok(k)?'✓ ':''}needs ${esc2(UNIT_BY[k].en.replace(/ extras$/,''))}</span>`).join('')}${ul.slice(0,2).map(k=>`<span class="chip">unlocks ${esc2(UNIT_BY[k].en)}</span>`).join('')}</div>`:''}</button></article>`}
@@ -581,16 +590,39 @@ function mapData(){const s=lbS,U=lmUnits(s),by=Object.fromEntries(U.map(u=>[u.k,
   let cur=X&&X.date===tk?(M?(X.subj==='maths'?'m:'+tk.slice(0,7):null):(X.unit||'').replace(/x$/,'')):null;
   const st={};U.forEach(u=>{st[u.k]=lmState(u,tk,by)[0]});if(!cur||!by[cur])cur=(U.find(u=>st[u.k]==='now')||{}).k||null;
   const dep={},D=(k,v=new Set())=>{if(dep[k]!=null)return dep[k];if(v.has(k))return 0;v.add(k);return dep[k]=Math.max(-1,...by[k].d.filter(x=>by[x]).map(x=>D(x,v)))+1};
-  const NW=250,NH=112,GX=316,GY=134,pos={};
-  if(M)U.forEach((u,i)=>pos[u.k]=[40+(i%5)*GX,40+Math.floor(i/5)*(GY+40)]);
-  else{U.forEach(u=>D(u.k));const cols={};U.forEach(u=>(cols[dep[u.k]]=cols[dep[u.k]]||[]).push(u));
-    Object.keys(cols).map(Number).sort((a,b)=>a-b).forEach(c=>{cols[c].sort((a,b)=>((a.bl[0]||{}).date||'9')<((b.bl[0]||{}).date||'9')?-1:1).forEach((u,r)=>pos[u.k]=[40+c*GX,40+r*GY])})}
-  const P=Object.values(pos),W=Math.max(...P.map(p=>p[0]))+NW+40,H=Math.max(...P.map(p=>p[1]))+NH+40;
-  return{s,U,by,st,cur,pos,NW,NH,W,H,M}}
+  const NW=250,NH=112,GX=330,GY=134,DY=34,pos={},route={};
+  /* layered layout: a layer per prerequisite depth (Maths: one long chain), long edges get pass-through points,
+     then the order inside each layer is swept by barycentre to cut crossings; the order with the fewest crossings wins */
+  if(M)U.forEach((u,i)=>dep[u.k]=i);else U.forEach(u=>D(u.k));
+  const edges=[];U.forEach(u=>u.d.filter(x=>by[x]).forEach(p=>edges.push([p,u.k])));
+  const L={},lay=k=>dep[k];U.forEach(u=>(L[dep[u.k]]=L[dep[u.k]]||[]).push(u.k));const nL=Math.max(...Object.keys(L).map(Number))+1;for(let c=0;c<nL;c++)L[c]=L[c]||[];
+  const seg=[];/* [from,to] between adjacent layers; dummies are '~p>u#i' */
+  for(const[p,u]of edges){let a=p;for(let c=lay(p)+1;c<lay(u);c++){const d='~'+p+'>'+u+'#'+c;dep[d]=c;L[c].push(d);seg.push([a,d,p,u]);a=d}seg.push([a,u,p,u])}
+  const first=k=>k[0]==='~'?'9':((by[k].bl[0]||{}).date||'9');for(let c=0;c<nL;c++)L[c].sort((a,b)=>first(a)<first(b)?-1:first(a)>first(b)?1:0);
+  const idx=()=>{const o={};for(let c=0;c<nL;c++)L[c].forEach((k,i)=>o[k]=i);return o};
+  const cross=()=>{const o=idx();let n=0;for(let c=0;c+1<nL;c++){const S=seg.filter(x=>dep[x[0]]===c);for(let i=0;i<S.length;i++)for(let j=i+1;j<S.length;j++){const a=S[i],b=S[j];if((o[a[0]]-o[b[0]])*(o[a[1]]-o[b[1]])<0)n++}}return n};
+  let best=JSON.stringify(L),bestN=cross();
+  for(let it=0;it<16;it++){const down=it%2===0,o=idx();
+    for(const c of down?[...Array(nL).keys()].slice(1):[...Array(nL).keys()].reverse().slice(1)){const nb=c+(down?-1:1);
+      const bc=k=>{const ns=seg.filter(x=>down?x[1]===k:x[0]===k).map(x=>o[down?x[0]:x[1]]);return ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:o[k]};
+      const v=Object.fromEntries(L[c].map(k=>[k,bc(k)]));L[c].sort((a,b)=>v[a]-v[b]);L[c].forEach((k,i)=>o[k]=i)}
+    const n=cross();if(n<bestN){bestN=n;best=JSON.stringify(L)}}
+  Object.assign(L,JSON.parse(best));
+  for(let c=0;c<nL;c++){let y=40;L[c].forEach(k=>{if(k[0]==='~'){pos[k]=[40+c*GX,y];y+=DY}else{pos[k]=[40+c*GX,y];y+=GY}})}
+  const P=Object.values(pos),W=Math.max(...P.map(p=>p[0]))+NW+40,H=Math.max(...U.map(u=>pos[u.k][1]))+NH+40;
+  return{s,U,by,st,cur,pos,NW,NH,W,H,M,seg,crossings:bestN,dep}}
 function mapHtml(){const D=mapData(),{U,by,st,cur,pos,NW,NH,s,M}=D;SM.D=D;const sel=SM.sel[s]&&by[SM.sel[s]]?SM.sel[s]:cur||(U[0]||{}).k;SM.sel[s]=sel;
-  let e='';for(const u of U)for(const k of u.d){if(!pos[k]||!pos[u.k])continue;const[a,b]=pos[k],[c,d]=pos[u.k];const x1=a+NW,y1=b+NH/2,x2=c,y2=d+NH/2;let p;
-    if(x2>x1+10){const dx=Math.max(30,(x2-x1)/2);p=`M${x1} ${y1} C${x1+dx} ${y1} ${x2-dx} ${y2} ${x2} ${y2}`}else{p=`M${a+NW/2} ${b+NH} C${a+NW/2} ${b+NH+40} ${c+NW/2} ${d-40} ${c+NW/2} ${d}`}
-    const lit=st[k]==='done',hot=lit&&u.k===cur;e+=`<path class="${hot?'hot':lit?'lit':''}" d="${p}"/>`}
+  /* right-angled edges: out of the right side, down or up in its own lane in the gap, into the left side.
+     Lanes in each gap are ordered by where the edge goes so vertical runs do not cross each other's turns. */
+  const mid=k=>k[0]==='~'?pos[k][1]+DYH:pos[k][1]+NH/2,DYH=17,gapL={},pts={};
+  for(const x of D.seg){const c=D.dep[x[0]];(gapL[c]=gapL[c]||[]).push(x)}
+  for(const c in gapL){const S=gapL[c].sort((a,b)=>(mid(a[1])-mid(a[0]))-(mid(b[1])-mid(b[0]))||mid(a[0])-mid(b[0])),x0=40+(+c)*330+NW,g=330-NW;
+    S.forEach((x,i)=>{x.lane=x0+g*(i+1)/(S.length+1)})}
+  const paths={};for(const x of D.seg){const key=x[2]+'>'+x[3],a=x[0],b=x[1],y1=mid(a),y2=mid(b),xs=pos[a][0]+NW,xe=pos[b][0];
+    const p=(paths[key]=paths[key]||[]);if(!p.length)p.push(`M${xs} ${y1}`);else p.push(`L${xs} ${y1}`);
+    if(Math.abs(y2-y1)<1)p.push(`L${xe} ${y2}`);else{const r=Math.min(8,Math.abs(y2-y1)/2),sg=y2>y1?1:-1;p.push(`L${x.lane-r} ${y1} Q${x.lane} ${y1} ${x.lane} ${y1+sg*r} L${x.lane} ${y2-sg*r} Q${x.lane} ${y2} ${x.lane+r} ${y2} L${xe} ${y2}`)}
+    if(b[0]==='~')p.push(`L${pos[b][0]+NW} ${y2}`)}
+  let e='';for(const key in paths){const[k,u]=key.split('>');const lit=st[k]==='done',hot=lit&&u===cur;e+=`<path class="${hot?'hot':lit?'lit':''}" d="${paths[key].join(' ')}"/>`}
   const nodes=U.map(u=>{const[x,y]=pos[u.k],sv=st[u.k],dn=u.bl.filter(b=>b.done).length,n=u.bl.length,sh=M?null:shareOf(u,s),ms=M||!(dn||sv==='now'||u.k===cur)?null:mastOf(u,s),c=u.k===cur?'cur':sv;
     const tag=c==='cur'?'NOW':sv==='done'?'DONE':sv==='lock'?'LOCKED':sv==='now'?'IN PROGRESS':(u.bl[0]?fmtD(u.bl[0].date).toUpperCase():'');
     const xs=u.xs&&u.xs.length?u.xs.flatMap(x=>x.bl):[];
@@ -663,7 +695,18 @@ function papShadow(){if(!isShadow())return;const tk=todayK(),sj=typeof ppS!=='un
     tile('Predicted Paper I',sj==='maths'?'—':m?`${m[1]}<small>/50</small>`:'—',sj==='maths'?'Maths has no MCQ paper':m?`likely ${m[2]}–${m[3]} · sharpens as you log`:'log questions below')+
     tile('Mistakes due today',String(dueS),dueS?`${SUBJ[sj]} · ${due.length} across all subjects`:'nothing to re-test',{on:dueS>0&&!npToday,btn:dueS?'<button type="button" class="sx2-btn sm" data-sx3="mb">Quiz them</button>':''})+
     tile('Next paper day',np?(npToday?'Today':fmtD(np.d)):'—',np?`${esc2(np.e.title)}${npToday?' · '+hm(np.e.s):''}`:'from January, one a week',{on:npToday})+
-    tile('Papers done',`${keys.length}`,avg!=null?`${SUBJ[sj]} · average ${avg}%`:`${SUBJ[sj]} · none marked yet`))}
+    tile('Papers done',`${keys.length}`,avg!=null?`${SUBJ[sj]} · average ${avg}%`:`${SUBJ[sj]} · none marked yet`));
+  /* clear sections on a long page */
+  const sec=(id,before,n,t,p)=>{const B=q1(before);if(!B||document.getElementById(id))return;const h=document.createElement('div');h.id=id;h.className='sx3-sec';h.innerHTML=`<span class="num">${n}</span><b>${t}</b><small>${p}</small>`;B.before(h)};
+  sec('sx3s1','#mqCard','01','Study next','Log each Paper I question; the weakest high-mark unit rises to the top');
+  sec('sx3s2','#papPage>.pp-grid>div:first-child>section:first-child','02','Timer and marks','Time a paper, log the mark, see the trend');
+  sec('sx3s3','#papPage>.pp-grid>section','04','Paper library','Every past paper, marking scheme and answer guide, by year');
+  const mb=q1('#mbH');if(mb&&!q1('#sx3s4')){const card=mb.closest('section');if(card){const h=document.createElement('div');h.id='sx3s4';h.className='sx3-sec';h.innerHTML='<span class="num">03</span><b>Mistake bank</b><small>Every wrong answer comes back after 3, 10 and 30 days</small>';card.before(h)}}}
+/* no emojis in Shadow mode: emoji characters are taken out of visible text while Shadow mode is on and put back when it is off */
+const EMO=/(\p{Emoji_Presentation}|\p{Extended_Pictographic}️|[⏱⏰\u{1F3DB}])\s?/gu,EMOS=new Set();
+function deEmoji(root){if(!isShadow()||!root)return;if(root.nodeType===3){fixT(root);return}if(root.nodeType!==1)return;const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=tw.nextNode()))fixT(n)}
+function fixT(n){const t=n.nodeValue;EMO.lastIndex=0;if(!t||!EMO.test(t))return;EMO.lastIndex=0;if(n.__sxo==null)n.__sxo=t;n.nodeValue=t.replace(EMO,'');EMOS.add(n)}
+function reEmoji(){for(const n of EMOS){if(n.__sxo!=null&&n.isConnected)n.nodeValue=n.__sxo;delete n.__sxo}EMOS.clear()}
 /* ---------- Report ---------- */
 function repShadow(){if(!isShadow())return;const T=['phy','chem','maths'].map(s=>{let r;try{r=trajectory(s)}catch(e){r=null}return[s,r]});
   strip('sxTraj','#repPage>.rp-top',`<div class="sx3-h"><h3>Trajectory</h3><p>Classes ticked in the last 14 days, projected to the end of the plan</p></div>`+T.map(([s,r])=>{if(!r)return '';
@@ -689,6 +732,8 @@ function p3wrap(){const w=(n,f)=>{const o=window[n];if(typeof o!=='function'||o.
   w('renderLib',papShadow);w('renderMQ',papShadow);w('renderMB',papShadow);w('renderReport',repShadow)}
 function p3refresh(){bars3();barTick();if(!isShadow())return;const c=document.body.className;try{if(/page-pap/.test(c))papShadow();if(/page-rep/.test(c))repShadow();if(/page-wo/.test(c))woShadow()}catch(e){console.error(e)}}
 function p3boot(){p3wrap();bars3();
+  new MutationObserver(ms=>{if(!isShadow())return;for(const m of ms)for(const n of m.addedNodes)deEmoji(n)}).observe(document.body,{childList:true,subtree:true});
+  new MutationObserver(()=>{if(isShadow())deEmoji(document.body);else reEmoji()}).observe(document.documentElement,{attributes:true,attributeFilter:['class']});if(isShadow())deEmoji(document.body);
   document.addEventListener('click',e=>{const b=e.target.closest('[data-sx3]');if(b&&b.dataset.sx3==='mb'){q1('#mbQuiz')?.click()}
     if(isShadow()&&/page-wo/.test(document.body.className)&&e.target.closest('#woPage'))setTimeout(woShadow,50)});
   let last='';const mo=new MutationObserver(()=>{const s=document.body.className+'|'+isShadow();if(s===last)return;last=s;p3refresh()});
