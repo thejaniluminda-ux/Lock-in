@@ -118,7 +118,7 @@ const svgI=p=>`<svg viewBox="0 0 24 24">${p}</svg>`;
 const ICO={full:svgI('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),x:svgI('<path d="M6 6l12 12M18 6 6 18"/>'),plus:svgI('<path d="M12 5v14M5 12h14"/>'),minus:svgI('<path d="M5 12h14"/>'),
   fit:svgI('<circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>'),all:svgI('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>')};
 const DOW3=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const SJC={phy:'#5b9dff',chem:'#4cd38a',maths:'#ff9f43',paper:'#c9c2b8'};
+const SJC={phy:'#5b9dff',chem:'#0d9488',maths:'#ff9f43',paper:'#c9c2b8'};
 /* edge labels sit on the curve's midpoint and are dropped if they would touch any node */
 const midOf=d=>{const v=d.match(/-?[\d.]+/g).map(Number);return[(v[0]+3*v[2]+3*v[4]+v[6])/8,(v[1]+3*v[3]+3*v[5]+v[7])/8]};
 const hitsAny=(x,y,w,h,B)=>B.some(([bx,by,bw,bh])=>x<bx+bw&&x+w>bx&&y<by+bh&&y+h>by);
@@ -388,10 +388,209 @@ document.addEventListener('change',e=>{const f=e.target.closest('[data-prof]');i
 addEventListener('keydown',e=>{if(!bpEl)return;if(e.key==='Escape')closeFull();if(e.key==='+'||e.key==='=')zoomC(1.25);if(e.key==='-')zoomC(.8);const m={ArrowLeft:[80,0],ArrowRight:[-80,0],ArrowUp:[0,80],ArrowDown:[0,-80]}[e.key];if(m){V.x+=m[0];V.y+=m[1];apply(true)}});
 let rsT=0;addEventListener('resize',()=>{clearTimeout(rsT);rsT=setTimeout(()=>{if(onHome())drawGraph(true);if(bpEl)apply()},120)});
 
+/* ===P2=== Phase 2: Focus, Calendar and Library redesigned for Shadow mode. The app's own controls, data and handlers
+   stay in charge; Shadow mode lays them out again and adds panels that read the same data. Normal mode is untouched. */
+const q1=s=>document.querySelector(s);
+const P2={msel:{},tab:{},A:{n:0,sec:0},awayAt:0,prevPh:'',prevLeft:0,quitT:0,links:false,sig:''};
+const pageOf=()=>{const c=document.body.className;return /\bpage-foc\b/.test(c)?'foc':/\bpage-cal\b/.test(c)?'cal':/\bpage-lib\b/.test(c)?'lib':''};
+const goP=n=>{try{(typeof vgo==='function'?vgo:go)(n)}catch(e){}};
+const PGN={foc:'Focus',cal:'Calendar',lib:'Library'};
+const ssm=s=>{s=Math.max(0,Math.round(s));return `${Math.floor(s/60)}:${p2(s%60)}`};
+const dayW=k=>{const x=new Date(k+'T00:00');return k===todayK()?'Today':DOW3[x.getDay()]+(Math.abs((x-new Date(todayK()+'T00:00'))/864e5)>6?' '+x.getDate():'')};
+
+/* ---------- shared bar: crumb, page switcher, day / exam / clock ---------- */
+function bars(){for(const[id,pg]of[['focPage','foc'],['calPage','cal'],['libPage','lib']]){const P=document.getElementById(id);if(!P||P.querySelector(':scope>.sx2-barw'))continue;
+  const b=document.createElement('div');b.className='sx2-barw';b.innerHTML=`<div class="sx2-crumb">Shadow Protocol / <b>${PGN[pg]}</b></div><div class="sx2-seg" role="group" aria-label="Pages">${['foc','cal','lib'].map(k=>`<button type="button" data-sxgo="${PGN[k]}" aria-pressed="${k===pg}">${PGN[k]}</button>`).join('')}</div><span class="sx2-sp"></span><div class="sx2-pill" data-sxday></div><div class="sx2-pill" data-sxexam></div><div class="sx2-pill"><b class="num" data-sxclk></b></div>`;P.prepend(b)}
+  barTick()}
+function barTick(){const n=now();document.querySelectorAll('[data-sxday]').forEach(e=>e.innerHTML=`Day <b class="num">${dayNo()}</b> / ${daysTotal()}`);
+  document.querySelectorAll('[data-sxexam]').forEach(e=>e.innerHTML=n<EXAM?`A/L in <b class="num">${Math.ceil((EXAM-n)/864e5)}</b> days`:'A/L');document.querySelectorAll('[data-sxclk]').forEach(e=>e.textContent=hm(nowMin()))}
+
+/* ================= FOCUS ================= */
+function focBuild(){const P=document.getElementById('focPage');if(!P||P.querySelector('#sxFoc'))return;const d=document.createElement('div');d.id='sxFoc';
+  let tk='';for(let i=0;i<60;i++){const a=(i/60*360-90)*Math.PI/180,r1=188,r2=i%5?177:168;tk+=`<line class="t${i%5?'':' M'}" x1="${(200+r1*Math.cos(a)).toFixed(1)}" y1="${(200+r1*Math.sin(a)).toFixed(1)}" x2="${(200+r2*Math.cos(a)).toFixed(1)}" y2="${(200+r2*Math.sin(a)).toFixed(1)}"/>`}
+  d.innerHTML=`<div class="sx2-col"><section class="sx2-pl sxf-blk"><div id="sxfBlk"></div>
+      <form class="sxf-cf" id="sxfCf" autocomplete="off"><div class="lbl">Stuck on something? One line, then keep going.</div><div class="in"><input id="sxfCfIn" maxlength="300" placeholder="Your question" aria-label="Question you can't answer yet"><button class="sx2-btn sm" type="submit">Save</button></div><select id="sxfCfU" aria-label="Unit this question belongs to"></select><div id="sxfCfL"></div></form></section></div>
+    <section class="sx2-pl sxf-dial" id="sxfDial"><div class="sxf-ban" id="sxfBan" role="status" hidden></div>
+      <div class="sx2-seg" id="sxfModes" role="group" aria-label="Session length"><button type="button" data-m="pomo">25 / 5</button><button type="button" data-m="deep">50 / 10</button></div>
+      <div class="sxf-face"><svg viewBox="0 0 400 400" id="sxfRing" aria-hidden="true">${tk}<circle cx="200" cy="200" r="152" fill="none" stroke="rgba(255,255,255,.05)"/></svg>
+        <div class="sxf-in"><div class="st" id="sxfSt"></div><b class="num" id="sxfTm" aria-live="off"></b><div class="sub" id="sxfSub"></div><div class="sxf-dots" id="sxfDots"></div></div></div>
+      <div class="sxf-brk">Stand up. Water. Eyes off the screen.</div>
+      <div class="sxf-sj" id="sxfSj" role="group" aria-label="Studying">${['phy','chem','maths'].map(s=>`<button type="button" data-s="${s}" style="--sj:${SJC[s]}"><i></i>${SUBJ[s]}</button>`).join('')}</div>
+      <div class="sxf-ctl"><button type="button" class="sx2-btn" id="sxfReset">Reset</button><button type="button" class="sx2-btn pri" id="sxfGo"></button><button type="button" class="sx2-btn" id="sxfQuit">Quit</button></div></section>
+    <div class="sx2-col"><section class="sx2-pl sxf-race" id="sxfRace"></section><section class="sx2-pl sxf-side" id="sxfSide"></section></div>`;
+  P.appendChild(d);
+  d.querySelector('#sxfModes').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b)document.querySelector(`#fModes [data-m="${b.dataset.m}"]`)?.click();focFull()});
+  d.querySelector('#sxfSj').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(b)document.querySelector(`#fSubj [data-s="${b.dataset.s}"]`)?.click();focFull()});
+  d.querySelector('#sxfGo').addEventListener('click',()=>{q1('#fGo').click();focFull()});
+  d.querySelector('#sxfReset').addEventListener('click',()=>{q1('#fReset').click();P2.A={n:0,sec:0};focFull()});
+  d.querySelector('#sxfQuit').addEventListener('click',()=>{const k=q1('#fSkip');if(fPhase==='break'){k.click();focFull();return}
+    if(!fRun&&fLeft>=fTotal)return;if(Date.now()-P2.quitT>4000){P2.quitT=Date.now();k.click();focFull();setTimeout(focFull,4100);return}P2.quitT=0;k.click();P2.A={n:0,sec:0};focFull()});
+  d.querySelector('#sxfCf').addEventListener('submit',e=>{e.preventDefault();const i=d.querySelector('#sxfCfIn'),v=i.value.trim();if(!v)return;const u=d.querySelector('#sxfCfU').value;
+    const su=q1('#cfUnit');if(su){su.value=u;su.dispatchEvent(new Event('change',{bubbles:true}))}q1('#cfIn').value=v;q1('#cfForm').requestSubmit();if(!q1('#cfIn').value){i.value='';cfListF()}else d.querySelector('#sxfCfU').focus()});
+  d.querySelector('#sxfBan').addEventListener('click',e=>{if(e.target.closest('button'))e.currentTarget.hidden=true})}
+function blockNow(){const tk=todayK(),m=nowMin(),L=(CS.days[tk]||[]).filter(isStudy).sort((a,b)=>a.s-b.s);const c=curBlock();if(c)return{b:c,cur:true};const n=L.find(e=>e.s>m);return n?{b:n,cur:false}:{b:null}}
+function nodeOf(b){if(!b)return null;const tk=todayK();return graphAll().find(n=>n.date===tk&&n.s===b.s&&n.title===b.title)||null}
+function chainOf(X){if(!X)return[];const G=graphAll(),out=[];const pre=X.par.map(i=>G[i]).filter(Boolean).slice(-2);pre.forEach(n=>out.push([n,'pre']));out.push([X,'now']);
+  const same=G.filter(n=>n.i>X.i&&n.kind==='class'&&(X.unit?n.unit===X.unit:n.subj===X.subj&&!n.unit)).slice(0,2);same.forEach(n=>out.push([n,'']));
+  const ids=new Set(out.map(([n])=>n.i));const un=G.find(n=>n.i>X.i&&n.kind==='class'&&X.unit&&n.unit&&n.unit!==X.unit&&!/x$/.test(n.unit)&&n.par.some(p=>ids.has(p)));if(un)out.push([un,'unl']);return out}
+function focBlk(){const{b,cur}=blockNow(),el=q1('#sxfBlk');if(!el)return;
+  if(!b){const m=nowMin(),L=(CS.days[todayK()]||[]).find(e=>m>=e.s&&m<e.e),t=L?L.title:'Free time',off=/off duty|free/i.test(t);el.innerHTML=`<div class="lbl">No study block now${L?' · '+hm(L.s)+'–'+hm(L.e):''}</div><h2 class="sxf-t">${esc2(t)}</h2><p class="sx2-cap">${off?'Rest is part of the plan. If you study anyway, pick a subject under the timer and it still counts.':'Pick a subject under the timer if you study anyway. It still counts.'}</p>`;return}
+  const kind=b.kind==='class'?(b.fixed?'live class':'class'):b.kind==='paper'?'paper':b.cons?'consolidation':'study';
+  const ch=chainOf(nodeOf(b)),tk=todayK();
+  el.innerHTML=`<div class="lbl">${cur?'Current block':'Next block · starts '+hm(b.s)}</div><h2 class="sxf-t si">${esc2(b.title)}</h2><div class="sxf-tm num${cur?' on':''}">${hm(b.s)} – ${hm(b.e)}</div><div class="sx2-cap"><i class="sx2-dot" style="--sj:${SJC[b.subj]||'#8b928d'}"></i>${SUBJ[b.subj]||'Paper'} · ${kind}</div>
+    ${ch.length>1?`<div class="lbl" style="margin-top:14px">Blueprint chain</div><div class="sxf-ch">${ch.map(([n,r])=>{const dn=liveDone(n),miss=!dn&&(n.date<tk||(n.date===tk&&n.e<=nowMin()))&&r!=='now';
+      return `<div class="c ${r==='now'?'now':dn?'ok':miss?'miss':r==='unl'?'lock':''}"><span class="si">${esc2(n.title)}</span><small>${r==='now'?(cur?'now':hm(n.s)):r==='pre'?(dn?'done':miss?'missed':dayW(n.date)):r==='unl'?dayW(n.date)+' · unlocks':dayW(n.date)}</small></div>`}).join('')}</div>`:''}`}
+function cfListF(){const el=q1('#sxfCfL');if(!el)return;const tk=todayK(),L=(typeof CF!=='undefined'?CF:[]).filter(x=>x.d===tk).slice(-3).reverse();
+  el.innerHTML=L.map(x=>`<div class="q"><span class="num">${x.ok?'✓':'?'}</span><span>${esc2(x.q)}</span></div>`).join('');
+  const s=q1('#sxfCfU'),src=q1('#cfUnit');if(s&&src&&document.activeElement!==s){s.innerHTML=src.innerHTML;s.value=src.value}}
+function raceSvg(S,tk){const t0=360,t1=1380,X=t=>((t-t0)/(t1-t0)*260).toFixed(1),you=SYS.ses[tk]||[],m=nowMin();
+  const shEnd=S.days.length?S.at(1440):0,vm=Math.max(60,shEnd,S.you+(fRun&&fPhase==='focus'?FMODES[fMode].f:0))*1.08,Y=v=>(80-v/vm*76).toFixed(1);
+  let yp=`M${X(t0)} ${Y(0)}`,c=0;you.slice().sort((a,b)=>a[0]-b[0]).forEach(([t,v])=>{yp+=` L${X(t)} ${Y(c)} L${X(t)} ${Y(c+v)}`;c+=v});yp+=` L${X(Math.min(m,t1))} ${Y(c)}`;
+  let sp='';if(S.days.length)for(let t=t0;t<=t1;t+=15)sp+=(sp?' L':'M')+X(t)+' '+Y(S.at(t));
+  const pend=fRun&&fPhase==='focus'?`<path class="pend" d="M${X(m)} ${Y(c)} L${X(Math.min(t1,m+fLeft/60))} ${Y(c+FMODES[fMode].f)}"/>`:'';
+  return `<svg viewBox="0 0 260 84" preserveAspectRatio="none" aria-hidden="true">${sp?`<path class="sl" d="${sp}"/>`:''}<path class="yl" d="${yp}"/>${pend}<line class="nl" x1="${X(m)}" x2="${X(m)}" y1="0" y2="84"/></svg>`}
+function focRace(){const el=q1('#sxfRace');if(!el)return;const tk=todayK(),S=shadow(),m=nowMin(),sh=S.days.length?S.at(m):null,you=S.you;
+  if(sh==null){el.innerHTML=`<div class="sx2-cap">Today vs your shadow · finished sessions only</div><div class="sxf-big num">${fmH(you)}</div><div class="sx2-cap">focused today</div>${you?raceSvg(S,tk):""}<p class="sxf-note">Your shadow forms from your best 3 of the last 7 days. Finish sessions today and tomorrow you race them.</p>`;return}
+  const df=you-sh,f=FMODES[fMode].f;
+  el.innerHTML=`<div class="sx2-cap">Today vs your shadow · finished sessions only</div><div class="sxf-big num">${df>=0?'+':'−'}${fmH(Math.abs(df))}</div><div class="sx2-cap">${df>0?'ahead':df<0?'behind':'level'}</div>${raceSvg(S,tk)}
+    <div class="sx2-row"><span>You</span><b class="num">${fmH(you)} h</b></div><div class="sx2-row"><span>Shadow at ${hm(m)}</span><b class="num">${fmH(sh)} h</b></div>
+    ${fRun&&fPhase==='focus'?`<p class="sxf-note">Finish this session and you are <b class="num">${df+f>=0?'+':'−'}${fmH(Math.abs(df+f))}</b>.</p>`:''}`}
+function recallItem(){try{const due=mbDueNow();const L=due.length?due:MB.filter(m=>!m.ok);if(!L.length)return null;return L[Math.floor(Date.now()/36e5)%L.length]}catch(e){return null}}
+function focSide(){const el=q1('#sxfSide');if(!el)return;const tk=todayK(),m=nowMin();
+  if(fPhase==='break'){const{b,cur}=blockNow(),end=m+Math.ceil((fRun?(fEnd-Date.now())/1000:fLeft)/60),cont=b&&cur&&b.e>end+10,nb=cont?b:(CS.days[tk]||[]).filter(isStudy).sort((a,c)=>a.s-c.s).find(e=>e.s>=end-10&&e!==b),R=recallItem();
+    el.innerHTML=`<div class="sx2-ph"><h3>Next session</h3><p>${hm(end)} · ${FMODES[fMode].f} minutes</p></div>${nb?`<div class="sxf-nx"><i class="sx2-dot" style="--sj:${SJC[nb.subj]||'#8b928d'}"></i><span class="si">${esc2(nb.title)}</span></div><p class="sx2-cap">${cont?'Same block, keep the thread.':'Starts '+hm(nb.s)+'.'}</p>`:'<p class="sx2-cap">Nothing else planned today. Pick a subject under the timer.</p>'}
+      ${R?`<div class="sxf-rc"><div class="lbl">Recall while you rest</div><b>${SUBJ[R.s]||''} ${esc2(R.y||'')} · Q${esc2(R.q||'')}</b><span>${esc2(R.t||'')}</span><p>Last time: ${esc2(R.w||'wrong')}. Say the method out loud before the break ends.</p></div>`:''}`;return}
+  const left=fRun?(fEnd-Date.now())/1000:fLeft,A=P2.A,line=(SYS.radio[tk]||[]).slice(-1)[0],day=(FO.log[tk]||{min:0}).min;
+  el.innerHTML=`<div class="sx2-ph"><h3>This session</h3><p>What the system is watching</p></div>
+    <div class="sx2-row"><span>Left the tab</span><b class="num${A.n?' warn':''}">${A.n?`${A.n} time${A.n>1?'s':''} · ${ssm(A.sec)}`:'0 times'}</b></div>
+    <div class="sx2-row"><span>${fRun?'Break at':'Break after'}</span><b class="num">${fRun?hm(m+Math.ceil(left/60)):FMODES[fMode].f+' min'}</b></div>
+    <div class="sx2-row"><span>Focused today</span><b class="num">${fmH(day)} h</b></div>
+    ${line?`<div class="sxf-radio"><span class="num">${line.t}</span>${esc2(line.text)}</div>`:''}`}
+function sesInfo(){const tk=todayK(),{b,cur}=blockNow(),done=(FO.log[tk]||{n:0}).n,per=FMODES[fMode].f+FMODES[fMode].b;
+  if(b&&cur){const inB=(SYS.ses[tk]||[]).filter(x=>x[0]>b.s&&x[0]<=b.e).length,tot=Math.max(inB+1,Math.round((b.e-b.s)/per));return{n:inB+1,tot,done}}return{n:done+1,tot:0,done}}
+function focFull(){const D=q1('#sxFoc');if(!D)return;const brk=fPhase==='break',I=sesInfo(),full=!fRun&&fLeft>=fTotal-.5;
+  D.classList.toggle('brk',brk);D.classList.toggle('run',fRun);
+  q1('#sxfSt').textContent=brk?`BREAK · ${FMODES[fMode].b} MIN`:full?'READY':!fRun?'PAUSED':`FOCUS · SESSION ${I.n}${I.tot?' OF '+I.tot:''}`;
+  const m=nowMin(),left=fRun?(fEnd-Date.now())/1000:fLeft;q1('#sxfSub').textContent=brk?(fRun?`Back at ${hm(m+Math.ceil(left/60))}`:'Break paused'):fRun?`Break at ${hm(m+Math.ceil(left/60))}`:full?`${FMODES[fMode].f} minutes · press Lock in`:'Paused · the shadow does not wait';
+  const fd=I.tot?I.n-1:I.done,nd=I.tot?Math.min(I.tot,12):Math.max(4,Math.ceil((I.done+1)/4)*4);q1('#sxfDots').innerHTML=Array.from({length:nd},(_,i)=>`<i class="${i<fd?'f':i===fd&&!brk&&fRun?'n':''}"></i>`).join('');q1('#sxfDots').title=I.tot?`Session ${I.n} of ${I.tot} in this block`:`${I.done} sessions today`;
+  D.querySelectorAll('#sxfModes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===fMode));
+  const sj=(typeof b2FSubj!=='undefined'&&b2FSubj)||(curBlock()||{}).subj;D.querySelectorAll('#sxfSj button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===sj));
+  q1('#sxfGo').textContent=q1('#fGo').textContent;const qb=q1('#sxfQuit'),armed=Date.now()-P2.quitT<4000;
+  qb.textContent=brk?'Skip break':armed?'Tap again to quit':'Quit';qb.classList.toggle('warn',armed&&!brk);qb.disabled=!brk&&full;q1('#sxfReset').disabled=full;
+  focBlk();cfListF();focRace();focSide();focTick(true)}
+function focTick(noFull){const D=q1('#sxFoc');if(!D)return;const left=fRun?Math.max(0,(fEnd-Date.now())/1000):fLeft,on=Math.round((fTotal?1-left/fTotal:0)*60);
+  /* a new session starts: the time left jumped up or the phase changed */
+  if(fPhase!==P2.prevPh||left>P2.prevLeft+2){if(fPhase==='focus')P2.A={n:0,sec:0};P2.prevPh=fPhase;if(!noFull){P2.prevLeft=left;focFull();return}}P2.prevLeft=left;
+  const s=Math.round(left);q1('#sxfTm').textContent=`${p2(Math.floor(s/60))}:${p2(s%60)}`;
+  const t=D.querySelectorAll('#sxfRing .t');if(+D.dataset.on!==on){D.dataset.on=on;t.forEach((l,i)=>l.classList.toggle('on',i<on))}
+  const sig=[fPhase,fRun,fMode,(FO.log[todayK()]||{n:0}).n,nowMin()>>2].join('|');if(!noFull&&sig!==P2.sig){P2.sig=sig;focFull()}}
+document.addEventListener('visibilitychange',()=>{if(typeof fRun==='undefined')return;
+  if(document.hidden){if(fRun&&fPhase==='focus')P2.awayAt=Date.now();return}
+  if(!P2.awayAt)return;const sec=(Date.now()-P2.awayAt)/1000;P2.awayAt=0;if(sec<3||!fRun||fPhase!=='focus')return;
+  P2.A.n++;P2.A.sec+=sec;const tk=todayK(),a=SYS.away||(SYS.away={});a[tk]=[((a[tk]||[0,0])[0]+1),Math.round((a[tk]||[0,0])[1]+sec)];const ks=Object.keys(a).sort();while(ks.length>21)delete a[ks.shift()];saveSys();
+  const B=q1('#sxfBan');if(B&&isShadow()){B.innerHTML=`<span>You left the tab for <b class="num">${ssm(sec)}</b>. The timer kept running; the shadow saw it.</span><button type="button" class="sx2-btn sm">Back to work</button>`;B.hidden=false;clearTimeout(P2.banT);P2.banT=setTimeout(()=>B.hidden=true,12000)}
+  if(pageOf()==='foc')focFull()});
+
+/* ================= CALENDAR ================= */
+const CAL_SJ=['phy','chem','maths'];
+function calPost(){if(!isShadow()||typeof curKeys==='undefined'||!curKeys.length)return;const tk=todayK(),m=nowMin(),X=focusNode();
+  document.querySelectorAll('#cBody .col').forEach(col=>{const k=col.dataset.k,L=CS.days[k]||[],by=new Map(L.map(e=>[String(e.id),e]));
+    const evs=[...col.querySelectorAll('.ev')].map(el=>({el,e:by.get(el.dataset.id)})).filter(x=>x.e).sort((a,b)=>a.e.s-b.e.s);
+    let run=[];const flush=()=>{if(run.length>1){const f=run[0],l=run[run.length-1];f.el.style.height=Math.max(12,(l.e.e-f.e.s)/60*HH-2)+'px';f.el.classList.add('sx-merge');
+        f.el.querySelector('.et').textContent=run.map(x=>x.e.title).join(' · ');f.el.title=run.map(x=>`${hm(x.e.s)}–${hm(x.e.e)} ${x.e.title}`).join('\n');run.slice(1).forEach(x=>x.el.classList.add('sx-hide'))}run=[]};
+    for(const x of evs){const{el,e}=x,dur=e.e-e.s,full=/calc\(0%/.test(el.style.left)&&/calc\(100%/.test(el.style.width);
+      el.classList.remove('sx-now','sx-miss','sx-tiny','sx-merge','sx-hide','sx-dim');
+      if(dur<30){el.classList.add('sx-tiny');el.style.height=Math.max(12,dur/60*HH-2)+'px';el.title=`${hm(e.s)}–${hm(e.e)} ${e.title}`}
+      if(X&&k===X.date&&e.s===X.s&&e.title===X.title&&m>=e.s&&m<e.e)el.classList.add('sx-now');
+      if(!e.done&&isStudy(e)&&(k<tk||(k===tk&&e.e<=m)))el.classList.add('sx-miss');
+      if(e.subj==='life'&&dur<30&&full){if(run.length&&run[run.length-1].e.e<e.s)flush();run.push(x)}else flush()}flush()});
+  calSide();calLinks()}
+function calSide(){const side=q1('#calPage .cside');if(!side)return;let box=side.querySelector('#sxCalSide');if(!box){box=document.createElement('div');box.id='sxCalSide';side.querySelector('.filt')?.before(box)}
+  const keys=curKeys,tk=todayK(),hrs={phy:0,chem:0,maths:0};let st=0,sd=0,ch=0,cd=0,foc=0;
+  for(const k of keys){for(const e of CS.days[k]||[]){if(!isStudy(e))continue;if(hrs[e.subj]!=null)hrs[e.subj]+=(e.e-e.s)/60;st++;if(e.done)sd++;if(e.kind==='class'){ch+=(e.e-e.s)/60;if(e.done)cd+=(e.e-e.s)/60}}foc+=((FO.log||{})[k]||{min:0}).min}
+  const nf=x=>+x.toFixed(1);
+  document.querySelectorAll('#calPage .filt label').forEach(l=>{const f=l.querySelector('input')?.dataset.f;let b=l.querySelector('.sx-h');if(!b){b=document.createElement('b');b.className='sx-h num';l.appendChild(b)}b.textContent=hrs[f]!=null?nf(hrs[f])+' h':''});
+  const owe=[];for(const k in CS.days)for(const e of CS.days[k])if(e.cu&&!e.done)owe.push(e);const oh=owe.reduce((a,e)=>a+(e.e-e.s),0),due=owe.map(e=>e.cu.due).sort()[0],late=owe.filter(e=>e.date<tk).length;
+  const wkLab=keys[0]<=tk&&tk<=keys[6]?'This week':'That week';
+  box.innerHTML=`<section class="card sx2-cu"><h2>Catch-up owed</h2><div class="big num">${fmH(oh)}</div><p>${owe.length?`${owe.length} block${owe.length>1?'s':''} · due by ${fmtD(due)}${late?` · <b class="warn">${late} overdue</b>`:''}`:'Nothing owed. Keep it that way.'}</p></section>
+    <section class="card sx2-wk"><h2>${wkLab}</h2><div class="sx2-row"><span>Blocks done</span><b class="num">${sd} / ${st}</b></div><div class="sx2-row"><span>Class hours</span><b class="num">${nf(cd)} / ${nf(ch)}</b></div><div class="sx2-row"><span>Focus, verified</span><b class="num">${fmH(foc)} h</b></div></section>`;
+  const bar=q1('#calPage .cbar');if(bar&&!bar.querySelector('#sxLinks')){const b=document.createElement('button');b.id='sxLinks';b.type='button';b.className='tbtn sx2-only';bar.querySelector('#cFs')?.before(b);b.addEventListener('click',()=>{P2.links=!P2.links;calLinks()})}
+  const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide links':'Links for the current block';lb.setAttribute('aria-pressed',P2.links)}}
+function calLinks(){const cb=q1('#cBody');if(!cb)return;cb.querySelector('#sxLk')?.remove();cb.classList.toggle('sx-lk',P2.links);const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide links':'Links for the current block';lb.setAttribute('aria-pressed',P2.links)}
+  if(!P2.links||!isShadow())return;const X=focusNode();if(!X)return;const G=graphAll(),S=new Set([X.i,...X.par,...X.kids]);X.kids.forEach(i=>G[i].kids.forEach(j=>{if(G[j].unit&&G[j].unit===G[i].unit)S.add(j)}));
+  const elOf=n=>{if(!curKeys.includes(n.date))return null;return cb.querySelector(`.col[data-k="${n.date}"] .ev[data-id="${CSS.escape(String(n.id))}"]`)};
+  const r0=cb.getBoundingClientRect();let h='';const lit=new Set();
+  for(const i of S){const n=G[i];for(const pi of n.par){if(!S.has(pi))continue;const a=elOf(G[pi]),b=elOf(n);if(!a||!b)continue;lit.add(a);lit.add(b);const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
+    const x1=ra.right-r0.left,y1=ra.top+Math.min(ra.height/2,18)-r0.top,x2=rb.left-r0.left,y2=rb.top+Math.min(rb.height/2,18)-r0.top,dx=Math.max(30,Math.abs(x2-x1)/2),on=pi===X.i||i===X.i;
+    h+=`<path class="${on?'n':''}" d="M${x1.toFixed(1)} ${y1.toFixed(1)} C${(x1+dx).toFixed(1)} ${y1.toFixed(1)} ${(x2-dx).toFixed(1)} ${y2.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}"/><circle class="${on?'n':''}" cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="3"/>`}}
+  cb.querySelectorAll('.ev').forEach(e=>e.classList.toggle('sx-dim',!lit.has(e)));
+  if(!h){toast&&toast('The current block has no links in this week.');return}
+  cb.insertAdjacentHTML('beforeend',`<svg id="sxLk" aria-hidden="true">${h}</svg>`)}
+
+/* ================= LIBRARY ================= */
+const isX=u=>/x$/.test(u.k)&&u.k!=='redox';
+function libUnit(u,tk,X){const bl=unitBlocks(u.k),d=bl.filter(e=>e.done).length,xs=CLASSES.filter(x=>isX(x)&&x.k.slice(0,-1)===u.k).flatMap(x=>unitBlocks(x.k)),xd=xs.filter(e=>e.done).length;
+  const nx=bl.find(e=>!e.done&&e.date>=tk);let st='next';
+  if(X&&X.date===tk&&X.unit===u.k)st='now';else if(bl.some(e=>e.date===tk&&!e.done))st='today';else if(bl.length&&d===bl.length)st='done';else if(!nx&&bl.length)st='late';else if(d||(bl[0]&&bl[0].date<tk))st='prog';
+  return{u,bl,d,xs,xd,nx,st}}
+const stLab=(I)=>({now:'NOW',today:'CLASS TODAY',prog:'IN PROGRESS',late:'OVERDUE',done:'DONE'})[I.st]||(I.nx?'NEXT '+fmtD(I.nx.date).toUpperCase():'NOT IN PLAN');
+function libCard(I){const{u,bl,d,xs,xd}=I,nd=unitNeeds(u.k).filter(k=>UNIT_BY[k]),ul=unitUnlocks(u.k).filter(k=>!isX(UNIT_BY[k])),ok=k=>{const b=unitBlocks(k);return b.length&&b.every(e=>e.done)};
+  return `<article class="sxl-card st-${I.st}" style="--sj:${SJC[u.subj]}"><button type="button" class="lb-main sxl-main" data-u="${u.k}" aria-expanded="false">
+    <div class="t"><div><h4 class="si">${esc2(u.si)}</h4><div class="en"><i class="sx2-dot"></i>${esc2(u.en)}</div></div><span class="state num">${stLab(I)}</span></div>
+    <div class="segs">${segHtml(Math.min(bl.length,30)||1,bl.length?Math.round(d/bl.length*Math.min(bl.length,30)):0)}</div>
+    <div class="m"><span><b class="num">${d}</b> / ${bl.length} days</span>${xs.length?`<span>+ extras <b class="num">${xd}/${xs.length}</b></span>`:''}${u.tag?`<span>${esc2(u.tag)}</span>`:''}${cfOpen(u.k)?`<span class="cfq">? ${cfOpen(u.k)} open</span>`:''}</div>
+    ${nd.length||ul.length?`<div class="dep">${nd.map(k=>`<span class="chip${ok(k)?' ok':''}">${ok(k)?'✓ ':''}needs ${esc2(UNIT_BY[k].en.replace(/ extras$/,''))}</span>`).join('')}${ul.slice(0,2).map(k=>`<span class="chip">unlocks ${esc2(UNIT_BY[k].en)}</span>`).join('')}</div>`:''}</button></article>`}
+function libShadow(){const box=q1('#lbList');if(!box)return;const tk=todayK(),X=focusNode();let ok=lbOpen&&UNIT_BY[lbOpen];if(ok&&isX(UNIT_BY[lbOpen]))lbOpen=lbOpen.slice(0,-1);
+  const I=CLASSES.filter(u=>u.subj===lbS&&!isX(u)).map(u=>libUnit(u,tk,X));
+  if(lbOpen&&UNIT_BY[lbOpen]){box.innerHTML=libOpen(I.find(x=>x.u.k===lbOpen)||libUnit(UNIT_BY[lbOpen],tk,X),tk,X);return}
+  const prog=I.filter(x=>['now','late','today','prog'].includes(x.st)).sort((a,b)=>['now','late','today','prog'].indexOf(a.st)-['now','late','today','prog'].indexOf(b.st)),nx=I.filter(x=>x.st==='next').sort((a,b)=>(a.nx?.date||'9')<(b.nx?.date||'9')?-1:1),dn=I.filter(x=>x.st==='done');
+  box.innerHTML=`<div class="sxl-grid">${prog.length?`<div class="sxl-sect">In progress</div>${prog.map(libCard).join('')}`:''}${nx.length?`<div class="sxl-sect">Coming up</div>${nx.map(libCard).join('')}`:''}${dn.length?`<div class="sxl-sect">Done</div>${dn.map(libCard).join('')}`:''}</div>`}
+function libOpen(I,tk,X){const{u,bl,d,xs,xd,nx}=I,k=u.k,rec=REC[u.rec||k]||'',S=(window.SUMMARY||{})[k],st=typeof STORY!=='undefined'&&STORY[k];
+  const tabs=[['days','Days'],S?['sum','සාරාංශය']:null,st?['story','Story']:null,['fb','Formulas'],['qb','Past questions'],['cf','Confused'+(cfOpen(k)?' · '+cfOpen(k):'')]].filter(Boolean);
+  let t=P2.tab[k]||'days';if(!tabs.some(x=>x[0]===t))t='days';
+  const row=(e,i,first)=>{const now=X&&X.date===e.date&&X.s===e.s&&X.title===e.title,miss=!e.done&&e.date<tk;
+    return `<div class="sxl-d${e.done?' ok':''}${now?' now':''}${e===first?' nx':''}${miss?' miss':''}"><span class="n num">${p2(i+1)}</span><b class="si">${esc2(e.title)}</b><span class="d num">${e.done?fmtD(e.date):now?'Now · '+hm(e.s):e.date===tk?'Today · '+hm(e.s):miss?fmtD(e.date)+' · missed':e===first?'Next · '+fmtD(e.date):fmtD(e.date)}</span><span class="tk" aria-label="${e.done?'done':'not done'}">${e.done?'✓':''}</span></div>`};
+  const first=bl.find(e=>!e.done&&e.date>=tk&&!(X&&X.date===e.date&&X.s===e.s)),fx=xs.find(e=>!e.done&&e.date>=tk);
+  let body='';if(t==='days')body=(bl.map((e,i)=>row(e,i,first)).join('')||'<p class="sx2-cap">No class days for this unit in the plan.</p>')+(xs.length?`<div class="sxl-xh">Extras · ${xd} of ${xs.length}</div>${xs.map((e,i)=>row(e,i,fx)).join('')}`:'');
+  else if(t==='sum'){smOpen[k]=true;body=sumHtml(k)}else if(t==='story')body=storyHtml(k);else if(t==='fb')body=fbList(k)||'<p class="sx2-cap">No formulas listed for this unit yet.</p>';
+  else if(t==='qb')body=qbList(k)||'<p class="sx2-cap">No tagged past questions for this unit yet.</p>';else body=cfList(k)||'<p class="sx2-cap">Nothing here. Questions you write in Focus land on this tab.</p>';
+  const nd=unitNeeds(k).filter(x=>UNIT_BY[x]),ul=unitUnlocks(k).filter(x=>!isX(UNIT_BY[x]));
+  return `<div class="sxl-open" style="--sj:${SJC[u.subj]}"><aside class="sx2-pl sxl-side"><button type="button" class="sx2-btn sm" data-sxback>← All units</button>
+      <div class="sx2-cap" style="margin-top:14px"><i class="sx2-dot"></i>${SUBJ[u.subj]}${u.tag?' · '+esc2(u.tag):''}</div><h2 class="si">${esc2(u.si)}</h2><div class="en">${esc2(u.en)}</div>
+      <div class="sxl-stat"><div><b class="num">${d}/${bl.length}</b><span>class days</span></div><div><b class="num">${nx?(nx.date===tk?hm(nx.s):fmtD(nx.date).split(' ').slice(0,2).join(' ')):'—'}</b><span>${nx&&nx.date===tk?'class today':'next class'}</span></div>${xs.length?`<div><b class="num">${xd}/${xs.length}</b><span>extras</span></div>`:''}<div><b class="num">${cfOpen(k)}</b><span>open questions</span></div></div>
+      <p class="sx2-cap">Needs: ${nd.map(x=>esc2(UNIT_BY[x].en)).join(', ')||'nothing'}<br>Unlocks: ${ul.map(x=>esc2(UNIT_BY[x].en)).join(', ')||'nothing'}</p>
+      ${rec?`<a class="sx2-btn sm sxl-rec" href="${rec}" target="_blank" rel="noopener">▶ Recordings</a>`:''}</aside>
+    <section class="sx2-pl sxl-main2"><div class="sxl-tabs" role="tablist">${tabs.map(([v,n])=>`<button type="button" role="tab" data-sxt="${k}|${v}" aria-selected="${v===t}" class="${/[඀-෿]/.test(n)?'si':''}">${n}</button>`).join('')}</div><div class="sxl-body sxl-${t}">${body}</div></section></div>`}
+
+function mapPost(){const svg=q1('#lmSvg');if(!svg)return;const X=focusNode(),tk=todayK();let cu=X&&X.date===tk&&X.unit?X.unit.replace(/x$/,''):null;
+  const tiles=[...svg.querySelectorAll('.lm-tile')];if(!cu||!tiles.some(t=>t.dataset.k===cu))cu=(tiles.find(t=>t.classList.contains('lm-now'))||{dataset:{}}).dataset.k||null;
+  tiles.forEach(t=>{const k=t.dataset.k;if(t.classList.contains('lm-now')&&k!==cu)t.classList.add('sx-calm');
+    const xs=CLASSES.filter(x=>isX(x)&&x.k.slice(0,-1)===k).flatMap(x=>unitBlocks(x.k));const l2=t.querySelector('.lm-l2');if(xs.length&&l2&&!l2.dataset.x){l2.dataset.x=1;l2.textContent+=` · +extras ${xs.filter(e=>e.done).length}/${xs.length}`}});
+  [...svg.querySelectorAll('g[pointer-events="none"]')].forEach(g=>{const r=g.querySelector('rect'),tx=g.querySelector('text');if(!r||!tx||!/You are here/.test(tx.textContent))return;
+    const t=tiles.find(t=>{const p=t.querySelector('.lm-top');if(!p)return false;const b=p.getBBox();return Math.abs(b.x+b.width/2-(+r.getAttribute('x')+38))<2});
+    if(!t||t.dataset.k!==cu){g.remove();return}r.setAttribute('fill','#7dffa8');g.querySelector('path')?.setAttribute('fill','#7dffa8');tx.setAttribute('fill','#07140c');tx.style.fontFamily='Geist,sans-serif'})}
+/* ---------- wiring ---------- */
+function p2wrap(){const w=(n,f)=>{const o=window[n];if(typeof o!=='function'||o.__sx)return;const g=function(){try{if(isShadow()&&n==='renderLibrary'&&lbV==='map'&&!P2.msel[lbS]){P2.msel[lbS]=1;const X=focusNode();if(X&&X.unit&&X.date===todayK())lmSel=X.unit.replace(/x$/,'')}}catch(e){}const r=o.apply(this,arguments);try{if(isShadow())f()}catch(e){console.error(e)}return r};g.__sx=1;window[n]=g};
+  w('renderWeek',calPost);w('renderLibrary',()=>{if(lbV==='map')mapPost();else if(lbS!=='maths')libShadow()})}
+function p2refresh(){bars();barTick();const pg=pageOf();if(!isShadow())return;
+  if(pg==='foc'){focBuild();focFull()}if(pg==='cal'&&typeof renderWeek==='function')renderWeek();if(pg==='lib'&&typeof renderLibrary==='function')renderLibrary()}
+function p2boot(){p2wrap();bars();focBuild();
+  document.addEventListener('click',e=>{const g=e.target.closest('[data-sxgo]');if(g){goP(g.dataset.sxgo);return}
+    const bk=e.target.closest('[data-sxback]');if(bk){lbOpen=null;renderLibrary();return}const t=e.target.closest('[data-sxt]');if(t){const[k,v]=t.dataset.sxt.split('|');P2.tab[k]=v;renderLibrary();q1('.sxl-tabs [aria-selected="true"]')?.focus()}});
+  const sigC=()=>pageOf()+'|'+isShadow();let last=sigC();
+  const mo=new MutationObserver(()=>{const s=sigC();if(s===last)return;const wasSh=last.endsWith('true');last=s;const pg=pageOf();
+    if(isShadow()){if(pg)p2refresh();return}
+    if(wasSh){q1('#sxLk')?.remove();q1('#cBody')?.classList.remove('sx-lk');try{renderWeek();renderLibrary()}catch(e){}}});
+  mo.observe(document.body,{attributes:true,attributeFilter:['class']});mo.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+  setInterval(()=>{if(!isShadow())return;const pg=pageOf();if(pg==='foc')focTick()},250);
+  setInterval(()=>{if(!isShadow())return;barTick();const pg=pageOf();if(pg==='foc'){logSessions();focFull()}if(pg==='cal'&&P2.links)calLinks()},20000);
+  if(isShadow())p2refresh()}
+/* ===/P2=== */
+
 /* ---------- boot ---------- */
 function boot(){const main=document.querySelector('main');if(!main)return;if(isShadow())fonts();box=document.createElement('div');box.id='shx';box.setAttribute('aria-label','Shadow Protocol home');const top=main.querySelector(':scope>.top');top?top.after(box):main.prepend(box);
   const b=document.getElementById('modeBtn');if(b)b.setAttribute('aria-pressed',isShadow());
-  render(true);sleepGuard();
+  render(true);sleepGuard();p2boot();
   new MutationObserver(()=>{if(onHome()){if(!box.querySelector('.sx-grid'))render(true);else{render();drawGraph(true);wave()}}}).observe(document.body,{attributes:true,attributeFilter:['class']});
   const rows=document.getElementById('rows');if(rows)new MutationObserver(()=>render()).observe(rows,{childList:true,subtree:true,attributes:true});
   setInterval(()=>{if(logSessions()&&onHome())render()},15000);logSessions();snapMB();setInterval(()=>{snapMB();if(!document.hidden)render()},20000);
