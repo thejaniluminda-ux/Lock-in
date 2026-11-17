@@ -741,7 +741,7 @@ function woShadow(){if(!isShadow())return;const W=woData(),df=W.me.sets-W.best.s
   strip('sxWo','#woPage>.pp-top',
     tile('This week vs your shadow',W.hasPast?`${df>=0?'+':'−'}${Math.abs(df)}<small> sets</small>`:`${W.me.sets}<small> sets</small>`,W.hasPast?`you ${W.me.sets} · shadow ${W.best.sets} by this weekday (best of last 4 weeks)`:'your shadow forms after your first full week')+
     tile('Sessions this week',`${W.me.ses}<small>/${W.planned}</small>`,'planned so far · Mon to Sat, Sunday rest',{warn:W.me.ses<W.planned-1})+
-    tile('Today',W.rest?'Rest':W.today?'Done':'Not yet',W.rest?'Sunday: recovery is training too':W.today?'logged · eat the protein':'one session keeps the streak alive',{on:!W.rest&&!W.today}))}
+    tile('Today',W.rest?'Rest':W.today?'Done':'Not yet',W.rest?'Sunday: recovery is training too':W.today?'logged · eat the protein':'one 30-minute session today',{on:!W.rest&&!W.today}))}
 /* ---------- wiring ---------- */
 function p3wrap(){const w=(n,f)=>{const o=window[n];if(typeof o!=='function'||o.__sx3)return;const g=function(){const r=o.apply(this,arguments);try{if(isShadow())f()}catch(e){console.error(e)}return r};g.__sx3=1;window[n]=g};
   w('renderLib',papShadow);w('renderMQ',papShadow);w('renderMB',papShadow);w('renderReport',repShadow)}
