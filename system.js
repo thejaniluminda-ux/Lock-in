@@ -49,7 +49,7 @@ function totals(){const ev=ledger(),tot=ev.reduce((a,e)=>a+e.x,0),tk=todayK(),mo
 
 /* ---------- Trajectory: plan pace vs current pace for classes (design C). Honest both ways, never an exam prediction. ---------- */
 function trajectory(sj){const tk=todayK(),from14=dk(add(now(),-14));let total=0,due=0,done=0,due14=0,done14=0,last=null;
-  for(const d of Object.keys(CS.days).sort())for(const e of CS.days[d]){if(e.kind!=='class'||e.subj!==sj||e.fixed)continue;total++;last=d;if(d<=tk){due++;if(e.done)done++;if(d>from14){due14++;if(e.done)done14++}}}
+  for(const d of Object.keys(CS.days).sort())for(const e of CS.days[d]){if(e.kind!=='class'||e.subj!==sj||e.fixed)continue;total++;last=d;if(d<tk||(d===tk&&e.e<=nowMin())){due++;if(e.done)done++;if(d>from14){due14++;if(e.done)done14++}}}
   const daysIn=Math.max(0,Math.round((now()-START)/864e5));
   if(daysIn<7)return{sj,total,due,done,last,msg:`Needs 7 days of data (day ${daysIn+1}). Plan: ${due} of ${total} classes due so far.`,state:'wait'};
   const rate=done14/14;if(rate<=0)return{sj,total,due,done,last,msg:`No classes ticked in 14 days. At zero pace, nothing finishes.`,state:'behind'};
@@ -57,12 +57,12 @@ function trajectory(sj){const tk=todayK(),from14=dk(add(now(),-14));let total=0,
   return{sj,total,due,done,last,fin,gap,state:gap>3?'behind':gap<-3?'ahead':'on',msg:`At this pace: ${fin.getDate()} ${M3[fin.getMonth()]}${fin.getFullYear()!==2027?' '+fin.getFullYear():''}. Plan: ${lastD.getDate()} ${M3[lastD.getMonth()]}. ${gap>3?gap+' days late.':gap<-3?(-gap)+' days early.':'On plan.'}`}}
 
 /* ---------- The Record: identity evidence from real data (design C) ---------- */
-function record(){const R=[],tk=todayK();let blocks=0,classes=0;for(const d in CS.days)if(d<=tk)for(const e of CS.days[d])if(e.done&&study(e)){blocks++;if(e.kind==='class')classes++}
+function record(){const R=[],tk=todayK(),st0=dk(START);let blocks=0,classes=0;for(const d in CS.days)if(d<=tk&&d>=st0)for(const e of CS.days[d])if(e.done&&study(e)){blocks++;if(e.kind==='class')classes++}
   const W=rd('lockin-workout-v1',{extra:{}}),wo=Object.values(W.extra||{}).filter(x=>x&&x.done!=null).length;
   const sleepOk=Object.values(SYS.sleep).filter(s=>['early','ontime'].includes(s.b)).length,phoneOk=Object.values(SYS.phone).filter(p=>p.night&&p.morning===true).length;
   const ONE={'focus sessions':'focus session','classes':'class','study blocks':'study block','nights':'night','mistakes':'mistake','past-paper questions':'past-paper question','full papers':'full paper','workouts':'workout'};
   const fx=(n,s)=>{if(n<=0)return;if(n===1)for(const k in ONE)if(s.startsWith(k)){s=ONE[k]+s.slice(k.length);break}R.push([n,s])};
-  fx(FO.sessions||0,'focus sessions finished');fx(classes,'classes completed');fx(blocks,'study blocks done');fx(sleepOk,'nights asleep by 23:30');fx(phoneOk,'nights the phone stayed out');
+  fx(Object.entries(FO.log||{}).filter(([d])=>d>=st0).reduce((a,[,v])=>a+(v.n||0),0),'focus sessions finished');fx(classes,'classes completed');fx(blocks,'study blocks done');fx(sleepOk,'nights asleep by 23:30');fx(phoneOk,'nights the phone stayed out');
   fx(MB.filter(m=>m.ok).length,'mistakes fixed for good');fx(new Set(qlGet().map(q=>q.id)).size,'past-paper questions done');fx(Object.keys(PP.score||{}).length,'full papers marked');fx(wo,'workouts finished');
   return R}
 
@@ -250,7 +250,7 @@ function render(force){if(!box||!isShadow()||!onHome())return;if(force||!box.que
   const T=totals(),lv=levelOf(T.tot),rank=rankOf(lv.L),P=prof();
   box.querySelector('#sxDay').innerHTML=new Date(todayK()+'T00:00')>EXAM_END?'Exam over':now()>=EXAM?`Exam day <b>${Math.round((new Date(todayK()+'T00:00')-EXAM)/864e5)+1}</b> / 26`:dayNo()<1?`Day 1 starts tomorrow`:`Day <b>${dayNo()}</b> / ${daysTotal()}`;
   box.querySelector('#sxExam').innerHTML=now()<EXAM?`A/L in <b>${Math.ceil((EXAM-now())/864e5)}</b> days`:'A/L';box.querySelector('#sxClk').textContent=hm(nowMin());
-  box.querySelector('.sx-tgt').innerHTML=P.course?`Target <b>${esc2(P.course)}</b>${P.z?' · Z '+esc2(P.z):' · Z —'}`:'Set your target';
+  box.querySelector('.sx-tgt').innerHTML=P.course?`Target <b>${esc2(P.course)}</b>${P.z?' · Z '+esc2(P.z):''}`:'Set your target';
   setPanel('sxRank',rankHtml(T,lv,rank));setPanel('sxMis',misHtml());setPanel('sxMast',mastHtml());setPanel('sxRec',recHtml());if(setPanel('sxRadio',radioHtml()))wave();
   requestAnimationFrame(()=>{drawGraph(force);if(!waveRaf)wave()});events(T,lv,rank)}
 /* ---------- moments: mission complete, level-up, rank-up, first launch ---------- */
@@ -437,12 +437,12 @@ function chainOf(X){if(!X)return[];const G=graphAll(),out=[];const pre=X.par.map
   const ids=new Set(out.map(([n])=>n.i));const un=G.find(n=>n.i>X.i&&n.kind==='class'&&X.unit&&n.unit&&n.unit!==X.unit&&!/x$/.test(n.unit)&&n.par.some(p=>ids.has(p)));if(un)out.push([un,'unl']);return out}
 function focBlk(){const{b,cur}=blockNow(),el=q1('#sxfBlk');if(!el)return;
   if(!b){const m=nowMin(),L=(CS.days[todayK()]||[]).find(e=>m>=e.s&&m<e.e),t=L?L.title:'Free time',off=/off duty|free/i.test(t);el.innerHTML=`<div class="lbl">No study block now${L?' · '+hm(L.s)+'–'+hm(L.e):''}</div><h2 class="sxf-t">${esc2(t)}</h2><p class="sx2-cap">${off?'Rest is part of the plan. If you study anyway, pick a subject under the timer and it still counts.':'Pick a subject under the timer if you study anyway. It still counts.'}</p>`;return}
-  const kind=b.kind==='class'?(b.fixed?'live class':'class'):b.kind==='paper'?'paper':b.cons?'consolidation':'study';
+  const kind=b.kind==='class'?(b.fixed?'live class':UNIT_BY[b.unit]&&UNIT_BY[b.unit].self?'self-study':'class'):b.kind==='paper'?'paper':b.cons?'consolidation':'study';
   const ch=chainOf(nodeOf(b)),tk=todayK();
   el.innerHTML=`<div class="lbl">${cur?'Current block':'Next block · starts '+hm(b.s)}</div><h2 class="sxf-t si">${esc2(b.title)}</h2><div class="sxf-tm num${cur?' on':''}">${hm(b.s)} – ${hm(b.e)}</div><div class="sx2-cap"><i class="sx2-dot" style="--sj:${SJC[b.subj]||'#8b928d'}"></i>${SUBJ[b.subj]||'Paper'} · ${kind}</div>
     ${ch.length>1?`<div class="lbl" style="margin-top:14px">Blueprint chain</div><div class="sxf-ch">${ch.map(([n,r])=>{const dn=liveDone(n),miss=!dn&&(n.date<tk||(n.date===tk&&n.e<=nowMin()))&&r!=='now';
       return `<div class="c ${r==='now'?'now':dn?'ok':miss?'miss':r==='unl'?'lock':''}"><span class="si">${esc2(n.title)}</span><small>${r==='now'?(cur?'now':hm(n.s)):r==='pre'?(dn?'done':miss?'missed':dayW(n.date)):r==='unl'?dayW(n.date)+' · unlocks':dayW(n.date)}</small></div>`}).join('')}</div>`:''}
-    ${(()=>{const L=(CS.days[tk]||[]).filter(e=>isStudy(e)&&e.s>=b.e&&e!==b).sort((x,y)=>x.s-y.s).slice(0,innerHeight>900?6:3);return L.length?`<div class="lbl" style="margin-top:14px">Later today</div><div class="sxf-later">${L.map(e=>`<div><span class="num">${hm(e.s)}</span><i class="sx2-dot" style="--sj:${SJC[e.subj]||'#8b928d'}"></i><span class="si">${esc2(e.title)}</span></div>`).join('')}</div>`:''})()}`}
+    ${(()=>{const L=(CS.days[tk]||[]).filter(e=>isStudy(e)&&e.s>=b.e&&e!==b).sort((x,y)=>x.s-y.s).slice(0,innerHeight>1000?8:innerHeight>900?6:3);return L.length?`<div class="lbl" style="margin-top:14px">Later today</div><div class="sxf-later">${L.map(e=>`<div><span class="num">${hm(e.s)}</span><i class="sx2-dot" style="--sj:${SJC[e.subj]||'#8b928d'}"></i><span class="si">${esc2(e.title)}</span></div>`).join('')}</div>`:''})()}`}
 function cfListF(){const el=q1('#sxfCfL');if(!el)return;const tk=todayK(),L=(typeof CF!=='undefined'?CF:[]).filter(x=>x.d===tk).slice(-3).reverse();
   el.innerHTML=L.map(x=>`<div class="q"><span class="num">${x.ok?'✓':'?'}</span><span>${esc2(x.q)}</span></div>`).join('');
   const s=q1('#sxfCfU'),src=q1('#cfUnit');if(s&&src&&document.activeElement!==s){s.innerHTML=src.innerHTML;s.value=src.value}}
@@ -472,7 +472,7 @@ function sesInfo(){const tk=todayK(),{b,cur}=blockNow(),done=(FO.log[tk]||{n:0})
   if(b&&cur){const inB=(SYS.ses[tk]||[]).filter(x=>x[0]>b.s&&x[0]<=b.e).length,tot=Math.max(inB+1,Math.round((b.e-b.s)/per));return{n:inB+1,tot,done}}return{n:done+1,tot:0,done}}
 function focFull(){const D=q1('#sxFoc');if(!D)return;const brk=fPhase==='break',I=sesInfo(),full=!fRun&&fLeft>=fTotal-.5;
   D.classList.toggle('brk',brk);D.classList.toggle('run',fRun);
-  q1('#sxfSt').textContent=brk?`BREAK · ${FMODES[fMode].b} MIN`:full?'READY':!fRun?'PAUSED':`FOCUS · SESSION ${I.n}${I.tot?' OF '+I.tot:''}`;
+  q1('#sxfSt').textContent=brk?`BREAK · ${FMODES[fMode].b} MIN`:full?'READY':!fRun?'PAUSED':`FOCUS · SESSION ${I.done+1} TODAY`;
   const m=nowMin(),left=fRun?(fEnd-Date.now())/1000:fLeft;q1('#sxfSub').textContent=brk?(fRun?`Back at ${hm(m+Math.ceil(left/60))}`:'Break paused'):fRun?`Break at ${hm(m+Math.ceil(left/60))}`:full?`${FMODES[fMode].f} minutes · press Lock in`:'Paused · the shadow does not wait';
   const fd=I.tot?I.n-1:I.done,nd=I.tot?Math.min(I.tot,12):Math.max(4,Math.ceil((I.done+1)/4)*4);q1('#sxfDots').innerHTML=Array.from({length:nd},(_,i)=>`<i class="${i<fd?'f':i===fd&&!brk&&fRun?'n':''}"></i>`).join('');q1('#sxfDots').title=I.tot?`Session ${I.n} of ${I.tot} in this block`:`${I.done} sessions today`;
   D.querySelectorAll('#sxfModes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===fMode));
@@ -503,7 +503,7 @@ document.addEventListener('visibilitychange',()=>{if(typeof fRun==='undefined')r
 
 /* ================= CALENDAR ================= */
 const CAL_SJ=['phy','chem','maths'];
-function calPost(){if(!isShadow()||typeof curKeys==='undefined'||!curKeys.length)return;const tk=todayK(),m=nowMin(),X=focusNode();
+function calPost(){if(!isShadow()||typeof curKeys==='undefined'||!curKeys.length)return;const tk=todayK(),m=nowMin(),X=focusNode();document.querySelectorAll('#cBody .col').forEach(c=>{c.querySelector('.sx-pre')?.remove();if(c.dataset.k&&c.dataset.k<dk(START)){const p=document.createElement('div');p.className='sx-pre';p.textContent='Before Day 1';c.appendChild(p)}});document.querySelectorAll('#cBody .ev .et').forEach(t=>{const v=t.textContent,n=v.replace(/ (\S{1,3})$/,' $1');if(n!==v)t.textContent=n});
   document.querySelectorAll('#cBody .col').forEach(col=>{const k=col.dataset.k,L=CS.days[k]||[],by=new Map(L.map(e=>[String(e.id),e]));
     const evs=[...col.querySelectorAll('.ev')].map(el=>({el,e:by.get(el.dataset.id)})).filter(x=>x.e).sort((a,b)=>a.e.s-b.e.s);
     let run=[];const flush=()=>{if(run.length>1){const f=run[0],l=run[run.length-1];f.el.style.height=Math.max(12,(l.e.e-f.e.s)/60*HH-2)+'px';f.el.classList.add('sx-merge');
@@ -533,11 +533,11 @@ function calLinks(){const cb=q1('#cBody');if(!cb)return;cb.querySelector('#sxLk'
   /* no lines across the grid (they crossed other blocks' text): the chain's blocks are numbered in order instead,
      and everything else is dimmed */
   cb.querySelectorAll('.sx-step').forEach(x=>x.remove());const lit=new Set(),chain=[...S].map(i=>G[i]).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.s-b.s);
-  const CL=q1('#sxChainL');if(CL){CL.hidden=false;CL.innerHTML=`<h2>Chain for the current block</h2><p>Numbered on the calendar in the order to study them</p>${chain.map((n,i)=>`<div class="st${n.i===X.i?' n':''}"><span class="b num">${i+1}</span><span class="d num">${dLab(n.date)} ${hm(n.s)}</span><span class="t si" title="${esc2(n.title)}">${esc2(n.title)}</span></div>`).join('')}`}
+  const CL=q1('#sxChainL');if(CL){CL.hidden=false;CL.innerHTML=`<h2>Chain for the current block</h2><p>Numbered on the calendar in the order to study them</p>${chain.slice(0,(innerHeight<800?4:innerHeight<900?5:9)).map((n,i)=>`<div class="st${n.i===X.i?' n':''}"><span class="b num">${i+1}</span><span class="d num">${dLab(n.date)} ${hm(n.s)}</span><span class="t si" title="${esc2(n.title)}">${esc2(n.title)}</span></div>`).join('')}${chain.length>((innerHeight<800?4:innerHeight<900?5:9))?`<div class="st sx-stm num">+ ${chain.length-((innerHeight<800?4:innerHeight<900?5:9))} more on the calendar</div>`:''}`}
   chain.forEach((n,i)=>{const el=elOf(n);if(!el)return;lit.add(el);const b=document.createElement('span');b.className='sx-step'+(n.i===X.i?' n':'');b.textContent=i+1;b.title=`Step ${i+1} of ${chain.length}${n.i===X.i?' · now':''}`;el.appendChild(b)});
   cb.querySelectorAll('.ev').forEach(e=>e.classList.toggle('sx-dim',!lit.has(e)));
   if(lit.size<2){toast&&toast('The current block has no links in this week.');return}const h='';
-  const sc2=q1('#cScroll');if(sc2){const vb=sc2.getBoundingClientRect().bottom,below=[...lit].filter(e=>e.getBoundingClientRect().top>vb-8);let mk=q1('#sxLkMore');if(!mk){mk=document.createElement('button');mk.id='sxLkMore';mk.type='button';q1('#calPage .cmain').appendChild(mk);mk.addEventListener('click',()=>{const t=[...document.querySelectorAll('#cBody .ev:not(.sx-dim)')].map(e=>e.offsetTop).filter(y=>y>q1('#cScroll').scrollTop+q1('#cScroll').clientHeight-40).sort((a,b)=>a-b)[0];if(t!=null)q1('#cScroll').scrollTop=t-40;setTimeout(calLinks,60)})}
+  const sc2=q1('#cScroll');if(sc2){const vb=sc2.getBoundingClientRect().bottom,below=[...lit].filter(e=>e.getBoundingClientRect().top>vb-8);let mk=q1('#sxLkMore');if(!mk){mk=document.createElement('button');mk.id='sxLkMore';mk.type='button';(q1('#calPage .cbar')||q1('#calPage .cmain')).appendChild(mk);mk.addEventListener('click',()=>{const t=[...document.querySelectorAll('#cBody .ev:not(.sx-dim)')].map(e=>e.offsetTop).filter(y=>y>q1('#cScroll').scrollTop+q1('#cScroll').clientHeight-40).sort((a,b)=>a-b)[0];if(t!=null)q1('#cScroll').scrollTop=t-40;setTimeout(calLinks,60)})}
     mk.hidden=!below.length;mk.innerHTML=`<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4"/></svg>${below.length} more step${below.length>1?"s":""} below`}
 }
 
@@ -553,8 +553,8 @@ function libCard(I){const{u,bl,d,xs,xd}=I,nd=unitNeeds(u.k).filter(k=>UNIT_BY[k]
   return `<article class="sxl-card st-${I.st}${I.wide?' wide':''}" style="--sj:${SJC[u.subj]}"><button type="button" class="lb-main sxl-main" data-u="${u.k}" aria-expanded="false">
     <div class="t"><div><h4 class="si${u.si.length>16?' long':''}" title="${esc2(u.si)}">${esc2(u.si)}</h4><div class="en"><i class="sx2-dot"></i>${esc2(u.en)}</div></div><span class="state num">${stLab(I)}</span></div>
     <div class="segs">${segHtml(Math.min(bl.length,30)||1,bl.length?Math.round(d/bl.length*Math.min(bl.length,30)):0)}</div>
-    <div class="m"><span><b class="num">${d}</b> / ${bl.length} days</span>${xs.length?`<span>+ extras <b class="num">${xd}/${xs.length}</b></span>`:''}${u.tag?`<span>${esc2(u.tag)}</span>`:''}${cfOpen(u.k)?`<span class="cfq">? ${cfOpen(u.k)} open</span>`:''}</div>
-    ${nd.length||ul.length?`<div class="dep">${nd.map(k=>`<span class="chip${ok(k)?' ok':''}">${ok(k)?'✓ ':''}needs ${esc2(UNIT_BY[k].en.replace(/ extras$/,''))}</span>`).join('')}${ul.length?`<span class="chip ul" title="Unlocks: ${esc2(ul.map(k=>UNIT_BY[k].en).join(', '))}">unlocks ${esc2(ul.slice(0,2).map(k=>UNIT_BY[k].en).join(', '))}${ul.length>2?` +${ul.length-2}`:''}</span>`:''}</div>`:''}</button></article>`}
+    <div class="m"><span><b class="num">${d}</b> / ${bl.length} ${bl.length===1?'day':'days'}</span>${xs.length?`<span>+ extras <b class="num">${xd}/${xs.length}</b></span>`:''}${(()=>{const sh=/% of paper/.test(u.tag||'')||!u.tag?shareOf(u,u.subj):null;return sh?`<span>≈${sh.v}% of Paper I</span>`:u.tag&&!/% of paper/.test(u.tag)?`<span>${esc2(u.tag)}</span>`:''})()}${cfOpen(u.k)?`<span class="cfq">? ${cfOpen(u.k)} open</span>`:''}</div>
+    ${nd.length||ul.length?`<div class="dep">${nd.map(k=>`<span class="chip${ok(k)?' ok':''}">${ok(k)?'✓ ':''}needs ${esc2(UNIT_BY[k].en.replace(/ extras$/,''))}</span>`).join('')}${ul.length?`<span class="chip ul" title="Unlocks: ${esc2(ul.map(k=>UNIT_BY[k].en).join(', '))}">unlocks ${esc2(ul.slice(0,2).map(k=>UNIT_BY[k].en).join(', '))}${ul.length>2?`&nbsp;+${ul.length-2}`:''}</span>`:''}</div>`:''}</button></article>`}
 function libShadow(){const box=q1('#lbList');if(!box)return;const tk=todayK(),X=focusNode();let ok=lbOpen&&UNIT_BY[lbOpen];if(ok&&isX(UNIT_BY[lbOpen]))lbOpen=lbOpen.slice(0,-1);
   const I=CLASSES.filter(u=>u.subj===lbS&&!isX(u)).map(u=>libUnit(u,tk,X));
   if(lbOpen&&UNIT_BY[lbOpen]){box.innerHTML=libOpen(I.find(x=>x.u.k===lbOpen)||libUnit(UNIT_BY[lbOpen],tk,X),tk,X);return}
@@ -646,12 +646,12 @@ function mapSide(k){const D=SM.D,u=D&&D.by[k];if(!u)return '';const sv=k===D.cur
     ${sh?`<div class="sx2-row"><span>Share of Paper I</span><b class="num">${sh.ap?'≈':''}${sh.v}%</b></div>`:''}${!D.M?`<div class="sx2-row"><span>Mastery</span><b class="num">${ms!=null?ms+'%':'not tried'}</b></div>`:''}
     <div class="lbl">Needs</div><div class="chips">${ch(u.d.filter(x=>D.by[x]).map(x=>D.by[x]))}</div><div class="lbl">Unlocks</div><div class="chips">${ch(kids)}</div>
     ${D.M?'':`<button type="button" class="sx2-btn sxm-open" data-mopen="${esc2(k)}">Open unit card</button>`}`}
-function mapApply(){const w=q1('#sxmW');if(!w)return;const V=SM.V;w.style.transform=`translate(${V.x}px,${V.y}px) scale(${V.k})`;q1('#sxmZ').textContent=Math.round(V.k*100)+'%';q1('#sxm').classList.toggle('ov',V.k<.7);const vp=q1('#sxmVp');if(vp&&SM.D)q1('#sxm').classList.toggle('more',SM.D.W*V.k+V.x>vp.clientWidth+4)}
+function mapApply(){const w=q1('#sxmW');if(!w)return;const V=SM.V;w.style.transform=`translate(${V.x}px,${V.y}px) scale(${V.k})`;q1('#sxmZ').textContent=Math.round(V.k*100)+'%';q1('#sxm').classList.toggle('ov',V.k<.7);const vp=q1('#sxmVp');if(vp&&SM.D)q1('#sxm').classList.toggle('sx-mr',SM.D.W*V.k+V.x>vp.clientWidth+4)}
 function mapClamp(){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,w=D.W*V.k,h=D.H*V.k,cw=vp.clientWidth,chh=vp.clientHeight;
   V.x=w<=cw?(cw-w)/2:Math.min(0,Math.max(cw-w,V.x));V.y=h<=chh?(chh-h)/2:Math.min(0,Math.max(chh-h,V.y))}
 function mapZoom(f,cx,cy){const vp=q1('#sxmVp'),V=SM.V;if(cx==null){cx=vp.clientWidth/2;cy=vp.clientHeight/2}const k=Math.min(1.6,Math.max(.4,V.k*f));V.x=cx-(cx-V.x)*k/V.k;V.y=cy-(cy-V.y)*k/V.k;V.k=k;mapClamp();mapApply()}
 function mapFit(centre){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,f=Math.min(vp.clientWidth/D.W,vp.clientHeight/D.H);V.k=centre?1:Math.min(1,f);
-  const c=D.pos[SM.sel[D.s]];V.x=0;V.y=0;if(centre&&c&&V.k>f){if((c[0]+D.NW)*V.k>vp.clientWidth*.85)V.x=vp.clientWidth/2-(c[0]+D.NW/2)*V.k;V.y=vp.clientHeight/2-(c[1]+D.NH/2)*V.k}mapClamp();mapApply()}
+  const c=D.pos[SM.sel[D.s]];V.x=0;V.y=0;if(centre&&c&&V.k>f){if((c[0]+D.NW)*V.k>vp.clientWidth)V.x=vp.clientWidth-(c[0]+D.NW+40)*V.k;if((c[1]+D.NH)*V.k>vp.clientHeight){const ys=[...new Set(Object.values(D.pos).map(p=>p[1]))].sort((a,b)=>a-b),yt=ys.find(y=>(c[1]+D.NH-y+32)*V.k<=vp.clientHeight);V.y=-((yt==null?c[1]:yt)-16)*V.k}}mapClamp();mapApply()}
 function mapRender(){const box=q1('#lbList');if(!box)return;box.innerHTML=mapHtml();requestAnimationFrame(()=>mapFit(true))}
 function mapWire(){document.addEventListener('click',e=>{if(!isShadow()||!q1('#sxm'))return;
     const z=e.target.closest('[data-mz]');if(z){const v=z.dataset.mz;if(v==='in')mapZoom(1.2);else if(v==='out')mapZoom(1/1.2);else if(v==='fit')mapFit(false);else{SM.fs=!SM.fs;q1('#sxm').classList.toggle('fs',SM.fs);document.body.classList.toggle('sx-mapfs',SM.fs);z.textContent=SM.fs?'Exit full screen':'Full screen';requestAnimationFrame(()=>mapFit(true))}return}
@@ -726,7 +726,7 @@ function repShadow(){if(!isShadow())return;const T=['phy','chem','maths'].map(s=
   const tk=todayK(),ck=CKP.find(c=>c[1]>=tk)||CKP[CKP.length-1],dl=Math.max(0,Math.round((new Date(ck[1]+'T00:00')-new Date(tk+'T00:00'))/864e5));
   let mocks=0;try{mocks=new Set(qlGet().filter(x=>x.mock).map(x=>String(x.t).slice(0,8))).size}catch(e){}
   let nt=null;for(const k of Object.keys(CS.days).sort()){if(k<tk)continue;const e=CS.days[k].find(e=>e.tag==='Timed');if(e){nt=k;break}}
-  const T2=q1('#sxTraj');if(T2){T2.querySelectorAll('.ck').forEach(x=>x.remove());T2.insertAdjacentHTML('beforeend',(tile('Next checkpoint',`${dl}<small> days</small>`,`${ck[0]} checkpoint (${fmtD(ck[1])}) · A track ${ck[2]}% · top-100 pace ${ck[3]}%`,{on:true})+
+  const T2=q1('#sxTraj');if(T2){T2.querySelectorAll('.ck').forEach(x=>x.remove());T2.insertAdjacentHTML('beforeend',(tile('Next checkpoint',`${dl}<small> days</small>`,`${ck[0]} checkpoint ${fmtD(ck[1])} · A track ${ck[2]}% · top-100 ${ck[3]}%`,{on:true})+
     tile('Mini-mocks',String(mocks),mocks?'25 Paper I questions in 60 minutes, scored out of 50':`none yet · first one ${nt?fmtD(nt):'on a Sunday'} (Sunday timed block)`)).replace(/class="sx3-t/g,'class="ck sx3-t'))}
   const px=q1('#px');if(px)px.classList.toggle('sx-empty',!mocks)}
 /* ---------- Workout ---------- */
@@ -734,8 +734,8 @@ function woData(){let S;try{S=JSON.parse(localStorage.getItem('lockin-workout-v1
   const mon=d=>{const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return x},wd=(n.getDay()+6)%7,m0=mon(n);
   const wk=i=>{const a=add(m0,-7*i),b=add(a,wd);const A=dk(a),B=dk(b);const l=L.filter(x=>x.d>=A&&x.d<=B);return{sets:l.length,ses:new Set(l.map(x=>x.d)).size}};
   const me=wk(0),past=[1,2,3,4].map(wk),best=past.reduce((a,b)=>b.sets>a.sets?b:a,{sets:0,ses:0});
-  const today=L.some(x=>x.d===tk),planned=Math.min(wd+1,6);
-  let miss2=0;for(let i=1;i<=56;i++){const d=add(n,-i);if(d.getDay()===0)continue;const k=dk(d),k2=dk(add(d,-1));if(k<'2026-11-16')break;if(!L.some(x=>x.d===k)&&!L.some(x=>x.d===k2)&&add(d,-1).getDay()!==0){miss2=i;break}}
+  const today=L.some(x=>x.d===tk),planned=(()=>{let c=0;for(let d=new Date(Math.max(+m0,+START));dk(d)<tk;d=add(d,1))if(d.getDay())c++;return c+(today?1:0)})();
+  let miss2=0;for(let i=1;i<=56;i++){const d=add(n,-i);if(d.getDay()===0)continue;const k=dk(d),k2=dk(add(d,-1));if(k<dk(START))break;if(!L.some(x=>x.d===k)&&!L.some(x=>x.d===k2)&&add(d,-1).getDay()!==0){miss2=i;break}}
   return{me,best,today,planned,hasPast:past.some(p=>p.sets),rest:n.getDay()===0}}
 function woShadow(){if(!isShadow())return;const W=woData(),df=W.me.sets-W.best.sets;
   strip('sxWo','#woPage>.pp-top',

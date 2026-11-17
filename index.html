@@ -2676,9 +2676,9 @@ function weekStats(mon,end){
     const C=cfGet();for(const u in C)for(const x of C[u])if(x.d===k)rec.push(x.r)}
   return{plan,done,byS,focus,rec}}
 function renderWeekly(){
-  const t=new Date(today0),mon=new Date(t);mon.setDate(t.getDate()-((t.getDay()+6)%7));const tk=dkey(t),mk=dkey(mon);
+  const t=new Date(today0),mon=new Date(t);mon.setDate(t.getDate()-((t.getDay()+6)%7));const cl=mon<START;if(cl)mon.setTime(+START);const tk=dkey(t),mk=dkey(mon);
   const lm=new Date(mon);lm.setDate(mon.getDate()-7);const le=new Date(mon);le.setDate(mon.getDate()-1);
-  const W=weekStats(mon,tk),L=weekStats(lm,dkey(le));
+  const W=weekStats(mon,tk),L=cl?weekStats(mon,dkey(le)):weekStats(lm,dkey(le));
   const pct=W.plan?Math.round(W.done/W.plan*100):0,lpct=L.plan?Math.round(L.done/L.plan*100):null;
   const diff=lpct==null?'':(pct>=lpct?`<span class="up">▲ ${pct-lpct}% vs last week</span>`:`<span class="dn">▼ ${lpct-pct}% vs last week</span>`);
   let owe=0,od=null;for(const k in CS.days)for(const e of CS.days[k])if(e.cu&&!e.done){owe+=(e.e-e.s)/60;const d=e.cu.due||k;if(!od||d<od)od=d}
@@ -3876,7 +3876,7 @@ function setsDone(e,d=ymd(today())){return new Set(logsOn(d,e).map(l=>l.set))}
 
 function renderToday(){
   const d=today(),t=curType(),el=$('#woToday');
-  $('#tdDate').textContent=DAYS[d.getDay()]+', '+d.getDate()+' '+MON[d.getMonth()].slice(0,3)+', week '+weekNo(d);
+  $('#tdDate').textContent=DAYS[d.getDay()]+', '+d.getDate()+' '+MON[d.getMonth()].slice(0,3)+', training week '+weekNo(d);
   if(!t){
     el.style.setProperty('--dc','#8a857e');
     $('#tdName').textContent='Rest day';
