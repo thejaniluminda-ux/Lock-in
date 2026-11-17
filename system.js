@@ -192,18 +192,18 @@ function rankHtml(T,lv,rank){const [nl,nr]=nextRank(lv.L),S=shadow(),seg=14,f=Ma
       <svg viewBox="0 0 ${W} 40" preserveAspectRatio="none"><path class="sl" d="${sl}"/><path class="yl" d="${yl}"/></svg>
       <div class="sx-who"><span>You <b>${fmH(S.you)} h</b></span><span>Shadow <b>${fmH(S.at(nowMin()))} h</b></span></div>`}
   return `<div class="sx-lvl"><b id="sxLvN">${lv.L}</b><div><span>${rank}</span><small>Level ${lv.L} · next rank ${nr} at level ${nl}</small></div></div>
-    <div class="sx-segs" id="sxXp">${segHtml(seg,f)}</div><div class="sx-xpr"><span><b>${lv.into}</b> / ${lv.need} XP</span><em>+${T.today} today</em></div>
+    <div class="sx-segs" id="sxXp">${segHtml(seg,f)}</div><div class="sx-xpr"><span><b>${lv.into}</b> / ${lv.need} XP</span><em>+${T.today} XP today</em></div>
     <div class="sx-sr"><div class="sx-t"><span>Shadow race</span><small>finished Focus sessions only</small></div>${race}
       <div class="sx-sec"><span>Right answers <b>${S.right}</b>${S.shRight!=null?' vs '+S.shRight:''}</span><span>Mistakes fixed <b>${S.fixed}</b>${S.shFixed!=null?' vs '+S.shFixed:''}</span></div></div>`}
 function misHtml(){const M=missions(),tk=todayK(),m=nowMin(),b=mib(tk);if(!M.length)return `<div class="sx-ph"><div><h3>Today's missions</h3><p>The exam is done. Nothing left to prove here.</p></div></div>`;
   const xp=x=>x.mib?XP.mib:x.t==='Practice'?30:x.t==='Body'?XP.workout:XP.sleep;
   return `<div class="sx-ph"><div><h3>Today's missions</h3><p>${M.length} missions · +${M.reduce((a,x)=>a+xp(x),0)} XP available</p></div></div>`+M.map((x,i)=>{let n=8,f=0,a='0',bb='1',r='';
-    if(x.mib&&b){n=5;const tot=b.e-b.s,el=x.done?tot:Math.max(0,Math.min(tot,m-b.s));f=Math.floor(el/tot*n);a=fmH(el);bb=fmH(tot)+' h';r=x.done?'Done':m>=b.s&&m<b.e?'Now':hm(b.s)}
+    if(x.mib&&b){n=5;const tot=b.e-b.s,el=x.done?tot:Math.max(0,Math.min(tot,m-b.s));f=Math.floor(el/tot*n);a=fmH(el);bb=fmH(tot)+' h block';r=x.done?'Done':m>=b.s&&m<b.e?'Now':hm(b.s)}
     else if(x.prog){n=10;f=parseInt(x.prog);a=String(f);bb='10';r=x.done?'Done':`${10-f} to go`}
     else{f=x.done?n:0;a=x.done?'1':'0';r=x.done?'Done':x.s.match(/\d\d:\d\d/)?.[0]||''}
     const cur=x.mib&&b&&!x.done&&m>=b.s&&m<b.e;
     return `<div class="sx-m${x.done?' ok':i===0?' mib':''}"><div class="sx-mt"><span class="k">${x.t}</span><span class="x">+${xp(x)} XP</span></div><div class="tt${/[\u0D80-\u0DFF]/.test(x.s)?' si':''}">${esc2(x.s)}</div>
-      <div class="cnt"><span><b>${a}</b> of ${bb}</span><span>${cur?'<button class="sx-go" data-begin>Begin</button>':r}</span></div><div class="sx-segs sm">${segHtml(n,f)}</div></div>`}).join('')}
+      <div class="cnt"><span><b>${a}</b> of ${bb}</span><span>${cur?'<button class="sx-go" data-begin>Focus</button>':r}</span></div><div class="sx-segs sm">${segHtml(n,f)}</div></div>`}).join('')}
 function mastHtml(){let G=[];try{const last=mqLast();for(const sj of ['chem','phy'])for(const g of mqGroups(sj)){const m=mqMast(sj,g,last);G.push({k:g.k,n:m.n,m:m.m,gain:g.per*(1-m.m)})}}catch(e){}
   if(!G.length)return `<div class="sx-ph"><div><h3>Mastery</h3><p>Weights file not loaded yet</p></div></div>`;
   const tried=G.filter(g=>g.n>0).sort((a,b)=>a.m-b.m),weak=tried.slice(0,3);for(const g of G.filter(g=>!g.n).sort((a,b)=>b.gain-a.gain))if(weak.length<3)weak.push(g);
@@ -456,7 +456,7 @@ function raceSvg(S,tk){const t0=360,t1=1380,X=t=>((t-t0)/(t1-t0)*260).toFixed(1)
 function focRace(){const el=q1('#sxfRace');if(!el)return;const tk=todayK(),S=shadow(),m=nowMin(),sh=S.days.length?S.at(m):null,you=S.you;
   if(sh==null){el.innerHTML=`<div class="sx2-cap">Today vs your shadow · finished sessions only</div><div class="sxf-big num">${fmH(you)}</div><div class="sx2-cap">focused today</div>${you?raceSvg(S,tk):""}<p class="sxf-note">Your shadow forms from your best 3 of the last 7 days. Finish sessions today and tomorrow you race them.</p>`;return}
   const df=you-sh,f=FMODES[fMode].f;
-  el.innerHTML=`<div class="sx2-cap">Today vs your shadow · finished sessions only</div><div class="sxf-big num">${df>=0?'+':'−'}${fmH(Math.abs(df))}</div><div class="sx2-cap">${df>0?'ahead':df<0?'behind':'level'}</div>${raceSvg(S,tk)}
+  el.innerHTML=`<div class="sx2-cap">Today vs your shadow · finished sessions only</div><div class="sxf-big num">${df>=0?'+':'−'}${fmH(Math.abs(df))}</div><div class="sx2-cap">${df>0?'ahead of your shadow':df<0?'behind your shadow':'even with your shadow'}</div>${raceSvg(S,tk)}
     <div class="sx2-row"><span>You</span><b class="num">${fmH(you)} h</b></div><div class="sx2-row"><span>Shadow at ${hm(m)}</span><b class="num">${fmH(sh)} h</b></div>
     ${fRun&&fPhase==='focus'?`<p class="sxf-note">Finish this session and you are <b class="num">${df+f>=0?'+':'−'}${fmH(Math.abs(df+f))}</b>.</p>`:''}`}
 function recallItem(){try{const due=mbDueNow();const L=due.length?due:MB.filter(m=>!m.ok);if(!L.length)return null;return L[Math.floor(Date.now()/36e5)%L.length]}catch(e){return null}}
@@ -474,7 +474,7 @@ function focFull(){const D=q1('#sxFoc');if(!D)return;const brk=fPhase==='break',
   D.classList.toggle('brk',brk);D.classList.toggle('run',fRun);
   q1('#sxfSt').textContent=brk?`BREAK · ${FMODES[fMode].b} MIN`:full?'READY':!fRun?'PAUSED':`FOCUS · SESSION ${I.done+1} TODAY`;
   const m=nowMin(),left=fRun?(fEnd-Date.now())/1000:fLeft;q1('#sxfSub').textContent=brk?(fRun?`Back at ${hm(m+Math.ceil(left/60))}`:'Break paused'):fRun?`Break at ${hm(m+Math.ceil(left/60))}`:full?`${FMODES[fMode].f} minutes · press Lock in`:'Paused · the shadow does not wait';
-  const fd=I.tot?I.n-1:I.done,nd=I.tot?Math.min(I.tot,12):Math.max(4,Math.ceil((I.done+1)/4)*4);q1('#sxfDots').innerHTML=Array.from({length:nd},(_,i)=>`<i class="${i<fd?'f':i===fd&&!brk&&fRun?'n':''}"></i>`).join('');q1('#sxfDots').title=I.tot?`Session ${I.n} of ${I.tot} in this block`:`${I.done} sessions today`;
+  const fd=I.done,nd=Math.min(12,Math.max(4,Math.ceil((I.done+1)/4)*4));q1('#sxfDots').innerHTML=Array.from({length:nd},(_,i)=>`<i class="${i<fd?'f':i===fd&&!brk&&fRun?'n':''}"></i>`).join('');q1('#sxfDots').title=I.tot?`Session ${I.n} of ${I.tot} in this block`:`${I.done} sessions today`;
   D.querySelectorAll('#sxfModes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===fMode));
   const sj=(typeof b2FSubj!=='undefined'&&b2FSubj)||(curBlock()||{}).subj;D.querySelectorAll('#sxfSj button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===sj));
   q1('#sxfGo').textContent=q1('#fGo').textContent;const qb=q1('#sxfQuit'),armed=Date.now()-P2.quitT<4000;
@@ -554,7 +554,7 @@ function libCard(I){const{u,bl,d,xs,xd}=I,nd=unitNeeds(u.k).filter(k=>UNIT_BY[k]
     <div class="t"><div><h4 class="si${u.si.length>16?' long':''}" title="${esc2(u.si)}">${esc2(u.si)}</h4><div class="en"><i class="sx2-dot"></i>${esc2(u.en)}</div></div><span class="state num">${stLab(I)}</span></div>
     <div class="segs">${segHtml(Math.min(bl.length,30)||1,bl.length?Math.round(d/bl.length*Math.min(bl.length,30)):0)}</div>
     <div class="m"><span><b class="num">${d}</b> / ${bl.length} ${bl.length===1?'day':'days'}</span>${xs.length?`<span>+ extras <b class="num">${xd}/${xs.length}</b></span>`:''}${(()=>{const sh=/% of paper/.test(u.tag||'')||!u.tag?shareOf(u,u.subj):null;return sh?`<span>≈${sh.v}% of Paper I</span>`:u.tag&&!/% of paper/.test(u.tag)?`<span>${esc2(u.tag)}</span>`:''})()}${cfOpen(u.k)?`<span class="cfq">? ${cfOpen(u.k)} open</span>`:''}</div>
-    ${nd.length||ul.length?`<div class="dep">${nd.map(k=>`<span class="chip${ok(k)?' ok':''}">${ok(k)?'✓ ':''}needs ${esc2(UNIT_BY[k].en.replace(/ extras$/,''))}</span>`).join('')}${ul.length?`<span class="chip ul" title="Unlocks: ${esc2(ul.map(k=>UNIT_BY[k].en).join(', '))}">unlocks ${esc2(ul.slice(0,2).map(k=>UNIT_BY[k].en).join(', '))}${ul.length>2?`&nbsp;+${ul.length-2}`:''}</span>`:''}</div>`:''}</button></article>`}
+    ${nd.length||ul.length?`<div class="dep">${nd.map(k=>{const dp=(u.deps||[]).includes(k),nw=Object.entries(u.need||{}).find(([,v])=>v.split(':')[0]===k),nm=esc2(UNIT_BY[k].en.replace(/ extras$/,''));return `<span class="chip${ok(k)?' ok':''}">${ok(k)?'✓ ':''}${!dp&&nw?`day ${+nw[0]+1} needs ${nm} day ${+nw[1].split(':')[1]+1}`:'needs '+nm}</span>`}).join('')}${ul.length?`<span class="chip ul" title="Unlocks: ${esc2(ul.map(k=>UNIT_BY[k].en).join(', '))}">unlocks ${esc2(ul.slice(0,2).map(k=>UNIT_BY[k].en).join(', '))}${ul.length>2?`&nbsp;+${ul.length-2}`:''}</span>`:''}</div>`:''}</button></article>`}
 function libShadow(){const box=q1('#lbList');if(!box)return;const tk=todayK(),X=focusNode();let ok=lbOpen&&UNIT_BY[lbOpen];if(ok&&isX(UNIT_BY[lbOpen]))lbOpen=lbOpen.slice(0,-1);
   const I=CLASSES.filter(u=>u.subj===lbS&&!isX(u)).map(u=>libUnit(u,tk,X));
   if(lbOpen&&UNIT_BY[lbOpen]){box.innerHTML=libOpen(I.find(x=>x.u.k===lbOpen)||libUnit(UNIT_BY[lbOpen],tk,X),tk,X);return}
@@ -594,7 +594,7 @@ function mapData(){const s=lbS,U=lmUnits(s),by=Object.fromEntries(U.map(u=>[u.k,
   let cur=X&&X.date===tk?(M?(X.subj==='maths'?'m:'+tk.slice(0,7):null):(X.unit||'').replace(/x$/,'')):null;
   const st={};U.forEach(u=>{st[u.k]=lmState(u,tk,by)[0]});if(!cur||!by[cur])cur=(U.find(u=>st[u.k]==='now')||{}).k||null;
   const dep={},D=(k,v=new Set())=>{if(dep[k]!=null)return dep[k];if(v.has(k))return 0;v.add(k);return dep[k]=Math.max(-1,...by[k].d.filter(x=>by[x]).map(x=>D(x,v)))+1};
-  const NW=250,NH=112,GX=330,GY=134,DY=34,pos={},route={};
+  const NW=250,NH=112,GX=330,GY=124,DY=34,pos={},route={};
   /* layered layout: a layer per prerequisite depth (Maths: one long chain), long edges get pass-through points,
      then the order inside each layer is swept by barycentre to cut crossings; the order with the fewest crossings wins */
   if(M)U.forEach((u,i)=>dep[u.k]=i);else U.forEach(u=>D(u.k));
@@ -650,7 +650,7 @@ function mapApply(){const w=q1('#sxmW');if(!w)return;const V=SM.V;w.style.transf
 function mapClamp(){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,w=D.W*V.k,h=D.H*V.k,cw=vp.clientWidth,chh=vp.clientHeight;
   V.x=w<=cw?(cw-w)/2:Math.min(0,Math.max(cw-w,V.x));V.y=h<=chh?(chh-h)/2:Math.min(0,Math.max(chh-h,V.y))}
 function mapZoom(f,cx,cy){const vp=q1('#sxmVp'),V=SM.V;if(cx==null){cx=vp.clientWidth/2;cy=vp.clientHeight/2}const k=Math.min(1.6,Math.max(.4,V.k*f));V.x=cx-(cx-V.x)*k/V.k;V.y=cy-(cy-V.y)*k/V.k;V.k=k;mapClamp();mapApply()}
-function mapFit(centre){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,f=Math.min(vp.clientWidth/D.W,vp.clientHeight/D.H);V.k=centre?1:Math.min(1,f);
+function mapFit(centre){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,f=Math.min(vp.clientWidth/D.W,vp.clientHeight/D.H);if(centre&&f>=.45)centre=false;V.k=centre?1:Math.min(1,f);
   const c=D.pos[SM.sel[D.s]];V.x=0;V.y=0;if(centre&&c&&V.k>f){if((c[0]+D.NW)*V.k>vp.clientWidth)V.x=vp.clientWidth-(c[0]+D.NW+40)*V.k;if((c[1]+D.NH)*V.k>vp.clientHeight){const ys=[...new Set(Object.values(D.pos).map(p=>p[1]))].sort((a,b)=>a-b),yt=ys.find(y=>(c[1]+D.NH-y+32)*V.k<=vp.clientHeight);V.y=-((yt==null?c[1]:yt)-16)*V.k}}mapClamp();mapApply()}
 function mapRender(){const box=q1('#lbList');if(!box)return;box.innerHTML=mapHtml();requestAnimationFrame(()=>mapFit(true))}
 function mapWire(){document.addEventListener('click',e=>{if(!isShadow()||!q1('#sxm'))return;
@@ -718,9 +718,9 @@ function repShadow(){if(!isShadow())return;const T=['phy','chem','maths'].map(s=
   strip('sxTraj','#repPage>.rp-top',`<div class="sx3-h"><h3>Trajectory</h3><p>Classes ticked in the last 14 days, projected to the end of the plan</p></div>`+T.map(([s,r])=>{if(!r)return '';
     const dl=d=>`${d.getDate()} ${M3[d.getMonth()]}${d.getFullYear()!==2027?' '+d.getFullYear():''}`,ld=r.last?new Date(r.last+'T00:00'):null;
     const v=r.state==='wait'?`${r.done}<small>/${r.due}</small>`:r.fin?dl(r.fin):'—';
-    const s2=r.state==='wait'?`classes done of due · ${r.total} in the plan · pace shows after day 7`:r.fin&&ld?`finish at this pace · plan ${dl(ld)} · ${r.gap>3?r.gap+' days late':r.gap<-3?(-r.gap)+' days early':'on plan'}`:`no classes ticked in 14 days · ${r.done}/${r.due} due done`;
+    const s2=r.state==='wait'?`classes done of due · ${r.total} class blocks planned · pace shows after day 7`:r.fin&&ld?`finish at this pace · plan ${dl(ld)} · ${r.gap>3?r.gap+' days late':r.gap<-3?(-r.gap)+' days early':'on plan'}`:`no classes ticked in 14 days · ${r.done}/${r.due} due done`;
     if(s==='maths'){const tk=todayK();let due=0,dn=0,tot=0;for(const k in CS.days)for(const e of CS.days[k])if(e.subj==='maths'&&e.kind==='class'){tot++;if(k<tk||(k===tk&&e.e<=nowMin())){due++;if(e.done)dn++}}
-      return tile(`<i class="sx2-dot" style="--sj:${SJC[s]}"></i>${SUBJ[s]}`,`${dn}<small>/${due}</small>`,`classes done of due · ${tot} in the plan · live classes count`,{warn:due>1&&dn<due-1})}
+      return tile(`<i class="sx2-dot" style="--sj:${SJC[s]}"></i>${SUBJ[s]}`,`${dn}<small>/${due}</small>`,`classes done of due · ${tot} class blocks planned · live classes count`,{warn:due>1&&dn<due-1})}
     return tile(`<i class="sx2-dot" style="--sj:${SJC[s]}"></i>${SUBJ[s]}`,v,esc2(s2),{warn:r.state==='behind'})}).join(''));
   /* one focal point: the next checkpoint; the empty mini-mock chart becomes a compact tile */
   const tk=todayK(),ck=CKP.find(c=>c[1]>=tk)||CKP[CKP.length-1],dl=Math.max(0,Math.round((new Date(ck[1]+'T00:00')-new Date(tk+'T00:00'))/864e5));
@@ -741,7 +741,7 @@ function woShadow(){if(!isShadow())return;const W=woData(),df=W.me.sets-W.best.s
   strip('sxWo','#woPage>.pp-top',
     tile('This week vs your shadow',W.hasPast?`${df>=0?'+':'−'}${Math.abs(df)}<small> sets</small>`:`${W.me.sets}<small> sets</small>`,W.hasPast?`you ${W.me.sets} · shadow ${W.best.sets} by this weekday (best of last 4 weeks)`:'your shadow forms after your first full week')+
     tile('Sessions this week',`${W.me.ses}<small>/${W.planned}</small>`,'planned so far · Mon to Sat, Sunday rest',{warn:W.me.ses<W.planned-1})+
-    tile('Today',W.rest?'Rest':W.today?'Done':'Not yet',W.rest?'Sunday: recovery is training too':W.today?'logged · eat the protein':'one 30-minute session today',{on:!W.rest&&!W.today}))}
+    (()=>{const wb=(CS.days[todayK()]||[]).find(e=>/workout/i.test(e.title||'')),due=!wb||nowMin()>=wb.s;return tile('Today',W.rest?'Rest':W.today?'Done':due?'Due now':'At '+hm(wb.s),W.rest?'Sunday: recovery is training too':W.today?'logged · eat the protein':'one 30-minute session today',{on:!W.rest&&!W.today&&due})})())}
 /* ---------- wiring ---------- */
 function p3wrap(){const w=(n,f)=>{const o=window[n];if(typeof o!=='function'||o.__sx3)return;const g=function(){const r=o.apply(this,arguments);try{if(isShadow())f()}catch(e){console.error(e)}return r};g.__sx3=1;window[n]=g};
   w('renderLib',papShadow);w('renderMQ',papShadow);w('renderMB',papShadow);w('renderReport',repShadow)}

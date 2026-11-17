@@ -1363,7 +1363,7 @@ body.wo-enter #woPage .wcol>.card,body.wo-enter #woNudge{animation:woRise .55s c
         <aside class="fo-side">
           <section class="card fo-stat"><h2>Today</h2><div class="fo-nums"><div><b id="fToday">0</b><span>sessions</span></div><div><b id="fMin">0.0</b><span>hours focused</span></div></div><div class="fo-dots" id="fDots"></div></section>
           <section class="card fo-stat"><h2>So far</h2><div class="fo-nums"><div><b id="fWeek">0.0</b><span>hours, last 7 days</span></div><div><b id="fAll">0</b><span>sessions in total</span></div></div><p class="fo-gift" id="fGift"></p></section>
-          <section class="card fo-rules"><h2>Lock-in rules</h2><ul><li>Phone in another room, face down.</li><li>The app notices if you leave this tab during a session.</li><li>Breaks start on their own. Stand up, drink water.</li><li>Each finished session counts toward Leo’s gifts.</li></ul></section>
+          <section class="card fo-rules"><h2>Lock-in rules</h2><ul><li>Phone in another room, face down.</li><li>The app notices if you leave this tab during a session.</li><li>Breaks start on their own. Stand up, drink water.</li><li>Each finished session counts in your Report.</li></ul></section>
         </aside>
       </div>
     </section>
@@ -3048,7 +3048,7 @@ let lbS='phy',lbOpen=null;
 function unitBlocks(k){const out=[],p2={};for(const d in CS.days)for(const e of CS.days[d])if(e.part===2&&e.unit===k)p2[e.iid]=e;
   /* plan v13: a split recording counts as one class day, done only when both parts are ticked */
   for(const d in CS.days)for(const e of CS.days[d])if(e.unit===k&&e.kind==='class'&&e.part!==2){if(e.part===1){const t=p2[String(e.iid).replace(/a$/,'b')];out.push(Object.assign({},e,{title:e.title.replace(/ · Part 1$/,' · Part 1 + Part 2'),done:!!(e.done&&(!t||t.done))}))}else out.push(e)}return out.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:a.s-b.s)}
-function renderLibrary(){
+function renderLibrary(){try{tagW()}catch(e){}
   document.querySelectorAll('#lbSeg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===lbS));
   const box=$('#lbList'),tk=dkey(today0);
   document.querySelectorAll('#lbView button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===lbV));
@@ -3121,11 +3121,12 @@ function lmUnits(s){
   L.filter(lmX).forEach(u=>{const p=by[u.k.slice(0,-1)];if(p)p.xs.push({k:u.k,en:u.en,bl:unitBlocks(u.k),n:unitLen(u)})});
   return main;
 }
+function tagW(){if(tagW.ok||!window.WEIGHTS||!WEIGHTS.phy)return;tagW.ok=1;for(const u of CLASSES){const p=u.subj==='phy'&&WEIGHTS.phy.units[u.k];if(p&&/% of paper/.test(u.tag||''))u.tag='~'+Math.round(p.pct)+'% of paper'}}
 function lmState(u,tk,by,seen){seen=seen||new Set();const dn=u.bl.filter(e=>e.done).length;
   if(u.bl.length&&dn===u.bl.length)return['done',1];
   if(dn||(u.bl[0]&&u.bl[0].date<=tk))return['now',Math.max(.04,dn/(u.bl.length||1))];
   if(seen.has(u.k))return['lock',0];seen.add(u.k);
-  return[u.d.every(k=>by[k]&&lmState(by[k],tk,by,seen)[0]==='done')?'next':'lock',0]}
+  return[u.d.every(k=>{const s=by[k]&&lmState(by[k],tk,by,seen)[0],full=((UNIT_BY[u.k]||{}).deps||[]).includes(k);return s==='done'||(!full&&s==='now')})?'next':'lock',0]}
 function renderLibMap(box,tk){
   const s=lbS,U=lmUnits(s),by=Object.fromEntries(U.map(u=>[u.k,u])),col=lmCol(s),M=s==='maths';
   const st={};U.forEach(u=>st[u.k]=lmState(u,tk,by));
@@ -3905,7 +3906,7 @@ function renderToday(){
   $('#tdRows').innerHTML=html;
   const pct=Math.round(done/total*100);
   $('#ringArc').style.strokeDashoffset=232.5*(1-done/total);
-  $('#ringPct').textContent=pct+'%';$('#ringSets').textContent=done+' of '+total;
+  $('#ringPct').textContent=pct+'%';$('#ringSets').textContent=done+' of '+total+' steps';
   $('#startBtn').style.display='';
   $('#startTxt').textContent=pct===0?'Start workout':pct===100?'Do it again':'Continue workout';
   renderStrip();

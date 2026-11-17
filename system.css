@@ -308,7 +308,7 @@ html.shadow #cBody .ev.sx-tiny .et{font-weight:400;white-space:nowrap!important;
 html.shadow #cBody .ev.sx-tiny .em,html.shadow #cBody .ev.sx-tiny .tg{display:none}
 html.shadow #cBody .ev.sx-merge{padding-top:1px}
 html.shadow #cBody .ev.sx-hide{display:none}
-html.shadow #cBody .ev.sx-dim{opacity:.22}
+html.shadow #cBody .ev.sx-dim{opacity:.42}
 #sxLk{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4;overflow:visible}
 #sxLk path{fill:none;stroke:rgba(255,255,255,.4);stroke-width:1.3;stroke-dasharray:3 4}#sxLk path.n{stroke:var(--sx-acc);stroke-dasharray:none;filter:drop-shadow(0 0 3px rgba(125,255,168,.7))}
 #sxLk circle{fill:var(--sx-mut)}#sxLk circle.n{fill:var(--sx-acc)}
@@ -629,4 +629,8 @@ html.shadow #woPage #pUndo{color:var(--sx-i2);background:rgba(255,255,255,.05);b
 html.shadow #sxTraj>*{grid-column:1/-1}html.shadow #sxTraj>.sx3-t{grid-column:span 2}html.shadow #sxTraj>.sx3-t.ck{grid-column:span 3}
 html.shadow #woPage #wkStrip{display:none}
 html.shadow #woPage .si{font-family:var(--font),'Noto Sans Sinhala','Iskoola Pota',sans-serif}
+/* round 4: Home */
+html.shadow #shx #sxRadio{flex:0 0 auto}
+html.shadow #shx .sx-rad{grid-template-columns:104px minmax(0,1fr)}html.shadow #shx .sx-weak{min-width:0}@media (min-height:950px){html.shadow #shx .sx-rad{grid-template-columns:128px minmax(0,1fr)}html.shadow #shx .sx-rad svg{width:128px;height:128px}}
+html.shadow #shx .sx-col>.sx-pl:last-child{flex:0 0 auto}
 /* ===/P3=== */
