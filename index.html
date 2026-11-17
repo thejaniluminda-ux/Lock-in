@@ -2773,7 +2773,7 @@ $('#libList').addEventListener('change',e=>{
 $('#ppZone').addEventListener('click',()=>window.open(PZ,'_blank','noopener'));
 
 /* paper timer */
-const ptCards=[...document.querySelectorAll('.pt-card')];
+const ptCards=[...document.querySelectorAll('#ptimer .pt-card')];
 let ptTotal=0,ptLeft=0,ptEnd=0,ptRun=false,ptI=null,ptLabel='',ptWarned={};
 function ptShow(force){
   const s=Math.max(0,Math.round(ptLeft)),d=String(Math.min(9,Math.floor(s/3600)))+String(Math.floor(s%3600/60)).padStart(2,'0')+String(s%60).padStart(2,'0');

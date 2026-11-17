@@ -428,3 +428,66 @@ html.shadow .lm-chip{background:var(--sx-p2);color:var(--sx-i2)}
 .sxm.ov .sxm-n{justify-content:center}.sxm.ov .sxm-n b.si{font-size:24px;line-height:32px;height:auto;max-height:64px}
 html.shadow body.sx-mapfs .rail,html.shadow body.sx-mapfs main>.top{display:none!important}
 /* ===/P2=== */
+
+/* ===P3=== */
+/* ================= PHASE 3: Papers, Workout, Report (Shadow mode only, except the .mq-r .p bug fix) ================= */
+.mq-r .p{position:static;animation:none;pointer-events:auto;font-weight:400}
+#sxPap,#sxTraj,#sxWo{display:none}
+html.shadow body.page-pap main,html.shadow body.page-rep main,html.shadow body.page-wo main{padding-top:12px;position:relative}
+html.shadow body.page-pap main>.top,html.shadow body.page-rep main>.top,html.shadow body.page-wo main>.top{position:absolute;right:30px;top:12px;z-index:6;margin:0;padding:0;display:block!important;min-height:0}
+html.shadow body.page-pap main>.top>:not(.corner),html.shadow body.page-rep main>.top>:not(.corner),html.shadow body.page-wo main>.top>:not(.corner),
+html.shadow body.page-pap main>.top .corner>:not(.bwrap),html.shadow body.page-rep main>.top .corner>:not(.bwrap),html.shadow body.page-wo main>.top .corner>:not(.bwrap){display:none!important}
+html.shadow body.page-pap #baku,html.shadow body.page-rep #baku,html.shadow body.page-wo #baku{display:none}
+html.shadow #papPage>.pp-top>div:first-child,html.shadow #repPage>.rp-top>div:first-child,html.shadow #woPage>.pp-top>div:first-child{display:none}
+html.shadow #papPage>.pp-top,html.shadow #repPage>.rp-top{margin:0 0 12px;justify-content:flex-start}
+html.shadow #woPage>.pp-top{display:none}
+/* status strip */
+html.shadow .sx3-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:0 0 14px}
+.sx3-t{position:relative;display:flex;flex-direction:column;gap:2px;min-width:0;padding:14px 16px;border-radius:16px;color:var(--sx-ink);font:400 13px/1.45 var(--font);background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.008)),var(--sx-p1);box-shadow:inset 0 1px rgba(255,255,255,.06),0 0 0 1px var(--sx-ln)}
+.sx3-t .k{font-size:12.5px;color:var(--sx-i3);display:flex;align-items:center}
+.sx3-t b{font:300 30px/1.15 var(--sx-mono);letter-spacing:-.02em;color:var(--sx-ink);margin:4px 0 2px;white-space:nowrap}.sx3-t b small{font-size:15px;color:var(--sx-i3);margin-left:2px}
+.sx3-t .s{font-size:12.5px;color:var(--sx-i2);overflow-wrap:anywhere}
+.sx3-t .sx2-btn{position:absolute;right:14px;top:14px}
+.sx3-t.on{box-shadow:inset 0 1px rgba(255,255,255,.06),0 0 0 1.5px rgba(125,255,168,.6),0 0 26px -10px rgba(125,255,168,.5)}.sx3-t.on .k{color:var(--sx-acc)}
+.sx3-t.warn b{color:#ffb3b3}
+.sx3-h{grid-column:1/-1;margin:0 2px -2px}.sx3-h h3{margin:0;font:600 15px var(--font);color:var(--sx-ink)}.sx3-h p{margin:2px 0 0;font-size:12.5px;color:var(--sx-i3)}
+/* Papers layout: what to study next on the left, tools on the right, the paper library below */
+html.shadow body.page-pap #papPage{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);gap:0 14px;align-items:start}
+html.shadow #papPage>.sx2-barw,html.shadow #papPage>.pp-top,html.shadow #papPage>#sxPap{grid-column:1/-1}
+html.shadow #papPage>#mqCard{grid-column:1;margin:0 0 14px}
+html.shadow #papPage>.pp-grid{display:contents}
+html.shadow #papPage>.pp-grid>div:first-child{grid-column:2;grid-row:4/span 2;display:flex;flex-direction:column;gap:14px}
+html.shadow #papPage>.pp-grid>section{grid-column:1;grid-row:5}
+html.shadow #papPage .card{margin:0}
+html.shadow #papPage .mq-g{grid-template-columns:minmax(0,1fr)}
+html.shadow #papPage .mq-next{background:var(--sx-p2);border:0;box-shadow:inset 0 0 0 1.5px rgba(125,255,168,.55),0 0 26px -12px rgba(125,255,168,.5)}
+html.shadow #papPage .mq-next .u{color:var(--sx-ink);font-weight:600}
+html.shadow #papPage .mq-next::before{content:'STUDY NEXT';display:block;font:600 11px var(--sx-mono);letter-spacing:.14em;color:var(--sx-acc);margin-bottom:4px}
+html.shadow #papPage .mq-q{grid-template-columns:110px minmax(0,1fr)}
+html.shadow #papPage .mq-q .id{font-family:var(--sx-mono);font-size:12.5px}
+html.shadow #papPage .mq-q .id a{color:var(--sx-i2)}
+html.shadow #papPage .mq-q button{background:var(--sx-p2);border-color:var(--sx-ln2);color:var(--sx-i2)}
+html.shadow #papPage .mq-q button.on.ok{background:rgba(236,238,236,.12);border-color:var(--sx-ink);color:var(--sx-ink)}
+html.shadow #papPage .mq-q button.on.x{background:rgba(255,107,107,.12);border-color:rgba(255,107,107,.6);color:#ffb3b3}
+html.shadow #papPage .mq-big b{font-family:var(--sx-mono);font-weight:300}
+html.shadow #papPage .mq-r{grid-template-columns:minmax(0,150px) minmax(0,1fr) 40px 64px}
+html.shadow #papPage .mq-r>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.shadow #papPage .mq-r .m,html.shadow #papPage .mq-r .p{font-family:var(--sx-mono);font-size:12px}
+html.shadow #papPage .mq-bar i{background:var(--sx-mut)!important}
+html.shadow #papPage .yr{border-color:var(--sx-ln)}
+html.shadow #papPage .fchip{background:var(--sx-p2);border-color:var(--sx-ln)}
+/* Report: Trajectory under the subject switch, cards in two columns */
+html.shadow body.page-rep #repPage{display:block}
+html.shadow #repPage .rp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+html.shadow #repPage .rp-grid>.card{margin:0}
+html.shadow #repPage .rp-ck{grid-column:1/-1}
+/* Workout */
+html.shadow #woPage>#sxWo{display:grid}
+html.shadow #woPage .td-name{text-shadow:none}
+html.shadow #sxPap,html.shadow #sxTraj{display:grid}
+@media (max-width:1150px){html.shadow body.page-pap #papPage{grid-template-columns:minmax(0,1fr)}html.shadow #papPage>.pp-grid>div:first-child,html.shadow #papPage>.pp-grid>section{grid-column:1;grid-row:auto}html.shadow #repPage .rp-grid{grid-template-columns:minmax(0,1fr)}}
+html.shadow #ptimer .pt-card{width:52px;height:74px;font-size:50px}
+html.shadow #sxTraj{grid-template-columns:repeat(3,minmax(0,1fr))}
+html.shadow body.page-pap .pbtn.pri,html.shadow body.page-rep .pbtn.pri,html.shadow body.page-rep #lgBtn{background:var(--sx-ink);color:#0a0b0a;box-shadow:none}
+html.shadow #papPage .mq-big{display:none}
+/* ===/P3=== */

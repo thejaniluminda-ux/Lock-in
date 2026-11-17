@@ -646,10 +646,60 @@ function p2boot(){p2wrap();mapWire();bars();focBuild();
   if(isShadow())p2refresh()}
 /* ===/P2=== */
 
+/* ===P3=== Phase 3: Papers, Workout and Report in Shadow mode. Same approach as Phase 2: the app's cards and
+   handlers stay, Shadow mode lays them out again and adds a status strip that reads the same data. */
+function bars3(){for(const[id,n]of[['papPage','Papers'],['woPage','Workout'],['repPage','Report']]){const P=document.getElementById(id);if(!P||P.querySelector(':scope>.sx2-barw'))continue;
+  const b=document.createElement('div');b.className='sx2-barw';b.innerHTML=`<div class="sx2-crumb">Shadow Protocol / <b>${n}</b></div><span class="sx2-sp"></span><div class="sx2-pill" data-sxday></div><div class="sx2-pill" data-sxexam></div><div class="sx2-pill"><b class="num" data-sxclk></b></div>`;P.prepend(b)}barTick()}
+const tile=(k,v,s,o={})=>`<div class="sx3-t${o.on?' on':''}${o.warn?' warn':''}"><span class="k">${k}</span><b class="num">${v}</b><span class="s">${s}</span>${o.btn||''}</div>`;
+function strip(id,after,html){const P=q1(after);if(!P)return;let el=document.getElementById(id);if(!el){el=document.createElement('div');el.id=id;el.className='sx3-strip';P.after(el)}el.innerHTML=html}
+/* ---------- Papers ---------- */
+function papShadow(){if(!isShadow())return;const tk=todayK(),sj=typeof ppS!=='undefined'?ppS:'phy';
+  const t=(q1('#mqBody .mq-big')||{}).textContent||'',m=t.match(/(\d+)\D*of 50.*?likely (\d+)\D(\d+)/);
+  let due=[];try{due=mbDueNow()}catch(e){}const dueS=due.filter(x=>x.s===sj).length;
+  let np=null;for(const d of Object.keys(CS.days).sort()){if(d<tk)continue;const e=CS.days[d].find(e=>e.kind==='paper');if(e){np={d,e};break}}
+  const keys=Object.keys(PP.done||{}).filter(k=>k.startsWith(sj+'-')&&PP.done[k]),sc=keys.map(k=>+PP.score[k]).filter(x=>x>=0),avg=sc.length?Math.round(sc.reduce((a,b)=>a+b,0)/sc.length):null;
+  const npToday=np&&np.d===tk;
+  strip('sxPap','#papPage>.pp-top',
+    tile('Predicted Paper I',sj==='maths'?'—':m?`${m[1]}<small>/50</small>`:'—',sj==='maths'?'Maths has no MCQ paper':m?`likely ${m[2]}–${m[3]} · sharpens as you log`:'log questions below')+
+    tile('Mistakes due today',String(dueS),dueS?`${SUBJ[sj]} · ${due.length} across all subjects`:'nothing to re-test',{on:dueS>0&&!npToday,btn:dueS?'<button type="button" class="sx2-btn sm" data-sx3="mb">Quiz them</button>':''})+
+    tile('Next paper day',np?(npToday?'Today':fmtD(np.d)):'—',np?`${esc2(np.e.title)}${npToday?' · '+hm(np.e.s):''}`:'from January, one a week',{on:npToday})+
+    tile('Papers done',`${keys.length}`,avg!=null?`${SUBJ[sj]} · average ${avg}%`:`${SUBJ[sj]} · none marked yet`))}
+/* ---------- Report ---------- */
+function repShadow(){if(!isShadow())return;const T=['phy','chem','maths'].map(s=>{let r;try{r=trajectory(s)}catch(e){r=null}return[s,r]});
+  strip('sxTraj','#repPage>.rp-top',`<div class="sx3-h"><h3>Trajectory</h3><p>Classes ticked in the last 14 days, projected to the end of the plan</p></div>`+T.map(([s,r])=>{if(!r)return '';
+    const dl=d=>`${d.getDate()} ${M3[d.getMonth()]}${d.getFullYear()!==2027?' '+d.getFullYear():''}`,ld=r.last?new Date(r.last+'T00:00'):null;
+    const v=r.state==='wait'?`${r.done}<small>/${r.due}</small>`:r.fin?dl(r.fin):'—';
+    const s2=r.state==='wait'?`classes done of due · ${r.total} in the plan · pace shows after day 7`:r.fin&&ld?`finish at this pace · plan ${dl(ld)} · ${r.gap>3?r.gap+' days late':r.gap<-3?(-r.gap)+' days early':'on plan'}`:`no classes ticked in 14 days · ${r.done}/${r.due} due done`;
+    return tile(`<i class="sx2-dot" style="--sj:${SJC[s]}"></i>${SUBJ[s]}`,v,esc2(s2),{warn:r.state==='behind'})}).join(''))}
+/* ---------- Workout ---------- */
+function woData(){let S;try{S=JSON.parse(localStorage.getItem('lockin-workout-v1')||'{}')}catch(e){S={}}const L=(S.logs||[]).filter(l=>l&&l.d);const tk=todayK(),n=now();
+  const mon=d=>{const x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return x},wd=(n.getDay()+6)%7,m0=mon(n);
+  const wk=i=>{const a=add(m0,-7*i),b=add(a,wd);const A=dk(a),B=dk(b);const l=L.filter(x=>x.d>=A&&x.d<=B);return{sets:l.length,ses:new Set(l.map(x=>x.d)).size}};
+  const me=wk(0),past=[1,2,3,4].map(wk),best=past.reduce((a,b)=>b.sets>a.sets?b:a,{sets:0,ses:0});
+  const today=L.some(x=>x.d===tk),planned=Math.min(wd+1,6);
+  let miss2=0;for(let i=1;i<=56;i++){const d=add(n,-i);if(d.getDay()===0)continue;const k=dk(d),k2=dk(add(d,-1));if(k<'2026-11-16')break;if(!L.some(x=>x.d===k)&&!L.some(x=>x.d===k2)&&add(d,-1).getDay()!==0){miss2=i;break}}
+  return{me,best,today,planned,hasPast:past.some(p=>p.sets),rest:n.getDay()===0}}
+function woShadow(){if(!isShadow())return;const W=woData(),df=W.me.sets-W.best.sets;
+  strip('sxWo','#woPage>.pp-top',
+    tile('This week vs your shadow',W.hasPast?`${df>=0?'+':'−'}${Math.abs(df)}<small> sets</small>`:`${W.me.sets}<small> sets</small>`,W.hasPast?`you ${W.me.sets} · shadow ${W.best.sets} by this weekday (best of last 4 weeks)`:'your shadow forms after your first full week')+
+    tile('Sessions this week',`${W.me.ses}<small>/${W.planned}</small>`,'planned so far · Mon to Sat, Sunday rest',{warn:W.me.ses<W.planned-1})+
+    tile('Today',W.rest?'Rest':W.today?'Done':'Not yet',W.rest?'Sunday: recovery is training too':W.today?'logged · eat the protein':'one session keeps the streak alive',{on:!W.rest&&!W.today}))}
+/* ---------- wiring ---------- */
+function p3wrap(){const w=(n,f)=>{const o=window[n];if(typeof o!=='function'||o.__sx3)return;const g=function(){const r=o.apply(this,arguments);try{if(isShadow())f()}catch(e){console.error(e)}return r};g.__sx3=1;window[n]=g};
+  w('renderLib',papShadow);w('renderMQ',papShadow);w('renderMB',papShadow);w('renderReport',repShadow)}
+function p3refresh(){bars3();barTick();if(!isShadow())return;const c=document.body.className;try{if(/page-pap/.test(c))papShadow();if(/page-rep/.test(c))repShadow();if(/page-wo/.test(c))woShadow()}catch(e){console.error(e)}}
+function p3boot(){p3wrap();bars3();
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-sx3]');if(b&&b.dataset.sx3==='mb'){q1('#mbQuiz')?.click()}
+    if(isShadow()&&/page-wo/.test(document.body.className)&&e.target.closest('#woPage'))setTimeout(woShadow,50)});
+  let last='';const mo=new MutationObserver(()=>{const s=document.body.className+'|'+isShadow();if(s===last)return;last=s;p3refresh()});
+  mo.observe(document.body,{attributes:true,attributeFilter:['class']});mo.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+  setInterval(()=>{if(isShadow()&&/page-(pap|rep|wo)/.test(document.body.className))p3refresh()},30000);p3refresh()}
+/* ===/P3=== */
+
 /* ---------- boot ---------- */
 function boot(){const main=document.querySelector('main');if(!main)return;if(isShadow())fonts();box=document.createElement('div');box.id='shx';box.setAttribute('aria-label','Shadow Protocol home');const top=main.querySelector(':scope>.top');top?top.after(box):main.prepend(box);
   const b=document.getElementById('modeBtn');if(b)b.setAttribute('aria-pressed',isShadow());
-  render(true);sleepGuard();p2boot();
+  render(true);sleepGuard();p2boot();p3boot();
   new MutationObserver(()=>{if(onHome()){if(!box.querySelector('.sx-grid'))render(true);else{render();drawGraph(true);wave()}}}).observe(document.body,{attributes:true,attributeFilter:['class']});
   const rows=document.getElementById('rows');if(rows)new MutationObserver(()=>render()).observe(rows,{childList:true,subtree:true,attributes:true});
   setInterval(()=>{if(logSessions()&&onHome())render()},15000);logSessions();snapMB();setInterval(()=>{snapMB();if(!document.hidden)render()},20000);
