@@ -54,7 +54,7 @@ function trajectory(sj){const tk=todayK(),from14=dk(add(now(),-14));let total=0,
   if(daysIn<7)return{sj,total,due,done,last,msg:`Needs 7 days of data (day ${daysIn+1}). Plan: ${due} of ${total} classes due so far.`,state:'wait'};
   const rate=done14/14;if(rate<=0)return{sj,total,due,done,last,msg:`No classes ticked in 14 days. At zero pace, nothing finishes.`,state:'behind'};
   const fin=add(now(),Math.ceil((total-done)/rate)),lastD=new Date(last+'T00:00'),gap=Math.round((fin-lastD)/864e5);
-  return{sj,total,due,done,last,fin,gap,state:gap>3?'behind':gap<-3?'ahead':'on',msg:`At this pace: ${fin.getDate()} ${M3[fin.getMonth()]}. Plan: ${lastD.getDate()} ${M3[lastD.getMonth()]}. ${gap>3?gap+' days late.':gap<-3?(-gap)+' days early.':'On plan.'}`}}
+  return{sj,total,due,done,last,fin,gap,state:gap>3?'behind':gap<-3?'ahead':'on',msg:`At this pace: ${fin.getDate()} ${M3[fin.getMonth()]}${fin.getFullYear()!==2027?' '+fin.getFullYear():''}. Plan: ${lastD.getDate()} ${M3[lastD.getMonth()]}. ${gap>3?gap+' days late.':gap<-3?(-gap)+' days early.':'On plan.'}`}}
 
 /* ---------- The Record: identity evidence from real data (design C) ---------- */
 function record(){const R=[],tk=todayK();let blocks=0,classes=0;for(const d in CS.days)if(d<=tk)for(const e of CS.days[d])if(e.done&&study(e)){blocks++;if(e.kind==='class')classes++}
@@ -93,11 +93,11 @@ function bakuLine(){const tk=todayK(),y=dk(add(now(),-1)),Y=CS.days[y]||[],plann
     const P=prof();if(P.line){const w=say('why',P.line);if(w)text=(text?text+' ':'')+'“'+w+'”'}}
   else if(now()>=EXAM)text=null;
   else{const b=mib(tk);const ok=Object.values(SYS.sleep).slice(-4).filter(s=>['early','ontime'].includes(s.b)).length;
-    text=say('wake',b?`Day ${dayNo()}. Today: ${b.title.replace(/^[^:]*: /,'')}. That's the one.`:`Day ${dayNo()}. No study blocks today.`)}
+    text=say('wake',b?`Day ${Math.max(1,dayNo())}. Today: ${b.title.replace(/^[^:]*: /,'')}. That's the one.`:`Day ${Math.max(1,dayNo())}. No study blocks today.`)}
   SYS.line={d:tk,text};saveSys();return text}
 const EXAM_END=new Date(2027,7,28);
-const phase=()=>{const n=now(),t=new Date(todayK()+"T00:00");if(t>EXAM_END)return "Exam over · the record stands";if(n>=EXAM)return "Exam period · day "+(Math.round((t-EXAM)/864e5)+1)+" of 26";return `Day ${dayNo()} of ${daysTotal()} · ${Math.ceil((EXAM-n)/864e5)} days to the exam`};
-const dayNo=()=>Math.max(1,Math.round((new Date(todayK()+'T00:00')-START)/864e5)+1);
+const phase=()=>{const n=now(),t=new Date(todayK()+"T00:00");if(t>EXAM_END)return "Exam over · the record stands";if(n>=EXAM)return "Exam period · day "+(Math.round((t-EXAM)/864e5)+1)+" of 26";return `${dayNo()<1?'Starts tomorrow':'Day '+dayNo()+' of '+daysTotal()} · ${Math.ceil((EXAM-n)/864e5)} days to the exam`};
+const dayNo=()=>Math.round((new Date(todayK()+'T00:00')-START)/864e5)+1;/* 0 or less before the start (18 Nov 2026) */
 const daysTotal=()=>Math.round((EXAM-START)/864e5);
 
 /* ---------- check-ins: sleep time (morning), phone out (22:30), confirmed next morning ---------- */
@@ -128,11 +128,11 @@ const nextRank=L=>RANKS.find(r=>r[0]>L)||[99,''];
 const rankNo=r=>RANKS.findIndex(x=>x[1]===r)+1;
 
 /* ---------- verified focus sessions with their finish time (forward-only: the app stores daily totals) ---------- */
-function logSessions(){const tk=todayK(),t=(FO.log||{})[tk];if(!t)return false;const L=SYS.ses[tk]||(SYS.ses[tk]=[]),have=L.length,got=t.n||0;if(got<=have)return false;
+function logSessions(){if(todayK()<dk(START))return false;const tk=todayK(),t=(FO.log||{})[tk];if(!t)return false;const L=SYS.ses[tk]||(SYS.ses[tk]=[]),have=L.length,got=t.n||0;if(got<=have)return false;
   const recMin=L.reduce((a,x)=>a+x[1],0),per=Math.max(1,Math.round(((t.min||0)-recMin)/(got-have)));for(let i=have;i<got;i++)L.push([nowMin(),per]);
   const ks=Object.keys(SYS.ses).sort();while(ks.length>21)delete SYS.ses[ks.shift()];saveSys();return true}
 const cumAt=(d,t)=>(SYS.ses[d]||[]).filter(x=>x[0]<=t).reduce((a,x)=>a+x[1],0);
-function shadow(){const tk=todayK(),from=dk(add(now(),-7));
+function shadow(){const tk=todayK(),from=[dk(add(now(),-7)),dk(START)].sort().pop();/* the shadow race starts fresh on the start day */
   const days=Object.keys(SYS.ses).filter(d=>d<tk&&d>=from&&SYS.ses[d].length).map(d=>({d,tot:cumAt(d,1440)})).sort((a,b)=>b.tot-a.tot).slice(0,3).map(x=>x.d);
   const at=t=>days.length?Math.round(days.reduce((a,d)=>a+cumAt(d,t),0)/days.length):null;
   const right=d=>new Set(qlGet().filter(q=>q.r==='ok'&&dk(new Date(q.t))===d).map(q=>q.id)).size;
@@ -248,7 +248,7 @@ let wt=0,waveRaf=0;function wave(){cancelAnimationFrame(waveRaf);const c=box&&bo
 const onHome=()=>isShadow()&&!/\bpage-/.test(document.body.className);
 function render(force){if(!box||!isShadow()||!onHome())return;if(force||!box.querySelector('.sx-grid'))shell();
   const T=totals(),lv=levelOf(T.tot),rank=rankOf(lv.L),P=prof();
-  box.querySelector('#sxDay').innerHTML=new Date(todayK()+'T00:00')>EXAM_END?'Exam over':now()>=EXAM?`Exam day <b>${Math.round((new Date(todayK()+'T00:00')-EXAM)/864e5)+1}</b> / 26`:`Day <b>${dayNo()}</b> / ${daysTotal()}`;
+  box.querySelector('#sxDay').innerHTML=new Date(todayK()+'T00:00')>EXAM_END?'Exam over':now()>=EXAM?`Exam day <b>${Math.round((new Date(todayK()+'T00:00')-EXAM)/864e5)+1}</b> / 26`:dayNo()<1?`Day 1 starts tomorrow`:`Day <b>${dayNo()}</b> / ${daysTotal()}`;
   box.querySelector('#sxExam').innerHTML=now()<EXAM?`A/L in <b>${Math.ceil((EXAM-now())/864e5)}</b> days`:'A/L';box.querySelector('#sxClk').textContent=hm(nowMin());
   box.querySelector('.sx-tgt').innerHTML=P.course?`Target <b>${esc2(P.course)}</b>${P.z?' · Z '+esc2(P.z):' · Z —'}`:'Set your target';
   setPanel('sxRank',rankHtml(T,lv,rank));setPanel('sxMis',misHtml());setPanel('sxMast',mastHtml());setPanel('sxRec',recHtml());if(setPanel('sxRadio',radioHtml()))wave();
@@ -400,9 +400,9 @@ const dayW=k=>{const x=new Date(k+'T00:00');return k===todayK()?'Today':DOW3[x.g
 
 /* ---------- shared bar: crumb, page switcher, day / exam / clock ---------- */
 function bars(){for(const[id,pg]of[['focPage','foc'],['calPage','cal'],['libPage','lib']]){const P=document.getElementById(id);if(!P||P.querySelector(':scope>.sx2-barw'))continue;
-  const b=document.createElement('div');b.className='sx2-barw';b.innerHTML=`<div class="sx2-crumb">Shadow Protocol / <b>${PGN[pg]}</b></div><div class="sx2-seg" role="group" aria-label="Pages">${['foc','cal','lib'].map(k=>`<button type="button" data-sxgo="${PGN[k]}" aria-pressed="${k===pg}">${PGN[k]}</button>`).join('')}</div><span class="sx2-sp"></span><div class="sx2-pill" data-sxday></div><div class="sx2-pill" data-sxexam></div><div class="sx2-pill"><b class="num" data-sxclk></b></div>`;P.prepend(b)}
+  const b=document.createElement('div');b.className='sx2-barw';b.innerHTML=`<div class="sx2-crumb">Shadow Protocol / <b>${PGN[pg]}</b></div><span class="sx2-sp"></span><div class="sx2-pill" data-sxday></div><div class="sx2-pill" data-sxexam></div><div class="sx2-pill"><b class="num" data-sxclk></b></div>`;P.prepend(b)}
   barTick()}
-function barTick(){const n=now();document.querySelectorAll('[data-sxday]').forEach(e=>e.innerHTML=`Day <b class="num">${dayNo()}</b> / ${daysTotal()}`);
+function barTick(){const n=now();document.querySelectorAll('[data-sxday]').forEach(e=>e.innerHTML=dayNo()<1?`Day 1 starts tomorrow`:`Day <b class="num">${dayNo()}</b> / ${daysTotal()}`);
   document.querySelectorAll('[data-sxexam]').forEach(e=>e.innerHTML=n<EXAM?`A/L in <b class="num">${Math.ceil((EXAM-n)/864e5)}</b> days`:'A/L');document.querySelectorAll('[data-sxclk]').forEach(e=>e.textContent=hm(nowMin()))}
 
 /* ================= FOCUS ================= */
@@ -416,11 +416,13 @@ function focBuild(){const P=document.getElementById('focPage');if(!P||P.querySel
         <div class="sxf-in"><div class="st" id="sxfSt"></div><b class="num" id="sxfTm" aria-live="off"></b><div class="sub" id="sxfSub"></div><div class="sxf-dots" id="sxfDots"></div></div></div>
       <div class="sxf-brk">Stand up. Water. Eyes off the screen.</div>
       <div class="sxf-sj" id="sxfSj" role="group" aria-label="Studying">${['phy','chem','maths'].map(s=>`<button type="button" data-s="${s}" style="--sj:${SJC[s]}"><i></i>${SUBJ[s]}</button>`).join('')}</div>
+      <div class="sxf-sp" id="sxfSp" hidden><span>Playback speed · 1-week trial</span><div class="sx2-seg" role="group" aria-label="Playback speed"><button type="button" data-sp="1">1×</button><button type="button" data-sp="1.25">1.25×</button></div></div>
       <div class="sxf-ctl"><button type="button" class="sx2-btn" id="sxfReset">Reset</button><button type="button" class="sx2-btn pri" id="sxfGo"></button><button type="button" class="sx2-btn" id="sxfQuit">Quit</button></div></section>
     <div class="sx2-col"><section class="sx2-pl sxf-race" id="sxfRace"></section><section class="sx2-pl sxf-side" id="sxfSide"></section></div>`;
   P.appendChild(d);
   d.querySelector('#sxfModes').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b)document.querySelector(`#fModes [data-m="${b.dataset.m}"]`)?.click();focFull()});
   d.querySelector('#sxfSj').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(b)document.querySelector(`#fSubj [data-s="${b.dataset.s}"]`)?.click();focFull()});
+  d.querySelector('#sxfSp').addEventListener('click',e=>{const b=e.target.closest('[data-sp]');if(b)document.querySelector(`#fSpeed [data-sp="${b.dataset.sp}"]`)?.click();focSp()});
   d.querySelector('#sxfGo').addEventListener('click',()=>{q1('#fGo').click();focFull()});
   d.querySelector('#sxfReset').addEventListener('click',()=>{q1('#fReset').click();P2.A={n:0,sec:0};focFull()});
   d.querySelector('#sxfQuit').addEventListener('click',()=>{const k=q1('#fSkip');if(fPhase==='break'){k.click();focFull();return}
@@ -477,7 +479,8 @@ function focFull(){const D=q1('#sxFoc');if(!D)return;const brk=fPhase==='break',
   const sj=(typeof b2FSubj!=='undefined'&&b2FSubj)||(curBlock()||{}).subj;D.querySelectorAll('#sxfSj button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===sj));
   q1('#sxfGo').textContent=q1('#fGo').textContent;const qb=q1('#sxfQuit'),armed=Date.now()-P2.quitT<4000;
   qb.textContent=brk?'Skip break':armed?'Tap again to quit':'Quit';qb.classList.toggle('warn',armed&&!brk);qb.disabled=!brk&&full;q1('#sxfReset').disabled=full;
-  focBlk();cfListF();focRace();focSide();focTick(true)}
+  focBlk();cfListF();focRace();focSide();focSp();focTick(true)}
+function focSp(){const src=q1('#fSpeed'),el=q1('#sxfSp');if(!src||!el)return;el.hidden=src.hidden;el.querySelectorAll('[data-sp]').forEach(b=>b.setAttribute('aria-pressed',src.querySelector(`[data-sp="${b.dataset.sp}"]`)?.getAttribute('aria-pressed')==='true'))}
 function focTick(noFull){const D=q1('#sxFoc');if(!D)return;const left=fRun?Math.max(0,(fEnd-Date.now())/1000):fLeft,on=Math.round((fTotal?1-left/fTotal:0)*60);
   /* a new session starts: the time left jumped up or the phase changed */
   if(fPhase!==P2.prevPh||left>P2.prevLeft+2){if(fPhase==='focus')P2.A={n:0,sec:0};P2.prevPh=fPhase;if(!noFull){P2.prevLeft=left;focFull();return}}P2.prevLeft=left;
@@ -514,11 +517,12 @@ function calSide(){const side=q1('#calPage .cside');if(!side)return;let box=side
   const wkLab=keys[0]<=tk&&tk<=keys[6]?'This week':'That week';
   box.innerHTML=`<section class="card sx2-cu"><h2>Catch-up owed</h2><div class="big num">${fmH(oh)}</div><p>${owe.length?`${owe.length} block${owe.length>1?'s':''} · due by ${fmtD(due)}${late?` · <b class="warn">${late} overdue</b>`:''}`:'Nothing owed. Keep it that way.'}</p></section>
     <section class="card sx2-wk"><h2>${wkLab}</h2><div class="sx2-row"><span>Blocks done</span><b class="num">${sd} / ${st}</b></div><div class="sx2-row"><span>Class hours</span><b class="num">${nf(cd)} / ${nf(ch)}</b></div><div class="sx2-row"><span>Focus, verified</span><b class="num">${fmH(foc)} h</b></div></section>`;
-  const bar=q1('#calPage .cbar');if(bar&&!bar.querySelector('#sxLinks')){const b=document.createElement('button');b.id='sxLinks';b.type='button';b.className='tbtn sx2-only';bar.querySelector('#cFs')?.before(b);b.addEventListener('click',()=>{P2.links=!P2.links;calLinks()})}
+  const bar=q1('#calPage .cbar');if(bar&&!bar.querySelector('#sxLinks')){const b=document.createElement('button');b.id='sxLinks';b.type='button';b.className='tbtn sx2-only';bar.querySelector('#cFs')?.before(b);b.addEventListener('click',()=>{P2.links=!P2.links;P2.lkScrolled=0;calLinks()})}
   const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide links':'Links for the current block';lb.setAttribute('aria-pressed',P2.links)}}
 function calLinks(){const cb=q1('#cBody');if(!cb)return;cb.querySelector('#sxLk')?.remove();cb.classList.toggle('sx-lk',P2.links);const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide links':'Links for the current block';lb.setAttribute('aria-pressed',P2.links)}
   if(!P2.links||!isShadow())return;const X=focusNode();if(!X)return;const G=graphAll(),S=new Set([X.i,...X.par,...X.kids]);X.kids.forEach(i=>G[i].kids.forEach(j=>{if(G[j].unit&&G[j].unit===G[i].unit)S.add(j)}));
   const elOf=n=>{if(!curKeys.includes(n.date))return null;return cb.querySelector(`.col[data-k="${n.date}"] .ev[data-id="${CSS.escape(String(n.id))}"]`)};
+  const sc=q1('#cScroll'),hd=q1('#cHead');if(sc&&!P2.lkScrolled){P2.lkScrolled=1;let top=1e9;for(const i of S){const el=elOf(G[i]);if(el)top=Math.min(top,el.offsetTop)}if(top<1e9){sc.scrollTop=Math.max(0,top-8)}}
   const r0=cb.getBoundingClientRect();let h='';const lit=new Set();
   for(const i of S){const n=G[i];for(const pi of n.par){if(!S.has(pi))continue;const a=elOf(G[pi]),b=elOf(n);if(!a||!b)continue;lit.add(a);lit.add(b);const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
     const x1=ra.right-r0.left,y1=ra.top+Math.min(ra.height/2,18)-r0.top,x2=rb.left-r0.left,y2=rb.top+Math.min(rb.height/2,18)-r0.top,dx=Math.max(30,Math.abs(x2-x1)/2),on=pi===X.i||i===X.i;
@@ -528,6 +532,7 @@ function calLinks(){const cb=q1('#cBody');if(!cb)return;cb.querySelector('#sxLk'
   cb.insertAdjacentHTML('beforeend',`<svg id="sxLk" aria-hidden="true">${h}</svg>`)}
 
 /* ================= LIBRARY ================= */
+const WARN='<svg class="sxw" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5 14 13H2z"/><path d="M8 6.5v3M8 11.2v.1"/></svg>';
 const isX=u=>/x$/.test(u.k)&&u.k!=='redox';
 function libUnit(u,tk,X){const bl=unitBlocks(u.k),d=bl.filter(e=>e.done).length,xs=CLASSES.filter(x=>isX(x)&&x.k.slice(0,-1)===u.k).flatMap(x=>unitBlocks(x.k)),xd=xs.filter(e=>e.done).length;
   const nx=bl.find(e=>!e.done&&e.date>=tk);let st='next';
@@ -552,7 +557,7 @@ function libOpen(I,tk,X){const{u,bl,d,xs,xd,nx}=I,k=u.k,rec=REC[u.rec||k]||'',S=
     return `<div class="sxl-d${e.done?' ok':''}${now?' now':''}${e===first?' nx':''}${miss?' miss':''}"><span class="n num">${p2(i+1)}</span><b class="si">${esc2(e.title)}</b><span class="d num">${e.done?fmtD(e.date):now?'Now · '+hm(e.s):e.date===tk?'Today · '+hm(e.s):miss?fmtD(e.date)+' · missed':e===first?'Next · '+fmtD(e.date):fmtD(e.date)}</span><span class="tk" aria-label="${e.done?'done':'not done'}">${e.done?'✓':''}</span></div>`};
   const first=bl.find(e=>!e.done&&e.date>=tk&&!(X&&X.date===e.date&&X.s===e.s)),fx=xs.find(e=>!e.done&&e.date>=tk);
   let body='';if(t==='days')body=(bl.map((e,i)=>row(e,i,first)).join('')||'<p class="sx2-cap">No class days for this unit in the plan.</p>')+(xs.length?`<div class="sxl-xh">Extras · ${xd} of ${xs.length}</div>${xs.map((e,i)=>row(e,i,fx)).join('')}`:'');
-  else if(t==='sum'){smOpen[k]=true;body=sumHtml(k)}else if(t==='story')body=storyHtml(k);else if(t==='fb')body=fbList(k)||'<p class="sx2-cap">No formulas listed for this unit yet.</p>';
+  else if(t==='sum'){smOpen[k]=true;body=sumHtml(k);(S.ch||[]).forEach((c,i)=>{if(c.ic)body=body.split(`>${c.ic} ${i+1}`).join(`>${i+1}`).split(`<h4>${c.ic} `).join(`<h4><span class="sxn num">${p2(i+1)}</span>`)});body=body.split('⚠').join(WARN)}else if(t==='story')body=storyHtml(k);else if(t==='fb')body=fbList(k)||'<p class="sx2-cap">No formulas listed for this unit yet.</p>';
   else if(t==='qb')body=qbList(k)||'<p class="sx2-cap">No tagged past questions for this unit yet.</p>';else body=cfList(k)||'<p class="sx2-cap">Nothing here. Questions you write in Focus land on this tab.</p>';
   const nd=unitNeeds(k).filter(x=>UNIT_BY[x]),ul=unitUnlocks(k).filter(x=>!isX(UNIT_BY[x]));
   return `<div class="sxl-open" style="--sj:${SJC[u.subj]}"><aside class="sx2-pl sxl-side"><button type="button" class="sx2-btn sm" data-sxback>← All units</button>
@@ -569,14 +574,71 @@ function mapPost(){const svg=q1('#lmSvg');if(!svg)return;const X=focusNode(),tk=
   [...svg.querySelectorAll('g[pointer-events="none"]')].forEach(g=>{const r=g.querySelector('rect'),tx=g.querySelector('text');if(!r||!tx||!/You are here/.test(tx.textContent))return;
     const t=tiles.find(t=>{const p=t.querySelector('.lm-top');if(!p)return false;const b=p.getBBox();return Math.abs(b.x+b.width/2-(+r.getAttribute('x')+38))<2});
     if(!t||t.dataset.k!==cu){g.remove();return}r.setAttribute('fill','#7dffa8');g.querySelector('path')?.setAttribute('fill','#7dffa8');tx.setAttribute('fill','#07140c');tx.style.fontFamily='Geist,sans-serif'})}
+/* ---------- Library map in Signal style: dark nodes, thin lines, done lit, current glowing, locked dim ---------- */
+const SM={V:{x:0,y:0,k:1},sel:{},fs:false,drag:null,D:null};
+function shareOf(u,s){try{const W=window.WEIGHTS;if(!W)return null;
+  if(s==='phy'){const p=W.phy.units[u.k];return p?{v:Math.round(p.pct),t:'of Paper I'}:null}
+  if(s==='chem'){const g=Object.values(W.chem.p1).find(g=>(g.g||[]).includes(u.k));if(!g)return null;const v=g.mean/50*100/((g.g||[1]).length);return{v:Math.max(1,Math.round(v)),t:'of Paper I',ap:(g.g||[]).length>1}}}catch(e){}return null}
+function mastOf(u,s){try{const last=mqLast(),g=mqGroups(s).find(g=>g.units.includes(u.k));if(!g)return null;const m=mqMast(s,g,last);return m.n?Math.round(m.m*100):null}catch(e){return null}}
+function mapData(){const s=lbS,U=lmUnits(s),by=Object.fromEntries(U.map(u=>[u.k,u])),tk=todayK(),X=focusNode(),M=s==='maths';
+  let cur=X&&X.date===tk?(M?(X.subj==='maths'?'m:'+tk.slice(0,7):null):(X.unit||'').replace(/x$/,'')):null;
+  const st={};U.forEach(u=>{st[u.k]=lmState(u,tk,by)[0]});if(!cur||!by[cur])cur=(U.find(u=>st[u.k]==='now')||{}).k||null;
+  const dep={},D=(k,v=new Set())=>{if(dep[k]!=null)return dep[k];if(v.has(k))return 0;v.add(k);return dep[k]=Math.max(-1,...by[k].d.filter(x=>by[x]).map(x=>D(x,v)))+1};
+  const NW=250,NH=112,GX=316,GY=134,pos={};
+  if(M)U.forEach((u,i)=>pos[u.k]=[40+(i%5)*GX,40+Math.floor(i/5)*(GY+40)]);
+  else{U.forEach(u=>D(u.k));const cols={};U.forEach(u=>(cols[dep[u.k]]=cols[dep[u.k]]||[]).push(u));
+    Object.keys(cols).map(Number).sort((a,b)=>a-b).forEach(c=>{cols[c].sort((a,b)=>((a.bl[0]||{}).date||'9')<((b.bl[0]||{}).date||'9')?-1:1).forEach((u,r)=>pos[u.k]=[40+c*GX,40+r*GY])})}
+  const P=Object.values(pos),W=Math.max(...P.map(p=>p[0]))+NW+40,H=Math.max(...P.map(p=>p[1]))+NH+40;
+  return{s,U,by,st,cur,pos,NW,NH,W,H,M}}
+function mapHtml(){const D=mapData(),{U,by,st,cur,pos,NW,NH,s,M}=D;SM.D=D;const sel=SM.sel[s]&&by[SM.sel[s]]?SM.sel[s]:cur||(U[0]||{}).k;SM.sel[s]=sel;
+  let e='';for(const u of U)for(const k of u.d){if(!pos[k]||!pos[u.k])continue;const[a,b]=pos[k],[c,d]=pos[u.k];const x1=a+NW,y1=b+NH/2,x2=c,y2=d+NH/2;let p;
+    if(x2>x1+10){const dx=Math.max(30,(x2-x1)/2);p=`M${x1} ${y1} C${x1+dx} ${y1} ${x2-dx} ${y2} ${x2} ${y2}`}else{p=`M${a+NW/2} ${b+NH} C${a+NW/2} ${b+NH+40} ${c+NW/2} ${d-40} ${c+NW/2} ${d}`}
+    const lit=st[k]==='done',hot=lit&&u.k===cur;e+=`<path class="${hot?'hot':lit?'lit':''}" d="${p}"/>`}
+  const nodes=U.map(u=>{const[x,y]=pos[u.k],sv=st[u.k],dn=u.bl.filter(b=>b.done).length,n=u.bl.length,sh=M?null:shareOf(u,s),ms=M||!(dn||sv==='now'||u.k===cur)?null:mastOf(u,s),c=u.k===cur?'cur':sv;
+    const tag=c==='cur'?'NOW':sv==='done'?'DONE':sv==='lock'?'LOCKED':sv==='now'?'IN PROGRESS':(u.bl[0]?fmtD(u.bl[0].date).toUpperCase():'');
+    const xs=u.xs&&u.xs.length?u.xs.flatMap(x=>x.bl):[];
+    return `<button type="button" class="sxm-n st-${c}${u.k===sel?' sel':''}" data-mk="${esc2(u.k)}" style="left:${x}px;top:${y}px;width:${NW}px;height:${NH}px" title="${esc2(u.si)} · ${esc2(u.en)}">
+      <span class="r1"><i class="sx2-dot"></i><span class="en">${esc2(u.en)}</span><span class="tg num">${tag}</span></span><b class="si">${esc2(u.si)}</b>
+      <span class="r3"><span><b class="num">${dn}/${n}</b> ${M?'classes':'days'}${xs.length?` · +extras <b class="num">${xs.filter(b=>b.done).length}/${xs.length}</b>`:''}</span><span>${ms!=null?`mastery <b class="num">${ms}%</b>`:sh?`<b class="num">${sh.ap?'≈':''}${sh.v}%</b> of paper`:''}</span></span>
+      <span class="pb"><i style="width:${n?Math.round(dn/n*100):0}%"></i></span></button>`}).join('');
+  return `<div class="sxm${SM.fs?' fs':''}" id="sxm"><div class="sxm-vp" id="sxmVp" tabindex="0" aria-label="Unit map. Drag or scroll to move, Ctrl and scroll to zoom."><div class="sxm-w" id="sxmW" style="width:${D.W}px;height:${D.H}px"><svg class="sxm-e" width="${D.W}" height="${D.H}" aria-hidden="true">${e}</svg>${nodes}</div></div>
+    <div class="sxm-tb"><button type="button" class="sx2-btn sm" data-mz="out" aria-label="Zoom out">−</button><span class="num" id="sxmZ">100%</span><button type="button" class="sx2-btn sm" data-mz="in" aria-label="Zoom in">+</button><button type="button" class="sx2-btn sm" data-mz="fit">Fit</button><button type="button" class="sx2-btn sm" data-mz="fs">${SM.fs?'Exit full screen':'Full screen'}</button><div class="sxm-leg"><span><i class="l-cur"></i>Now</span><span><i class="l-done"></i>Done</span><span><i class="l-next"></i>Open</span><span><i class="l-lock"></i>Locked</span><span class="h">Line: finish this to start that · % = share of Paper I, or your mastery once you log questions</span></div></div>
+    <aside class="sxm-side" id="sxmSide">${mapSide(sel)}</aside></div>`}
+function mapSide(k){const D=SM.D,u=D&&D.by[k];if(!u)return '';const sv=k===D.cur?'cur':D.st[k],dn=u.bl.filter(b=>b.done).length,sh=D.M?null:shareOf(u,D.s),ms=D.M?null:mastOf(u,D.s),kids=D.U.filter(x=>x.d.includes(k));
+  const span=u.bl.length?fmtD(u.bl[0].date)+(u.bl.at(-1).date!==u.bl[0].date?' – '+fmtD(u.bl.at(-1).date):''):'Not in plan';
+  const ch=a=>a.length?a.map(x=>`<button type="button" class="chip${D.st[x.k]==='done'?' ok':''}" data-mk="${esc2(x.k)}">${D.st[x.k]==='done'?'✓ ':''}${esc2(D.M?x.si:x.en)}</button>`).join(''):'<span class="sx2-cap">Nothing</span>';
+  return `<div class="tg st-${sv}">${{cur:'Now',done:'Done',now:'In progress',next:'Open: you can start this',lock:'Locked'}[sv]}</div><h3 class="si">${esc2(u.si)}</h3><div class="en">${esc2(u.en)}</div>
+    <div class="sx2-row"><span>Done</span><b class="num">${dn} / ${u.bl.length} ${D.M?'classes':'days'}</b></div><div class="sx2-row"><span>Planned</span><b class="num">${span}</b></div>
+    ${sh?`<div class="sx2-row"><span>Share of Paper I</span><b class="num">${sh.ap?'≈':''}${sh.v}%</b></div>`:''}${!D.M?`<div class="sx2-row"><span>Mastery</span><b class="num">${ms!=null?ms+'%':'not tried'}</b></div>`:''}
+    <div class="lbl">Needs</div><div class="chips">${ch(u.d.filter(x=>D.by[x]).map(x=>D.by[x]))}</div><div class="lbl">Unlocks</div><div class="chips">${ch(kids)}</div>
+    ${D.M?'':`<button type="button" class="sx2-btn sxm-open" data-mopen="${esc2(k)}">Open unit card</button>`}`}
+function mapApply(){const w=q1('#sxmW');if(!w)return;const V=SM.V;w.style.transform=`translate(${V.x}px,${V.y}px) scale(${V.k})`;q1('#sxmZ').textContent=Math.round(V.k*100)+'%';q1('#sxm').classList.toggle('ov',V.k<.7)}
+function mapClamp(){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,w=D.W*V.k,h=D.H*V.k,cw=vp.clientWidth,chh=vp.clientHeight;
+  V.x=w<=cw?(cw-w)/2:Math.min(0,Math.max(cw-w,V.x));V.y=h<=chh?Math.min((chh-h)/2,20):Math.min(0,Math.max(chh-h,V.y))}
+function mapZoom(f,cx,cy){const vp=q1('#sxmVp'),V=SM.V;if(cx==null){cx=vp.clientWidth/2;cy=vp.clientHeight/2}const k=Math.min(1.6,Math.max(.4,V.k*f));V.x=cx-(cx-V.x)*k/V.k;V.y=cy-(cy-V.y)*k/V.k;V.k=k;mapClamp();mapApply()}
+function mapFit(centre){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,f=Math.min(vp.clientWidth/D.W,vp.clientHeight/D.H);V.k=centre?1:Math.min(1,f);
+  const c=D.pos[SM.sel[D.s]];V.x=0;V.y=0;if(centre&&c&&V.k>f){if((c[0]+D.NW)*V.k>vp.clientWidth*.85)V.x=vp.clientWidth/2-(c[0]+D.NW/2)*V.k;V.y=vp.clientHeight/2-(c[1]+D.NH/2)*V.k}mapClamp();mapApply()}
+function mapRender(){const box=q1('#lbList');if(!box)return;box.innerHTML=mapHtml();requestAnimationFrame(()=>mapFit(true))}
+function mapWire(){document.addEventListener('click',e=>{if(!isShadow()||!q1('#sxm'))return;
+    const z=e.target.closest('[data-mz]');if(z){const v=z.dataset.mz;if(v==='in')mapZoom(1.2);else if(v==='out')mapZoom(1/1.2);else if(v==='fit')mapFit(false);else{SM.fs=!SM.fs;q1('#sxm').classList.toggle('fs',SM.fs);document.body.classList.toggle('sx-mapfs',SM.fs);z.textContent=SM.fs?'Exit full screen':'Full screen';requestAnimationFrame(()=>mapFit(true))}return}
+    const o=e.target.closest('[data-mopen]');if(o){SM.fs=false;document.body.classList.remove('sx-mapfs');lbV='cards';try{lsSet(LVKEY,'cards')}catch(x){}lbOpen=o.dataset.mopen;renderLibrary();return}
+    const n=e.target.closest('[data-mk]');if(n&&!(SM.moved)){SM.sel[SM.D.s]=n.dataset.mk;document.querySelectorAll('.sxm-n').forEach(b=>b.classList.toggle('sel',b.dataset.mk===n.dataset.mk));q1('#sxmSide').innerHTML=mapSide(n.dataset.mk)}},true);
+  document.addEventListener('pointerdown',e=>{const vp=e.target.closest&&e.target.closest('#sxmVp');SM.moved=false;if(!vp||e.button)return;SM.drag={x:e.clientX,y:e.clientY,vx:SM.V.x,vy:SM.V.y,m:0}});
+  addEventListener('pointermove',e=>{const d=SM.drag;if(!d)return;d.m=Math.max(d.m,Math.abs(e.clientX-d.x)+Math.abs(e.clientY-d.y));if(d.m<5)return;SM.moved=true;q1('#sxmVp')?.classList.add('drag');SM.V.x=d.vx+e.clientX-d.x;SM.V.y=d.vy+e.clientY-d.y;mapClamp();mapApply()});
+  addEventListener('pointerup',()=>{q1('#sxmVp')?.classList.remove('drag');SM.drag=null});
+  document.addEventListener('wheel',e=>{const vp=e.target.closest&&e.target.closest('#sxmVp');if(!vp)return;e.preventDefault();const r=vp.getBoundingClientRect();
+    if(e.ctrlKey||e.metaKey){mapZoom(Math.exp(-e.deltaY*.0015),e.clientX-r.left,e.clientY-r.top);return}if(e.shiftKey)SM.V.x-=e.deltaY;else{SM.V.x-=e.deltaX;SM.V.y-=e.deltaY}mapClamp();mapApply()},{passive:false});
+  addEventListener('keydown',e=>{if(!q1('#sxm')||!isShadow())return;if(e.key==='Escape'&&SM.fs){SM.fs=false;document.body.classList.remove('sx-mapfs');q1('#sxm').classList.remove('fs');const b=q1('[data-mz="fs"]');if(b)b.textContent='Full screen';requestAnimationFrame(()=>mapFit(true));return}
+    if(!e.target.closest||!e.target.closest('#sxmVp'))return;const m={ArrowLeft:[80,0],ArrowRight:[-80,0],ArrowUp:[0,80],ArrowDown:[0,-80]}[e.key];if(m){e.preventDefault();SM.V.x+=m[0];SM.V.y+=m[1];mapClamp();mapApply()}if(e.key==='+'||e.key==='=')mapZoom(1.2);if(e.key==='-')mapZoom(1/1.2)});
+  addEventListener('resize',()=>{if(q1('#sxm')){mapClamp();mapApply()}})}
 /* ---------- wiring ---------- */
 function p2wrap(){const w=(n,f)=>{const o=window[n];if(typeof o!=='function'||o.__sx)return;const g=function(){try{if(isShadow()&&n==='renderLibrary'&&lbV==='map'&&!P2.msel[lbS]){P2.msel[lbS]=1;const X=focusNode();if(X&&X.unit&&X.date===todayK())lmSel=X.unit.replace(/x$/,'')}}catch(e){}const r=o.apply(this,arguments);try{if(isShadow())f()}catch(e){console.error(e)}return r};g.__sx=1;window[n]=g};
-  w('renderWeek',calPost);w('renderLibrary',()=>{if(lbV==='map')mapPost();else if(lbS!=='maths')libShadow()})}
+  w('renderWeek',calPost);w('renderLibrary',()=>{if(lbV==='map')mapRender();else if(lbS!=='maths')libShadow()})}
 function p2refresh(){bars();barTick();const pg=pageOf();if(!isShadow())return;
   if(pg==='foc'){focBuild();focFull()}if(pg==='cal'&&typeof renderWeek==='function')renderWeek();if(pg==='lib'&&typeof renderLibrary==='function')renderLibrary()}
-function p2boot(){p2wrap();bars();focBuild();
+function p2boot(){p2wrap();mapWire();bars();focBuild();
   document.addEventListener('click',e=>{const g=e.target.closest('[data-sxgo]');if(g){goP(g.dataset.sxgo);return}
-    const bk=e.target.closest('[data-sxback]');if(bk){lbOpen=null;renderLibrary();return}const t=e.target.closest('[data-sxt]');if(t){const[k,v]=t.dataset.sxt.split('|');P2.tab[k]=v;renderLibrary();q1('.sxl-tabs [aria-selected="true"]')?.focus()}});
+    const bk=e.target.closest('[data-sxback]');if(bk){lbOpen=null;renderLibrary();return}const t=e.target.closest('[data-sxt]');if(t){const[k,v]=t.dataset.sxt.split('|');P2.tab[k]=v;renderLibrary();if(!e.detail)q1('.sxl-tabs [aria-selected="true"]')?.focus()}});
   const sigC=()=>pageOf()+'|'+isShadow();let last=sigC();
   const mo=new MutationObserver(()=>{const s=sigC();if(s===last)return;const wasSh=last.endsWith('true');last=s;const pg=pageOf();
     if(isShadow()){if(pg)p2refresh();return}
