@@ -192,7 +192,7 @@ body[class*="page-"] #hx{display:none}
 .r .bar{width:4px;height:30px;border-radius:2px;background:rgba(255,255,255,.12)}
 .r.phy .bar{background:var(--phy)}.r.chem .bar{background:var(--chem)}.r.maths .bar{background:var(--maths)}
 .r .w{min-width:0}
-.r .ti{font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r .ti{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:14px;color:var(--ink);white-space:normal;overflow:hidden;overflow-wrap:anywhere}
 .r.life .ti{color:var(--ink-2);font-size:13.5px}
 .r .si{display:block;font-size:12px;color:var(--ink-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .r .si .sin{font-family:var(--si)}
@@ -958,6 +958,7 @@ body.cal-fs .cmain{height:100%}
 #partQ.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}#partQ span{flex:1 1 260px}
 #partQ input{width:92px;font:inherit;font-variant-numeric:tabular-nums;padding:7px 10px;border-radius:10px;border:1px solid var(--edge);background:rgba(0,0,0,.25);color:var(--ink)}
 #partQ .pbtn{padding:7px 14px;font-size:12.5px}
+.fo-speed{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:var(--ink-2)}.fo-speed small{color:var(--ink-3)}.fo-speed[hidden]{display:none}
 #fin.show{transform:translate(-50%,0);opacity:1;pointer-events:auto}
 #fin .pbtn{padding:7px 14px;font-size:12.5px}
 
@@ -1353,6 +1354,7 @@ body.wo-enter #woPage .wcol>.card,body.wo-enter #woNudge{animation:woRise .55s c
           </div>
           <div class="fo-btns"><button class="pbtn" id="fReset">Reset</button><button class="pbtn pri big" id="fGo">Lock in</button><button class="pbtn" id="fSkip">Skip</button></div>
           <div class="fo-subj"><span>Studying</span><div class="seg" id="fSubj"><button data-s="phy">Physics</button><button data-s="chem">Chemistry</button><button data-s="maths">Maths</button></div><button class="tbtn2" id="fFull">⛶ Full screen</button></div>
+          <div class="fo-speed" id="fSpeed" hidden><span>Playback speed <small>(1-week trial, easy units only)</small></span><div class="seg" role="group" aria-label="Playback speed"><button data-sp="1">1×</button><button data-sp="1.25">1.25×</button></div></div>
           <form class="fo-cf" id="cfForm" autocomplete="off">
             <div class="fo-cf-row"><span class="fo-cf-ic" aria-hidden="true">?</span><input id="cfIn" maxlength="300" placeholder="Confused about something? Type it, press Enter, keep going." aria-label="Question you can't answer yet"><select id="cfUnit" aria-label="Unit this question belongs to"></select></div>
             <div class="fo-cf-n" id="cfN"></div>
@@ -1754,7 +1756,7 @@ $('#fsBtn').addEventListener('click',async()=>{
 const dkey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const addDays=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
 /* ================= Lock In data + scheduler ================= */
-const START=new Date(2026,10,16)/* starts Mon 16 Nov 2026 (his request; was Sun 15 Nov, nothing was done 11-15 Nov) */,EXAM=new Date(2027,7,3),CLASSES_BY=new Date(2027,4,26),JULY=new Date(2027,6,1);
+const START=new Date(2026,10,18)/* the real run starts Wed 18 Nov 2026 (his call, 17 Nov): day 1. 11-17 Nov are not counted as missed */,EXAM=new Date(2027,7,3),CLASSES_BY=new Date(2027,4,31),JULY=new Date(2027,6,1);
 const REC={mech:'https://t.me/Sci_Link/1007',therm:'https://t.me/Sci_Link/876',cur:'https://t.me/Sci_Link/1094',wave:'https://t.me/Sci_Link/1184',light:'https://t.me/Sci_Link/1214',mag:'https://t.me/Sci_Link/1207',elec:'https://t.me/Sci_Link/1255',matter:'https://t.me/Sci_Link/1354',estat:'https://t.me/Sci_Link/1448',mprop:'https://t.me/Sci_Link/1524',grav:'https://t.me/Sci_Link/1645',
   calc:'https://t.me/Sci_Link/855',redox:'https://www.youtube.com/live/Swwr_vNYU5s',bond:'https://t.me/Sci_Link/884',sblock:'https://youtu.be/G23RPKI--MY',pblock:'https://t.me/Sci_Link/865',dblock:'https://t.me/Sci_Link/865',period:'https://t.me/Sci_Link/858',kin:'https://t.me/Sci_Link/937',ener:'https://t.me/Sci_Link/1040',gas:'https://t.me/Sci_Link/1113',org:'https://t.me/Sci_Link/2194',isom:'https://youtu.be/upeffNyWyPA',guna:'https://youtube.com/live/Ibfn2DWZHog',equil:'https://t.me/Sci_Link/1331',echem:'https://t.me/Sci_Link/1498',ind:'https://t.me/Sci_Link/1227',
   mSep:'https://t.me/Vikumlk/213',mOct:'https://t.me/Vikumlk/214',mNov:'https://t.me/Vikumlk/234',mPure26:'https://t.me/Vikumlk/117',mApp26:'https://t.me/Vikumlk/119'};
@@ -1857,7 +1859,7 @@ function buildPlan(hist){
       if(u.need&&u.need[i])deps.push(u.need[i]);
       Q[u.subj+u.track].push({unit:u.k,iid:`${u.k}:${i+1}`,deps:[...new Set(deps)],w:u.w||5,x:!!u.at,subj:u.subj,h,day:!!u.day,title:nm,sub:list.length>1?`${u.en}, ${i+1} of ${list.length}`:u.en,tag:u.tag,rec:REC[u.rec||u.k]||''})});
   }
-  const ok=it=>it.deps.every(d=>taken.has(d))&&(!hist||CURK>=hist.sk||hist.taken.has(it.iid));
+  const ok=it=>it.deps.every(d=>taken.has(d))&&(!hist||!hist.taken||CURK>=hist.sk||hist.taken.has(it.iid));
   const papers=[];/* unit past-paper question tasks waiting for a study slot */
   const last={phy:null,chem:null};
   const done={phy:[],chem:[]},fin={phy:[],chem:[]},mDone=[],pc={phy:0,chem:0,maths:0};
@@ -1876,6 +1878,7 @@ function buildPlan(hist){
   const lastSubj={A:'chem',B:'phy'};/* alternate Physics and Chemistry inside each track */
   const chain={};/* the unit each track+subject is working through, so a unit runs day after day */
   const finished={};/* unit -> day it finished (for spaced review) */
+  if(hist&&hist.pre)for(const n in Q)for(let i=Q[n].length-1;i>=0;i--){const it=Q[n][i];if(!hist.pre.has(it.iid))continue;Q[n].splice(i,1);taken.add(it.iid);done[it.subj].push(it);last[it.subj]=it;if(--left[it.unit]===0){const u=UNIT_BY[it.unit];if(u&&!/x$/.test(u.k)&&!u.day)fin[u.subj].push(u.k)}}
   let today=[],prevDay=[];/* class items taken today / yesterday (for consolidation) */
   function take(names,cap,allowDay,split){
     const tr=names[0].slice(-1),pref=lastSubj[tr]==='phy'?'chem':'phy';
@@ -2064,7 +2067,7 @@ function buildPlan(hist){
     days[k]=ev.map((e,i)=>Object.assign({id:k+'-'+i,date:k},e));
   }
   /* plan v12 (16 Nov 2026, his request): morning fast, a free Saturday every other buffer week, room care.
-     1. Morning fast: breakfast becomes a 30-minute review block (Friday: 15 minutes). Eating window about 13:00-21:15.
+     1. (Morning fast removed 17 Nov 2026 at his request: breakfast is a real meal again, about 2,700-2,800 kcal a day to gain.)
         Food notes go on the life blocks so the muscle-gain calories still get eaten: big lunch, a milk+peanut shake after the
         workout, big dinner, milk and peanuts before 21:15 (about 2,900-3,100 kcal, 110-120 g protein).
      2. Buffer weeks come every 4 weeks. Every other one, its Sunday becomes a free day (about every 8 weeks, none in June-August).
@@ -2074,10 +2077,8 @@ function buildPlan(hist){
     for(const k of K){const L=days[k];
       const first=L.find(x=>x.s===375&&x.subj!=='life');
       for(const e of L){
-        if(e.kind==='life'&&(e.title==='Breakfast'||e.title==='Quick breakfast at your desk'))Object.assign(e,{title:'සූත්‍ර සහ වැරදි සමාලෝචනය',sub:'Morning fast: formula quiz (Library ∑ Quiz me) and mistakes due (Papers). Water or plain tea only.',tag:'Fasting',subj:first&&first.subj!=='paper'?first.subj:'chem',kind:'study'});
-        else if(e.kind==='life'&&e.title==='Lunch')e.sub='Meal 1, the fast ends. Big plate: rice, dhal or kadala, fish or eggs, vegetables. Protein first.';
-        else if(e.kind==='life'&&(e.title==='Free time and dinner'||e.title==='Shower and dinner'))e.sub='Meal 2 by about 19:00. Then before 21:15: a glass of milk and a handful of peanuts.';
-        else if(e.kind==='life'&&e.title==='Screens off, sleep')e.sub='10-minute desk reset first: clear the desk, pack tomorrow’s books.'}
+        /* 17 Nov 2026 (his call): no fasting. Breakfast stays a real meal every day; lunch and dinner are plain meals. */
+        if(e.kind==='life'&&e.title==='Screens off, sleep')e.sub='10-minute desk reset first: clear the desk, pack tomorrow’s books.'}
       const wi=L.findIndex(x=>x.title==='Workout'),sh=wi>=0?L.find(x=>x.title==='Shower'&&x.s===L[wi].e):null;
       if(sh)sh.sub='Then the shake: 500 ml milk, 2 tablespoons of peanuts or peanut butter, a banana.';
 }
@@ -2137,7 +2138,7 @@ function renderRoutine(){
     const second=[e.tag?`<span class="qt">${esc(e.tag)}</span>`:'',e.fixed?'<span class="qt live">LIVE</span>':'',e.sub?`<span>${esc(e.sub)}</span>`:'',rev?'<span>Night review, about a minute</span>':'',rl?`<a class="rec" href="${rl}" target="_blank" rel="noopener">▶ Recordings</a>`:'',e.kind==='study'&&e.unit&&qbShort(e.unit)?`<span class="qt qbq" title="Past-paper questions on this unit">📄 ${esc(qbShort(e.unit))}</span>`:'',e.tag==='Timed'&&e.subj!=='maths'&&viewKey===todayKey&&!e.done?`<a class="rec hallgo" href="#" data-mock="${e.subj}">🎯 Start mini-mock</a>`:'',e.kind==='paper'&&/exam conditions/.test(e.sub||'')&&viewKey===todayKey&&!e.done?`<a class="rec hallgo" href="#" data-hall="${e.subj}">🏛 Exam hall</a>`:'',e.title==='Workout'&&viewKey===todayKey?'<a class="rec" href="#" onclick="go(\'Workout\');return false">▶ Open workout</a>':''].filter(Boolean).join('');
     return `<div class="r ${cls}${e.done?' done':''}${isNow?' now':''}${rev&&nudgeOn&&!e.done?' pulse':''}" data-id="${e.id}">`+
       `<span class="t">${e.e-e.s<=5?fm(e.s):fm(e.s)+'–'+fm(e.e)}</span><span class="bar"></span>`+
-      `<span class="w"><span class="ti">${esc(e.title)}</span>${second?`<span class="si">${second}</span>`:''}</span>`+
+      `<span class="w"><span class="ti" title="${esc(e.title)}">${esc(e.title)}</span>${second?`<span class="si">${second}</span>`:''}</span>`+
       `<button class="tick" role="checkbox" aria-checked="${!!e.done}" aria-label="Done: ${esc(e.title)}"${preview||viewKey>todayKey?' disabled':''}>${CHECK}</button></div>`+
       (rev&&nrOpen&&!e.done?nrHtml():'')+(rateFor===e.id&&e.done?rateHtml(e):'');
   }).join(''):'<p class="sub" style="padding:14px 10px">Nothing is planned for this day.</p>';
@@ -2210,7 +2211,7 @@ function renderRings(){
       `<text x="43" y="48" text-anchor="middle" class="pct">${Math.round(p*100)}%</text></svg><div class="lbl">${n}</div><div class="num">${d} of ${tt} classes</div></div>`}).join('');
   /* projected finish: the last Physics/Chemistry class still in the plan */
   let endK='';for(const k in CS.days)if(CS.days[k].some(e=>e.kind==='class'&&e.subj!=='maths'&&!e.done)&&k>endK)endK=k;
-  const sub=$('#ringSub');if(sub&&endK){const late=endK>dkey(CLASSES_BY);const ed=new Date(endK+'T00:00');sub.innerHTML=`Classes finish <b style="color:${late?'#ff8a7a':'var(--green)'};font-weight:500">${DOW[ed.getDay()]} ${ed.getDate()} ${MON[ed.getMonth()].slice(0,3)}</b>${late?' · past 26 May, skip less':' · on track for 26 May'}`}
+  const sub=$('#ringSub');if(sub&&endK){const late=endK>dkey(CLASSES_BY);const ed=new Date(endK+'T00:00');sub.innerHTML=`Classes finish <b style="color:${late?'#ff8a7a':'var(--green)'};font-weight:500">${DOW[ed.getDay()]} ${ed.getDate()} ${MON[ed.getMonth()].slice(0,3)}</b>${late?' · past 31 May, skip less':' · on track for 31 May'}`}
 }
 function renderBars(){
   const wk0=addDays(today0,-((today0.getDay()+6)%7)),MAXH=12,GOAL=8,ti=(today0.getDay()+6)%7;
@@ -2328,6 +2329,10 @@ addEventListener('keydown',()=>{bkLast=Date.now();if(bkMood==='sleepy')bkSet('ha
 setInterval(()=>{if(bkMood==='happy'&&Date.now()-bkLast>60000)bkSet('sleepy')},5000);
 $('#baku').addEventListener('click',()=>{bkLast=Date.now();bkSet('cheeky',2200);say(['Study first, play later 😜','Hoo! Back to work.','I’m watching your streak 👀'][Math.floor(Math.random()*3)])});
 bkSet('happy');
+/* the owl sits in the real gap between the date and the top-right corner, and hides when that gap is too small (17 Nov 2026) */
+function bkPlace(){const t=document.querySelector('main>.top'),o=document.getElementById('baku');if(!t||!o)return;const d=t.firstElementChild,c=t.querySelector('.corner');if(!d||!c)return;
+  const tr=t.getBoundingClientRect(),a=Math.max(...[...d.children].map(x=>x.getBoundingClientRect().right),d.getBoundingClientRect().left),b=c.getBoundingClientRect().left;o.style.display=b-a<150?'none':'';const P=(o.offsetParent||t).getBoundingClientRect();o.style.left=((a+b)/2-P.left)+'px'}
+try{new ResizeObserver(bkPlace).observe(document.querySelector('main>.top'))}catch(e){}addEventListener('resize',bkPlace);setTimeout(bkPlace,300);
 /* ================= Calendar ================= */
 const HH=64,D0=360,D1=1380;/* calendar shows 06:00 to 23:00 */
 const p2=n=>String(n).padStart(2,'0');
@@ -2933,6 +2938,14 @@ function rebuildOrder(keepPast,keepToday){
   for(const k in (old.off||{}))if(k>=sk&&old.off[k]){CS.off[k]=true;(CS.days[k]||[]).filter(x=>x.kind!=='life'&&x.kind!=='review'&&!x.fixed&&!x.done&&!x.user).forEach(skipToCU);CS.days[k]=(CS.days[k]||[]).filter(x=>x.fixed||x.user)}
 }
 /* plan v13 migration proof: every ticked block as date | time | unit | title */
+function v13Restart(){const old=CS,sk=kOf(START),base=x=>String(x||'').replace(/[ab]$/,''),pre=new Set();
+  for(const k in old.days)for(const e of old.days[k])if(e.done&&e.iid&&e.kind==='class')pre.add(base(e.iid));
+  const days=applyBlueprint(buildPlan({pre}).days);
+  for(const k in old.days)if(k<sk){const keep=old.days[k].filter(e=>e.done).map(e=>e.tag==='Fasting'?Object.assign(e,{tag:'',sub:''}):e);if(keep.length)days[k]=keep}
+  const byKey={};for(const k in days)if(k>=sk)for(const x of days[k])if(x.unit)byKey[x.unit+'|'+x.title]=x;
+  for(const k in old.days)if(k>=sk)for(const e of old.days[k]){if(!e.done&&!e.user)continue;if(e.user){(days[k]||(days[k]=[])).push(e);continue}
+    const m=e.unit?byKey[e.unit+'|'+e.title]:(days[k]||[]).find(x=>x.title===e.title&&!x.done);if(m&&!m.done)m.done=true;else(days[k]||(days[k]=[])).push(Object.assign({},e,{user:true}))}
+  CS={v:13,days,off:{},slid:[]}}
 function v13Ticks(P){const o=[];for(const k of Object.keys(P.days||{}).sort())for(const e of P.days[k])if(e.done&&e.kind!=='life'&&e.kind!=='review')o.push({k,s:e.s,unit:e.unit||'',title:e.title,kind:e.kind});return o}
 function v13Report(){let R;try{R=JSON.parse(localStorage.getItem('lockin-v13-check')||'null')}catch(e){}if(!R||R.seen)return;
   const key=x=>x.k+'|'+x.unit+'|'+x.title,A=new Set(R.after.map(key)),lost=R.before.filter(x=>!A.has(key(x))),cls=R.before.filter(x=>x.kind==='class');
@@ -2949,10 +2962,12 @@ function v13Report(){let R;try{R=JSON.parse(localStorage.getItem('lockin-v13-che
   /* v12 to v13 (his Option 2): Physics and Chemistry at a steady pace from 23 Nov, 5 class days (Mon-Fri, at most 8 h),
      no class on Saturday, a 3 h recording after the Friday Maths class, buffer weeks up to 26 Apr. Past days and ticks are kept. */
   if(CS.v===12){
-    /* safety: keep the old plan, rebuild, then compare every ticked block before and after (shown once on Home) */
+    /* 17 Nov 2026, his call: restart from Wed 18 Nov as day 1. Every ticked block is kept; unticked blocks before the start
+       are removed, so nothing from 11-17 Nov counts as missed or owes catch-up; the shadow race starts fresh */
     try{localStorage.setItem('lockin-plan-v2-pre13',JSON.stringify(CS))}catch(e){}
-    const before=v13Ticks(CS);rebuildOrder(true,true);saveCS();const after=v13Ticks(CS);
-    try{localStorage.setItem('lockin-v13-check',JSON.stringify({t:Date.now(),before,after,back:CS.repaired||[],seen:false}))}catch(e){}
+    const before=v13Ticks(CS);v13Restart();saveCS();const after=v13Ticks(CS);
+    try{localStorage.setItem('lockin-v13-check',JSON.stringify({t:Date.now(),before,after,back:[],seen:false}))}catch(e){}
+    try{const S=JSON.parse(localStorage.getItem('lockin-system-v1')||'null');if(S){const sk=kOf(START);for(const f of ['ses','radio','msg','misSeen','mbSnap','mbFix','sleep','phone','away'])if(S[f])for(const d in S[f])if(d<sk)delete S[f][d];S.started=null;S.seenL=null;S.seenRank=null;S.guard=null;localStorage.setItem('lockin-system-v1',JSON.stringify(S))}}catch(e){}
     return}
   /* v11 to v12: morning fast (breakfast becomes review), a free Saturday every other buffer week, room care */
   if(CS.v===11){rebuildOrder(true);saveCS();return}
@@ -3257,7 +3272,7 @@ function fShow(){
   $('#fWhat').innerHTML=b?`<span class="fw-dot" style="background:var(--${b.subj})"></span><span><span class="si">${esc(b.title)}</span><small>${esc(b.sub||'')}</small></span>`:`<span class="fw-dot"></span><span>No study block right now. Pick a subject below.</span>`;
   document.querySelectorAll('#fSubj button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.s===sj));
   if(fRun)document.title=`${d.slice(0,2)}:${d.slice(2)} · ${fPhase==='focus'?'Focus':'Break'} · Lock In`;else document.title='Lock In';
-  fStats();
+  fStats();spShow();
 }
 function fStats(){
   const k=dkey(new Date()),t=FO.log[k]||{min:0,n:0};
@@ -3273,7 +3288,7 @@ function fTick(){fLeft=Math.max(0,(fEnd-Date.now())/1000);fShow();if(fLeft<=0)fD
 function chime(){try{const a=new (window.AudioContext||window.webkitAudioContext)(),t=a.currentTime;[784,1047].forEach((f,i)=>{const o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,t+i*.18);g.gain.linearRampToValueAtTime(.18,t+i*.18+.02);g.gain.exponentialRampToValueAtTime(.001,t+i*.18+.9);o.connect(g);g.connect(a.destination);o.start(t+i*.18);o.stop(t+i*.18+1)})}catch(e){}}
 function fDone(){
   clearInterval(fI);fRun=false;chime();
-  if(fPhase==='focus'){const k=dkey(new Date()),t=FO.log[k]||(FO.log[k]={min:0,n:0});t.min+=FMODES[fMode].f;t.n++;FO.sessions++;saveFO();
+  if(fPhase==='focus'){const k=dkey(new Date()),t=FO.log[k]||(FO.log[k]={min:0,n:0});t.min+=FMODES[fMode].f;t.n++;FO.sessions++;saveFO();spLog();
     toast(`Session ${t.n} done. Take your break.`);if(typeof hop==='function'){hop();say(['Nice work! Stretch a bit.','That’s one more! 💪','Break time. Drink water.'][t.n%3],3200)}
     fSet('break');fEnd=Date.now()+fLeft*1000;fRun=true;fI=setInterval(fTick,250);fShow();
   }else{toast('Break over. Ready when you are.');fSet('focus');if(typeof say==='function')say('Back to it?',2500)}
@@ -3284,6 +3299,15 @@ $('#fGo').addEventListener('click',()=>{
   if(fPhase==='focus'&&typeof say==='function')say('I’ll keep watch. 👀',2400);
 });
 $('#fReset').addEventListener('click',()=>fSet(fPhase));
+/* playback speed trial (17 Nov 2026, his call): a manual 1x / 1.25x switch for recording blocks of easy units, for one week.
+   The scheduler is not changed. Each finished focus session logs the speed it used, so the week can be judged on recall. */
+const SPKEY='lockin-speed-v1',SP_HARD=new Set(['mech','wave','cur','calc','equil','org']);
+const spGet=()=>lsGet(SPKEY,{start:dkey(new Date()),cur:1,log:[]});
+function spBlock(){const b=curBlock();return b&&b.kind==='class'&&b.unit&&b.subj!=='maths'&&!SP_HARD.has(String(b.unit).replace(/x$/,''))?b:null}
+var spSig='';function spShow(){try{const b=spBlock(),S=spGet(),sig=(b?b.id:'')+'|'+S.cur;if(sig===spSig)return;spSig=sig;const el=$('#fSpeed');if(!el)return;el.hidden=!b;
+  el.querySelectorAll('[data-sp]').forEach(x=>x.setAttribute('aria-pressed',+x.dataset.sp===S.cur))}catch(e){}}
+function spLog(){const b=spBlock();if(!b)return;const S=spGet();S.log.push({d:dkey(new Date()),unit:b.unit,speed:S.cur,min:FMODES[fMode].f});lsSet(SPKEY,S)}
+$('#fSpeed').addEventListener('click',e=>{const x=e.target.closest('[data-sp]');if(!x)return;const S=spGet();S.cur=+x.dataset.sp;lsSet(SPKEY,S);spSig='';spShow()});
 let quitArm=0;
 $('#fSkip').addEventListener('click',()=>{
   if(fPhase==='break'){fSet('focus');return}
@@ -3771,7 +3795,7 @@ const weekNo=d=>Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate())-W
 function plan(type,d){
   const neck=weekNo(d)>=3?['neckcurl',2]:['neckiso',4];
   const P={
-    /* arena plan (16 Nov 2026): upper\/lower split, rows and hamstrings added, Tuesday is the light fasted day, one short conditioning day */
+    /* arena plan (16 Nov 2026): upper\/lower split, rows and hamstrings added, Tuesday is the light day, one short conditioning day */
     upperA:{n:'Upper A',c:'#ff5a5a',warm:['Arm circles, 30 seconds each way','8 scapula hangs from the bar','10 easy push-ups'],
       main:[['negpull',4],['declinepush',4],['backrow',4],['lateral',4]],acc:[neck],ss:1,
       cool:['Chest stretch in a doorway, 30 seconds','Hang from the bar to stretch your lats, 30 seconds','Slow breathing, 1 minute']},

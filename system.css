@@ -502,7 +502,13 @@ html.shadow body:has(#sxm)::before{display:none}
 .sxm-more{display:none}html.shadow .sxm.more .sxm-more{display:inline;position:static;padding:0;background:none;box-shadow:none;font:400 12px var(--font);color:var(--sx-i3);margin-left:6px}
 html.shadow .sxm.more .sxm-vp::after{width:48px}
 .sxm-e path.hot{filter:none!important;stroke-width:2px}
+#sxFoc .sxf-sp{display:flex;align-items:center;gap:10px;margin:-4px 0 10px;font-size:12.5px;color:var(--sx-i3)}#sxFoc .sxf-sp[hidden]{display:none}
+#sxFoc .sxf-sp .sx2-seg button{padding:4px 11px;font-size:12px}
 /* ===/P2=== */
+
+/* speed trial switch (Shadow Focus) */
+#sxFoc .sxf-sp{display:flex;align-items:center;gap:10px;margin:-4px 0 10px;font-size:12.5px;color:var(--sx-i3)}#sxFoc .sxf-sp[hidden]{display:none}
+#sxFoc .sxf-sp .sx2-seg button{padding:4px 11px;font-size:12px}
 
 /* ===P3=== */
 /* ================= PHASE 3: Papers, Workout, Report (Shadow mode only, except the .mq-r .p bug fix) ================= */

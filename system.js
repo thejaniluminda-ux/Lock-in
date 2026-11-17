@@ -93,11 +93,11 @@ function bakuLine(){const tk=todayK(),y=dk(add(now(),-1)),Y=CS.days[y]||[],plann
     const P=prof();if(P.line){const w=say('why',P.line);if(w)text=(text?text+' ':'')+'“'+w+'”'}}
   else if(now()>=EXAM)text=null;
   else{const b=mib(tk);const ok=Object.values(SYS.sleep).slice(-4).filter(s=>['early','ontime'].includes(s.b)).length;
-    text=say('wake',b?`Day ${dayNo()}. Today: ${b.title.replace(/^[^:]*: /,'')}. That's the one.`:`Day ${dayNo()}. No study blocks today.`)}
+    text=say('wake',b?`Day ${Math.max(1,dayNo())}. Today: ${b.title.replace(/^[^:]*: /,'')}. That's the one.`:`Day ${Math.max(1,dayNo())}. No study blocks today.`)}
   SYS.line={d:tk,text};saveSys();return text}
 const EXAM_END=new Date(2027,7,28);
-const phase=()=>{const n=now(),t=new Date(todayK()+"T00:00");if(t>EXAM_END)return "Exam over · the record stands";if(n>=EXAM)return "Exam period · day "+(Math.round((t-EXAM)/864e5)+1)+" of 26";return `Day ${dayNo()} of ${daysTotal()} · ${Math.ceil((EXAM-n)/864e5)} days to the exam`};
-const dayNo=()=>Math.max(1,Math.round((new Date(todayK()+'T00:00')-START)/864e5)+1);
+const phase=()=>{const n=now(),t=new Date(todayK()+"T00:00");if(t>EXAM_END)return "Exam over · the record stands";if(n>=EXAM)return "Exam period · day "+(Math.round((t-EXAM)/864e5)+1)+" of 26";return `${dayNo()<1?'Starts tomorrow':'Day '+dayNo()+' of '+daysTotal()} · ${Math.ceil((EXAM-n)/864e5)} days to the exam`};
+const dayNo=()=>Math.round((new Date(todayK()+'T00:00')-START)/864e5)+1;/* 0 or less before the start (18 Nov 2026) */
 const daysTotal=()=>Math.round((EXAM-START)/864e5);
 
 /* ---------- check-ins: sleep time (morning), phone out (22:30), confirmed next morning ---------- */
@@ -128,11 +128,11 @@ const nextRank=L=>RANKS.find(r=>r[0]>L)||[99,''];
 const rankNo=r=>RANKS.findIndex(x=>x[1]===r)+1;
 
 /* ---------- verified focus sessions with their finish time (forward-only: the app stores daily totals) ---------- */
-function logSessions(){const tk=todayK(),t=(FO.log||{})[tk];if(!t)return false;const L=SYS.ses[tk]||(SYS.ses[tk]=[]),have=L.length,got=t.n||0;if(got<=have)return false;
+function logSessions(){if(todayK()<dk(START))return false;const tk=todayK(),t=(FO.log||{})[tk];if(!t)return false;const L=SYS.ses[tk]||(SYS.ses[tk]=[]),have=L.length,got=t.n||0;if(got<=have)return false;
   const recMin=L.reduce((a,x)=>a+x[1],0),per=Math.max(1,Math.round(((t.min||0)-recMin)/(got-have)));for(let i=have;i<got;i++)L.push([nowMin(),per]);
   const ks=Object.keys(SYS.ses).sort();while(ks.length>21)delete SYS.ses[ks.shift()];saveSys();return true}
 const cumAt=(d,t)=>(SYS.ses[d]||[]).filter(x=>x[0]<=t).reduce((a,x)=>a+x[1],0);
-function shadow(){const tk=todayK(),from=dk(add(now(),-7));
+function shadow(){const tk=todayK(),from=[dk(add(now(),-7)),dk(START)].sort().pop();/* the shadow race starts fresh on the start day */
   const days=Object.keys(SYS.ses).filter(d=>d<tk&&d>=from&&SYS.ses[d].length).map(d=>({d,tot:cumAt(d,1440)})).sort((a,b)=>b.tot-a.tot).slice(0,3).map(x=>x.d);
   const at=t=>days.length?Math.round(days.reduce((a,d)=>a+cumAt(d,t),0)/days.length):null;
   const right=d=>new Set(qlGet().filter(q=>q.r==='ok'&&dk(new Date(q.t))===d).map(q=>q.id)).size;
@@ -248,7 +248,7 @@ let wt=0,waveRaf=0;function wave(){cancelAnimationFrame(waveRaf);const c=box&&bo
 const onHome=()=>isShadow()&&!/\bpage-/.test(document.body.className);
 function render(force){if(!box||!isShadow()||!onHome())return;if(force||!box.querySelector('.sx-grid'))shell();
   const T=totals(),lv=levelOf(T.tot),rank=rankOf(lv.L),P=prof();
-  box.querySelector('#sxDay').innerHTML=new Date(todayK()+'T00:00')>EXAM_END?'Exam over':now()>=EXAM?`Exam day <b>${Math.round((new Date(todayK()+'T00:00')-EXAM)/864e5)+1}</b> / 26`:`Day <b>${dayNo()}</b> / ${daysTotal()}`;
+  box.querySelector('#sxDay').innerHTML=new Date(todayK()+'T00:00')>EXAM_END?'Exam over':now()>=EXAM?`Exam day <b>${Math.round((new Date(todayK()+'T00:00')-EXAM)/864e5)+1}</b> / 26`:dayNo()<1?`Day 1 starts tomorrow`:`Day <b>${dayNo()}</b> / ${daysTotal()}`;
   box.querySelector('#sxExam').innerHTML=now()<EXAM?`A/L in <b>${Math.ceil((EXAM-now())/864e5)}</b> days`:'A/L';box.querySelector('#sxClk').textContent=hm(nowMin());
   box.querySelector('.sx-tgt').innerHTML=P.course?`Target <b>${esc2(P.course)}</b>${P.z?' · Z '+esc2(P.z):' · Z —'}`:'Set your target';
   setPanel('sxRank',rankHtml(T,lv,rank));setPanel('sxMis',misHtml());setPanel('sxMast',mastHtml());setPanel('sxRec',recHtml());if(setPanel('sxRadio',radioHtml()))wave();
@@ -402,7 +402,7 @@ const dayW=k=>{const x=new Date(k+'T00:00');return k===todayK()?'Today':DOW3[x.g
 function bars(){for(const[id,pg]of[['focPage','foc'],['calPage','cal'],['libPage','lib']]){const P=document.getElementById(id);if(!P||P.querySelector(':scope>.sx2-barw'))continue;
   const b=document.createElement('div');b.className='sx2-barw';b.innerHTML=`<div class="sx2-crumb">Shadow Protocol / <b>${PGN[pg]}</b></div><span class="sx2-sp"></span><div class="sx2-pill" data-sxday></div><div class="sx2-pill" data-sxexam></div><div class="sx2-pill"><b class="num" data-sxclk></b></div>`;P.prepend(b)}
   barTick()}
-function barTick(){const n=now();document.querySelectorAll('[data-sxday]').forEach(e=>e.innerHTML=`Day <b class="num">${dayNo()}</b> / ${daysTotal()}`);
+function barTick(){const n=now();document.querySelectorAll('[data-sxday]').forEach(e=>e.innerHTML=dayNo()<1?`Day 1 starts tomorrow`:`Day <b class="num">${dayNo()}</b> / ${daysTotal()}`);
   document.querySelectorAll('[data-sxexam]').forEach(e=>e.innerHTML=n<EXAM?`A/L in <b class="num">${Math.ceil((EXAM-n)/864e5)}</b> days`:'A/L');document.querySelectorAll('[data-sxclk]').forEach(e=>e.textContent=hm(nowMin()))}
 
 /* ================= FOCUS ================= */
@@ -416,11 +416,13 @@ function focBuild(){const P=document.getElementById('focPage');if(!P||P.querySel
         <div class="sxf-in"><div class="st" id="sxfSt"></div><b class="num" id="sxfTm" aria-live="off"></b><div class="sub" id="sxfSub"></div><div class="sxf-dots" id="sxfDots"></div></div></div>
       <div class="sxf-brk">Stand up. Water. Eyes off the screen.</div><div class="sxf-strip" id="sxfStrip" aria-label="Today's study blocks and finished sessions"></div>
       <div class="sxf-sj" id="sxfSj" role="group" aria-label="Studying">${['phy','chem','maths'].map(s=>`<button type="button" data-s="${s}" style="--sj:${SJC[s]}"><i></i>${SUBJ[s]}</button>`).join('')}</div>
+      <div class="sxf-sp" id="sxfSp" hidden><span>Playback speed · 1-week trial</span><div class="sx2-seg" role="group" aria-label="Playback speed"><button type="button" data-sp="1">1×</button><button type="button" data-sp="1.25">1.25×</button></div></div>
       <div class="sxf-ctl"><button type="button" class="sx2-btn" id="sxfReset">Reset</button><button type="button" class="sx2-btn pri" id="sxfGo"></button><button type="button" class="sx2-btn" id="sxfQuit">Quit</button></div></section>
     <div class="sx2-col"><section class="sx2-pl sxf-race" id="sxfRace"></section><section class="sx2-pl sxf-side" id="sxfSide"></section></div>`;
   P.appendChild(d);
   d.querySelector('#sxfModes').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b)document.querySelector(`#fModes [data-m="${b.dataset.m}"]`)?.click();focFull()});
   d.querySelector('#sxfSj').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(b)document.querySelector(`#fSubj [data-s="${b.dataset.s}"]`)?.click();focFull()});
+  d.querySelector('#sxfSp').addEventListener('click',e=>{const b=e.target.closest('[data-sp]');if(b)document.querySelector(`#fSpeed [data-sp="${b.dataset.sp}"]`)?.click();focSp()});
   d.querySelector('#sxfGo').addEventListener('click',()=>{q1('#fGo').click();focFull()});
   d.querySelector('#sxfReset').addEventListener('click',()=>{q1('#fReset').click();P2.A={n:0,sec:0};focFull()});
   d.querySelector('#sxfQuit').addEventListener('click',()=>{const k=q1('#fSkip');if(fPhase==='break'){k.click();focFull();return}
@@ -477,7 +479,8 @@ function focFull(){const D=q1('#sxFoc');if(!D)return;const brk=fPhase==='break',
   const sj=(typeof b2FSubj!=='undefined'&&b2FSubj)||(curBlock()||{}).subj;D.querySelectorAll('#sxfSj button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===sj));
   q1('#sxfGo').textContent=q1('#fGo').textContent;const qb=q1('#sxfQuit'),armed=Date.now()-P2.quitT<4000;
   qb.textContent=brk?'Skip break':armed?'Tap again to quit':'Quit';qb.classList.toggle('warn',armed&&!brk);qb.disabled=!brk&&full;q1('#sxfReset').disabled=full;
-  focBlk();cfListF();focRace();focSide();focStrip();focTick(true)}
+  focBlk();cfListF();focRace();focSide();focStrip();focSp();focTick(true)}
+function focSp(){const src=q1('#fSpeed'),el=q1('#sxfSp');if(!src||!el)return;el.hidden=src.hidden;el.querySelectorAll('[data-sp]').forEach(b=>b.setAttribute('aria-pressed',src.querySelector(`[data-sp="${b.dataset.sp}"]`)?.getAttribute('aria-pressed')==='true'))}
 /* today 06:00-23:00: study blocks as faint bars, finished sessions as solid marks, the running session in green, now as a line */
 function focStrip(){const el=q1('#sxfStrip');if(!el)return;const tk=todayK(),t0=360,t1=1380,X=t=>((Math.min(t1,Math.max(t0,t))-t0)/(t1-t0)*100).toFixed(2)+'%',W=(a,b)=>((Math.min(t1,b)-Math.max(t0,a))/(t1-t0)*100).toFixed(2)+'%',m=nowMin();
   const bl=(CS.days[tk]||[]).filter(isStudy).map(e=>`<i class="b" style="left:${X(e.s)};width:${W(e.s,e.e)};--sj:${SJC[e.subj]||'#8b928d'}" title="${hm(e.s)}–${hm(e.e)} ${esc2(e.title)}"></i>`).join('');
