@@ -100,7 +100,7 @@ function bakuLine(){const tk=todayK(),y=dk(add(now(),-1)),Y=CS.days[y]||[],plann
 const EXAM_END=new Date(2027,7,28);
 const phase=()=>{const n=now(),t=new Date(todayK()+"T00:00");if(t>EXAM_END)return "Exam over · the record stands";if(n>=EXAM)return "Exam period · day "+(Math.round((t-EXAM)/864e5)+1)+" of 26";return `${dayNo()<1?'Starts tomorrow':'Day '+dayNo()+' of '+daysTotal()} · ${Math.ceil((EXAM-n)/864e5)} days to the exam`};
 const dayNo=()=>Math.round((new Date(todayK()+'T00:00')-START)/864e5)+1;/* 0 or less before the start (19 Nov 2026) */
-const daysTotal=()=>Math.round((EXAM-START)/864e5);
+const daysTotal=()=>Math.round((EXAM-START)/864e5)+1;/* exam day is the last day: day 258 of 258 */
 
 /* ---------- check-ins: sleep time (morning), phone out (22:30), confirmed next morning ---------- */
 const SLEEP=[['early','Before 23:00'],['ontime','23:00–23:30'],['late','23:30–00:30'],['vlate','00:30–02:00'],['xlate','After 02:00']];
@@ -142,7 +142,7 @@ function shadow(){const tk=todayK(),from=[dk(add(now(),-7)),dk(START)].sort().po
   const avg=f=>days.length?Math.round(days.reduce((a,d)=>a+f(d),0)/days.length):null;
   /* Part C (his call, 18 Nov 2026): days 1-7, or any day with no session history yet, race the PLAN line: the focus minutes
      today's plan expects by this time of day (study, class and paper blocks at 25 of every 30 minutes). From day 8: the shadow. */
-  const planAt=t=>{let m=0;for(const e of (CS.days[tk]||[]))if(e.kind==='class'||e.kind==='study'||e.kind==='paper')m+=Math.max(0,Math.min(t,e.e)-e.s);return Math.round(m*25/30)};
+  const planAt=t=>{let m=0;for(const e of (CS.days[tk]||[]))if((e.kind==='class'&&!e.fixed)||e.kind==='study'||e.kind==='paper')m+=Math.max(0,Math.min(t,e.e)-e.s);return Math.round(m*25/30)};
   const usePlan=dayNo()<=7||!days.length;
   return{days:usePlan?['plan']:days,at:usePlan?planAt:at,plan:usePlan,foe:usePlan?'the plan':'your shadow',Foe:usePlan?'Plan':'Shadow',you:cumAt(tk,nowMin()),youTot:((FO.log||{})[tk]||{}).min||0,right:right(tk),shRight:avg(right),fixed:fixedToday,shFixed:avg(d=>SYS.mbFix[d]||0)}}
 function snapMB(){const tk=todayK(),sum=MB.reduce((a,m)=>a+(m.st||0)+(m.ok?1:0),0);if(SYS.mbSnap[tk]==null){SYS.mbSnap[tk]=sum;saveSys()}const f=sum-SYS.mbSnap[tk];if(SYS.mbFix[tk]!==f){SYS.mbFix[tk]=f;saveSys()}}
@@ -199,7 +199,7 @@ function rankHtml(T,lv,rank){const [nl,nr]=nextRank(lv.L),S=shadow(),seg=14,f=Ma
       <div class="sx-who"><span>You <b>${fmH(S.you)} h</b></span><span>${S.Foe} <b>${fmH(S.at(nowMin()))} h</b></span></div>`}
   return `<div class="sx-lvl"><b id="sxLvN">${lv.L}</b><div><span>${rank}</span><small>Level ${lv.L} · next rank ${nr} at level ${nl}</small></div></div>
     <div class="sx-segs" id="sxXp">${segHtml(seg,f)}</div><div class="sx-xpr"><span><b>${lv.into}</b> / ${lv.need} XP</span><em>+${T.today} today</em></div>
-    <div class="sx-sr"><div class="sx-t"><span>${S.plan?'Race vs the plan':'Shadow race'}</span><small>${S.plan?'days 1 to 7 · finished Focus sessions':'finished Focus sessions only'}</small></div>${race}
+    <div class="sx-sr"><div class="sx-t"><span>${S.plan?'Race vs the plan':'Shadow race'}</span><small>${S.plan?'days 1-7 · Focus only':'finished Focus sessions only'}</small></div>${race}
       <div class="sx-sec"><span>Right answers <b>${S.right}</b>${S.shRight!=null?' vs '+S.shRight:''}</span><span>Mistakes fixed <b>${S.fixed}</b>${S.shFixed!=null?' vs '+S.shFixed:''}</span></div></div>`}
 function misHtml(){const M=missions(),tk=todayK(),m=nowMin(),b=mib(tk);if(!M.length)return `<div class="sx-ph"><div><h3>Today's missions</h3><p>The exam is done. Nothing left to prove here.</p></div></div>`;
   const xp=x=>x.mib?XP.mib:x.t==='Practice'?30:x.t==='Body'?XP.workout:XP.sleep;
@@ -256,7 +256,7 @@ function render(force){if(!box||!isShadow()||!onHome())return;if(force||!box.que
   const T=totals(),lv=levelOf(T.tot),rank=rankOf(lv.L),P=prof();
   box.querySelector('#sxDay').innerHTML=new Date(todayK()+'T00:00')>EXAM_END?'Exam over':now()>=EXAM?`Exam day <b>${Math.round((new Date(todayK()+'T00:00')-EXAM)/864e5)+1}</b> / 26`:dayNo()<1?`Day 1 starts tomorrow`:`Day <b>${dayNo()}</b> / ${daysTotal()}`;
   box.querySelector('#sxExam').innerHTML=now()<EXAM?`A/L in <b>${Math.ceil((EXAM-now())/864e5)}</b> days`:'A/L';box.querySelector('#sxClk').textContent=hm(nowMin());
-  box.querySelector('.sx-tgt').innerHTML=P.course?`Target <b>${esc2(P.course)}</b>${P.z?' · Z '+esc2(P.z):' · Z —'}`:'Set your target';
+  box.querySelector('.sx-tgt').innerHTML=P.course?`Target <b>${esc2(P.course)}</b>${P.z?' · Z '+esc2(P.z):''}`:'Set your target';
   setPanel('sxRank',rankHtml(T,lv,rank));setPanel('sxMis',misHtml());setPanel('sxMast',mastHtml());setPanel('sxRec',recHtml());if(setPanel('sxRadio',radioHtml()))wave();
   requestAnimationFrame(()=>{drawGraph(force);if(!waveRaf)wave()});events(T,lv,rank)}
 /* ---------- moments: mission complete, level-up, rank-up, first launch ---------- */
