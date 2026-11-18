@@ -214,7 +214,7 @@ function misHtml(){const M=missions(),tk=todayK(),m=nowMin(),b=mib(tk);if(!M.len
     else{f=x.done?n:0;a=x.done?'1':'0';r=x.done?'Done':x.s.match(/\d\d:\d\d/)?.[0]||''}
     const cur=x.mib&&b&&!x.done&&m>=b.s&&m<b.e;
     return `<div class="sx-m${x.done?' ok':i===0?' mib':''}"><div class="sx-mt"><span class="k">${x.t}</span><span class="x">+${xp(x)} XP</span></div><div class="tt${/[\u0D80-\u0DFF]/.test(x.s)?' si':''}">${esc2(x.s)}</div>
-      <div class="cnt"><span><b>${a}</b> of ${bb}</span><span>${cur?'<button class="sx-go" data-begin>Focus</button>':r}</span></div><div class="sx-segs sm">${segHtml(n,f)}</div></div>`}).join('')}
+      <div class="cnt"><span><b>${a}</b> of ${bb}</span><span>${cur?'<button class="sx-go" data-begin>Focus</button>':r}</span></div><div class="sx-segs sm">${segHtml(n,f)}</div></div>`}).join('')+(innerHeight>950?(()=>{const L=(CS.days[tk]||[]).filter(e=>isStudy(e)&&e.s>=m).sort((x,y)=>x.s-y.s).slice(0,5);return L.length?`<div class="sx-rest"><h4>Rest of today</h4>${L.map(e=>`<div><span class="num">${hm(e.s)}</span><i class="sx2-dot" style="--sj:${SJC[e.subj]||'#8b928d'}"></i><span class="si">${esc2(e.title)}</span></div>`).join('')}</div>`:''})():'')}
 function mastHtml(){let G=[];try{const last=mqLast();for(const sj of ['chem','phy'])for(const g of mqGroups(sj)){const m=mqMast(sj,g,last);G.push({k:g.k,n:m.n,m:m.m,gain:g.per*(1-m.m)})}}catch(e){}
   if(!G.length)return `<div class="sx-ph"><div><h3>Mastery</h3><p>Weights file not loaded yet</p></div></div>`;
   const tried=G.filter(g=>g.n>0).sort((a,b)=>a.m-b.m),weak=tried.slice(0,3);for(const g of G.filter(g=>!g.n).sort((a,b)=>b.gain-a.gain))if(weak.length<3)weak.push(g);
@@ -235,7 +235,7 @@ let HG=null,flowRaf=0;
 function drawGraph(force){const g=box&&box.querySelector('#sxGraph');if(!g||!g.clientWidth)return;const H0=homeGraph(Math.max(3,Math.min(5,Math.floor(g.clientWidth/135))));
   const sig=g.clientWidth+'x'+g.clientHeight+'|'+H0.nodes.map(n=>n.i+':'+nodeState(n,H0.X)).join(',');if(!force&&HG&&HG.sig===sig)return;HG={sig,...H0};
   const unit=H0.X?(H0.X.unit?(String(H0.X.sub||'').split(',')[0]||H0.X.unit):''):'';box.querySelector('#sxUnit').textContent=H0.X?`${SUBJ[H0.X.subj]||''}${H0.X.unit?' · '+unit:''}`:'Nothing scheduled';
-  const W=g.clientWidth,H=g.clientHeight,nc=Math.max(1,H0.cols.length),cw=W/nc,rows=HG.rows||1,rh=Math.min(130,(H-60)/Math.max(rows,1)),off=Math.max(34,(H-rh*(rows-1)-80)/2);
+  const W=g.clientWidth,H=g.clientHeight,nc=Math.max(1,H0.cols.length),cw=W/nc,rows=HG.rows||1,rh=Math.min(H>700?200:130,(H-60)/Math.max(rows,1)),off=Math.max(34,(H-rh*(rows-1)-80)/2);
   box.querySelector('#sxCols').style.gridTemplateColumns=`repeat(${nc},1fr)`;box.querySelector('#sxCols').innerHTML=H0.cols.map(c=>`<span class="${c==='Today'?'today':''}">${c}</span>`).join('');
   g.querySelectorAll('.sx-nd').forEach(n=>n.remove());const pos={};
   for(const n of H0.nodes){const st=nodeState(n,H0.X),el=document.createElement('div');el.className='sx-nd '+st;el.dataset.i=n.i;const x=n._c*cw+8,y=off+n._r*rh;pos[n.i]=el;
@@ -452,7 +452,8 @@ function focBlk(){const{b,cur}=blockNow(),el=q1('#sxfBlk');if(!el)return;
   const ch=chainOf(nodeOf(b)),tk=todayK();
   el.innerHTML=`<div class="lbl">${cur?'Current block':'Next block · starts '+hm(b.s)}</div><h2 class="sxf-t si">${esc2(b.title)}</h2><div class="sxf-tm num${cur?' on':''}">${hm(b.s)} – ${hm(b.e)}</div><div class="sx2-cap"><i class="sx2-dot" style="--sj:${SJC[b.subj]||'#8b928d'}"></i>${SUBJ[b.subj]||'Paper'} · ${kind}</div>
     ${ch.length>1?`<div class="lbl" style="margin-top:14px">Blueprint chain</div><div class="sxf-ch">${ch.map(([n,r])=>{const dn=liveDone(n),miss=!dn&&(n.date<tk||(n.date===tk&&n.e<=nowMin()))&&r!=='now';
-      return `<div class="c ${r==='now'?'now':dn?'ok':miss?'miss':r==='unl'?'lock':''}"><span class="si">${esc2(n.title)}</span><small>${r==='now'?(cur?'now':hm(n.s)):r==='pre'?(dn?'done':miss?'missed':dayW(n.date)):r==='unl'?dayW(n.date)+' · unlocks':dayW(n.date)}</small></div>`}).join('')}</div>`:''}`}
+      return `<div class="c ${r==='now'?'now':dn?'ok':miss?'miss':r==='unl'?'lock':''}"><span class="si">${esc2(n.title)}</span><small>${r==='now'?(cur?'now':hm(n.s)):r==='pre'?(dn?'done':miss?'missed':dayW(n.date)):r==='unl'?dayW(n.date)+' · unlocks':dayW(n.date)}</small></div>`}).join('')}</div>`:''}
+    ${(()=>{const L=(CS.days[tk]||[]).filter(e=>isStudy(e)&&e.s>=b.e&&e!==b).sort((x,y)=>x.s-y.s).slice(0,innerHeight>1000?8:innerHeight>900?6:3);return L.length?`<div class="lbl" style="margin-top:14px">Later today</div><div class="sxf-later">${L.map(e=>`<div><span class="num">${hm(e.s)}</span><i class="sx2-dot" style="--sj:${SJC[e.subj]||'#8b928d'}"></i><span class="si">${esc2(e.title)}</span></div>`).join('')}</div>`:''})()}`}
 function cfListF(){const el=q1('#sxfCfL');if(!el)return;const tk=todayK(),L=(typeof CF!=='undefined'?CF:[]).filter(x=>x.d===tk).slice(-3).reverse();
   el.innerHTML=L.map(x=>`<div class="q"><span class="num">${x.ok?'✓':'?'}</span><span>${esc2(x.q)}</span></div>`).join('');
   const s=q1('#sxfCfU'),src=q1('#cfUnit');if(s&&src&&document.activeElement!==s){s.innerHTML=src.innerHTML;s.value=src.value}}
@@ -567,7 +568,7 @@ function libOpen(I,tk,X){const{u,bl,d,xs,xd,nx}=I,k=u.k,rec=REC[u.rec||k]||'',S=
   const row=(e,i,first)=>{const now=X&&X.date===e.date&&X.s===e.s&&X.title===e.title,miss=!e.done&&e.date<tk;
     return `<div class="sxl-d${e.done?' ok':''}${now?' now':''}${e===first?' nx':''}${miss?' miss':''}"><span class="n num">${p2(i+1)}</span><b class="si">${esc2(e.title)}</b><span class="d num">${e.done?fmtD(e.date):now?'Now · '+hm(e.s):e.date===tk?'Today · '+hm(e.s):miss?fmtD(e.date)+' · missed':e===first?'Next · '+fmtD(e.date):fmtD(e.date)}</span><span class="tk" aria-label="${e.done?'done':'not done'}">${e.done?'✓':''}</span></div>`};
   const first=bl.find(e=>!e.done&&e.date>=tk&&!(X&&X.date===e.date&&X.s===e.s)),fx=xs.find(e=>!e.done&&e.date>=tk);
-  let body='';if(t==='days')body=(typeof awList==='function'?awList(k):'')+(bl.map((e,i)=>row(e,i,first)).join('')||'<p class="sx2-cap">No class days for this unit in the plan.</p>')+(xs.length?`<div class="sxl-xh">Extras · ${xd} of ${xs.length}</div>${xs.map((e,i)=>row(e,i,fx)).join('')}`:'');
+  let body='';if(t==='days')body=(typeof awList==='function'?awList(k):'')+(bl.map((e,i)=>row(e,i,first)).join('')||'<p class="sx2-cap">No class days for this unit in the plan.</p>')+(bl.length<6&&typeof qbList==='function'?`<div class="sxl-qb">${qbList(k)}</div>`:'')+(xs.length?`<div class="sxl-xh">Extras · ${xd} of ${xs.length}</div>${xs.map((e,i)=>row(e,i,fx)).join('')}`:'');
   else if(t==='sum'){smOpen[k]=true;body=sumHtml(k);(S.ch||[]).forEach((c,i)=>{if(c.ic)body=body.split(`>${c.ic} ${i+1}`).join(`>${i+1}`).split(`<h4>${c.ic} `).join(`<h4><span class="sxn num">${p2(i+1)}</span>`)});body=body.split('⚠').join(WARN)}else if(t==='story')body=storyHtml(k);else if(t==='fb')body=fbList(k)||'<p class="sx2-cap">No formulas listed for this unit yet.</p>';
   else if(t==='qb')body=qbList(k)||'<p class="sx2-cap">No tagged past questions for this unit yet.</p>';else body=cfList(k)||'<p class="sx2-cap">Nothing here. Questions you write in Focus land on this tab.</p>';
   const nd=unitNeeds(k).filter(x=>UNIT_BY[x]),ul=unitUnlocks(k).filter(x=>!isX(UNIT_BY[x]));
