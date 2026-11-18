@@ -27,7 +27,7 @@ const study=e=>e&&e.kind!=='life'&&e.kind!=='review';
 /* most important block: a paper beats a class beats a unit study block; then the longest; then the earliest */
 function mib(day){const w=e=>e.kind==='paper'?3:e.kind==='class'?2:e.unit?1:0;
   return (CS.days[day]||[]).filter(e=>study(e)&&w(e)>0).sort((a,b)=>(w(b)-w(a))||((b.e-b.s)-(a.e-a.s))||a.s-b.s)[0]||null}
-function ledger(){const ev=[],put=(cat,d,x,why)=>{if(x>0)ev.push({cat,d,x,why})},tk=todayK(),st=dk(START);
+function ledger(){const ev=[],put=(cat,d,x,why)=>{if(x>0&&d&&d>=st)ev.push({cat,d,x,why})}/* nothing before day 1 earns XP (his rule, 18 Nov) */,tk=todayK(),st=dk(START);
   for(const d in CS.days){if(d>tk||d<st)continue;let m=0;
     for(const e of CS.days[d])if(e.done&&study(e)){const take=Math.min(e.e-e.s,XP.dayCapMin-m);if(take>0){m+=take;put('blocks',d,take*XP.blockPerMin)}}
     const b=mib(d);if(b&&b.done)put('mib',d,XP.mib)}
@@ -40,6 +40,8 @@ function ledger(){const ev=[],put=(cat,d,x,why)=>{if(x>0)ev.push({cat,d,x,why})}
   for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('lockin-review-')){const d=k.slice(14);if(d<=tk)put('reviews',d,XP.review)}}
   for(const d in SYS.sleep)if(['early','ontime'].includes(SYS.sleep[d].b))put('sleep',d,XP.sleep);
   for(const c of CF)if(c.ok)put('confused',c.d||tk,XP.confused);
+  /* active watching: 3 points from memory after a recording session, at most 4 a day count */
+  try{const A=rd('lockin-aw-v1',{});for(const d in A){const n=Math.min(4,(A[d]||[]).filter(x=>x.pts&&x.pts.filter(p=>p.trim()).length>=3).length);if(d<=tk)put('recall',d,n*15)}}catch(e){}
   return ev}
 function levelOf(xp){let L=1,c=0;while(c+300+30*L<=xp){c+=300+30*L;L++}return{L,into:xp-c,need:300+30*L}}
 const rankOf=L=>RANKS.filter(r=>L>=r[0]).at(-1)[1];
@@ -97,7 +99,7 @@ function bakuLine(){const tk=todayK(),y=dk(add(now(),-1)),Y=CS.days[y]||[],plann
   SYS.line={d:tk,text};saveSys();return text}
 const EXAM_END=new Date(2027,7,28);
 const phase=()=>{const n=now(),t=new Date(todayK()+"T00:00");if(t>EXAM_END)return "Exam over · the record stands";if(n>=EXAM)return "Exam period · day "+(Math.round((t-EXAM)/864e5)+1)+" of 26";return `${dayNo()<1?'Starts tomorrow':'Day '+dayNo()+' of '+daysTotal()} · ${Math.ceil((EXAM-n)/864e5)} days to the exam`};
-const dayNo=()=>Math.round((new Date(todayK()+'T00:00')-START)/864e5)+1;/* 0 or less before the start (18 Nov 2026) */
+const dayNo=()=>Math.round((new Date(todayK()+'T00:00')-START)/864e5)+1;/* 0 or less before the start (19 Nov 2026) */
 const daysTotal=()=>Math.round((EXAM-START)/864e5);
 
 /* ---------- check-ins: sleep time (morning), phone out (22:30), confirmed next morning ---------- */
@@ -138,7 +140,11 @@ function shadow(){const tk=todayK(),from=[dk(add(now(),-7)),dk(START)].sort().po
   const right=d=>new Set(qlGet().filter(q=>q.r==='ok'&&dk(new Date(q.t))===d).map(q=>q.id)).size;
   const fixedToday=Math.max(0,MB.reduce((a,m)=>a+(m.st||0)+(m.ok?1:0),0)-(SYS.mbSnap[tk]??0));
   const avg=f=>days.length?Math.round(days.reduce((a,d)=>a+f(d),0)/days.length):null;
-  return{days,at,you:cumAt(tk,nowMin()),youTot:((FO.log||{})[tk]||{}).min||0,right:right(tk),shRight:avg(right),fixed:fixedToday,shFixed:avg(d=>SYS.mbFix[d]||0)}}
+  /* Part C (his call, 18 Nov 2026): days 1-7, or any day with no session history yet, race the PLAN line: the focus minutes
+     today's plan expects by this time of day (study, class and paper blocks at 25 of every 30 minutes). From day 8: the shadow. */
+  const planAt=t=>{let m=0;for(const e of (CS.days[tk]||[]))if(e.kind==='class'||e.kind==='study'||e.kind==='paper')m+=Math.max(0,Math.min(t,e.e)-e.s);return Math.round(m*25/30)};
+  const usePlan=dayNo()<=7||!days.length;
+  return{days:usePlan?['plan']:days,at:usePlan?planAt:at,plan:usePlan,foe:usePlan?'the plan':'your shadow',Foe:usePlan?'Plan':'Shadow',you:cumAt(tk,nowMin()),youTot:((FO.log||{})[tk]||{}).min||0,right:right(tk),shRight:avg(right),fixed:fixedToday,shFixed:avg(d=>SYS.mbFix[d]||0)}}
 function snapMB(){const tk=todayK(),sum=MB.reduce((a,m)=>a+(m.st||0)+(m.ok?1:0),0);if(SYS.mbSnap[tk]==null){SYS.mbSnap[tk]=sum;saveSys()}const f=sum-SYS.mbSnap[tk];if(SYS.mbFix[tk]!==f){SYS.mbFix[tk]=f;saveSys()}}
 
 /* ---------- the plan as a graph: real dependencies from the scheduler ---------- */
@@ -188,12 +194,12 @@ function rankHtml(T,lv,rank){const [nl,nr]=nextRank(lv.L),S=shadow(),seg=14,f=Ma
   else{const g=S.you-S.at(nowMin()),W=260,x=t=>((t-360)/(1380-360)*W).toFixed(1),mx=Math.max(60,S.at(1380),S.you)*1.1,y=v=>(38-(v/mx)*36).toFixed(1);
     const pts=t0=>{const o=[];for(let t=360;t<=t0;t+=30)o.push(t);o.push(t0);return o};
     const yl=pts(Math.min(nowMin(),1380)).map((t,i)=>(i?'L':'M')+x(t)+' '+y(cumAt(todayK(),t))).join(' '),sl=pts(1380).map((t,i)=>(i?'L':'M')+x(t)+' '+y(S.at(t))).join(' ');
-    race=`<div class="sx-g"><b class="num">${g>=0?'+':'−'}${fmH(Math.abs(g))}</b><span>${g>=0?'ahead of':'behind'} your shadow</span></div>
+    race=`<div class="sx-g"><b class="num">${g>=0?'+':'−'}${fmH(Math.abs(g))}</b><span>${g>=0?'ahead of':'behind'} ${S.foe}</span></div>
       <svg viewBox="0 0 ${W} 40" preserveAspectRatio="none"><path class="sl" d="${sl}"/><path class="yl" d="${yl}"/></svg>
-      <div class="sx-who"><span>You <b>${fmH(S.you)} h</b></span><span>Shadow <b>${fmH(S.at(nowMin()))} h</b></span></div>`}
+      <div class="sx-who"><span>You <b>${fmH(S.you)} h</b></span><span>${S.Foe} <b>${fmH(S.at(nowMin()))} h</b></span></div>`}
   return `<div class="sx-lvl"><b id="sxLvN">${lv.L}</b><div><span>${rank}</span><small>Level ${lv.L} · next rank ${nr} at level ${nl}</small></div></div>
     <div class="sx-segs" id="sxXp">${segHtml(seg,f)}</div><div class="sx-xpr"><span><b>${lv.into}</b> / ${lv.need} XP</span><em>+${T.today} today</em></div>
-    <div class="sx-sr"><div class="sx-t"><span>Shadow race</span><small>finished Focus sessions only</small></div>${race}
+    <div class="sx-sr"><div class="sx-t"><span>${S.plan?'Race vs the plan':'Shadow race'}</span><small>${S.plan?'days 1 to 7 · finished Focus sessions':'finished Focus sessions only'}</small></div>${race}
       <div class="sx-sec"><span>Right answers <b>${S.right}</b>${S.shRight!=null?' vs '+S.shRight:''}</span><span>Mistakes fixed <b>${S.fixed}</b>${S.shFixed!=null?' vs '+S.shFixed:''}</span></div></div>`}
 function misHtml(){const M=missions(),tk=todayK(),m=nowMin(),b=mib(tk);if(!M.length)return `<div class="sx-ph"><div><h3>Today's missions</h3><p>The exam is done. Nothing left to prove here.</p></div></div>`;
   const xp=x=>x.mib?XP.mib:x.t==='Practice'?30:x.t==='Body'?XP.workout:XP.sleep;
@@ -454,8 +460,8 @@ function raceSvg(S,tk){const t0=360,t1=1380,X=t=>((t-t0)/(t1-t0)*260).toFixed(1)
 function focRace(){const el=q1('#sxfRace');if(!el)return;const tk=todayK(),S=shadow(),m=nowMin(),sh=S.days.length?S.at(m):null,you=S.you;
   if(sh==null){el.innerHTML=`<div class="sx2-cap">Today vs your shadow · finished sessions only</div><div class="sxf-big num">${fmH(you)}</div><div class="sx2-cap">focused today</div>${you?raceSvg(S,tk):""}<p class="sxf-note">Your shadow forms from your best 3 of the last 7 days. Finish sessions today and tomorrow you race them.</p>`;return}
   const df=you-sh,f=FMODES[fMode].f;
-  el.innerHTML=`<div class="sx2-cap">Today vs your shadow · finished sessions only</div><div class="sxf-big num">${df>=0?'+':'−'}${fmH(Math.abs(df))}</div><div class="sx2-cap">${df>0?'ahead':df<0?'behind':'level'}</div>${raceSvg(S,tk)}
-    <div class="sx2-row"><span>You</span><b class="num">${fmH(you)} h</b></div><div class="sx2-row"><span>Shadow at ${hm(m)}</span><b class="num">${fmH(sh)} h</b></div>
+  el.innerHTML=`<div class="sx2-cap">Today vs ${S.foe}${S.plan?' (days 1 to 7)':''} · finished sessions only</div><div class="sxf-big num">${df>=0?'+':'−'}${fmH(Math.abs(df))}</div><div class="sx2-cap">${df>0?'ahead of '+S.foe:df<0?'behind '+S.foe:'even with '+S.foe}</div>${raceSvg(S,tk)}
+    <div class="sx2-row"><span>You</span><b class="num">${fmH(you)} h</b></div><div class="sx2-row"><span>${S.Foe} at ${hm(m)}</span><b class="num">${fmH(sh)} h</b></div>
     ${fRun&&fPhase==='focus'?`<p class="sxf-note">Finish this session and you are <b class="num">${df+f>=0?'+':'−'}${fmH(Math.abs(df+f))}</b>.</p>`:''}`}
 function recallItem(){try{const due=mbDueNow();const L=due.length?due:MB.filter(m=>!m.ok);if(!L.length)return null;return L[Math.floor(Date.now()/36e5)%L.length]}catch(e){return null}}
 function focSide(){const el=q1('#sxfSide');if(!el)return;const tk=todayK(),m=nowMin();

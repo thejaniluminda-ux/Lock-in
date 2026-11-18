@@ -948,7 +948,7 @@ body.cal-fs .cmain{height:100%}
 .ds-f{padding:12px 18px;border-top:1px solid var(--edge)}
 /* finish-early prompt */
 #fin{position:fixed;left:50%;bottom:26px;z-index:62;display:flex;gap:12px;align-items:center;padding:10px 12px 10px 18px;border-radius:999px;background:rgba(36,34,32,.96);border:1px solid rgba(185,168,255,.35);box-shadow:0 18px 50px rgba(0,0,0,.55);font-size:13px;transform:translate(-50%,140%);opacity:0;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s ease;pointer-events:none}
-#v13chk{position:fixed;inset:0;z-index:95;display:grid;place-items:center;background:rgba(0,0,0,.55);padding:16px}
+#v13chk,#lightQ{position:fixed;inset:0;z-index:95;display:grid;place-items:center;background:rgba(0,0,0,.55);padding:16px}
 .v13c{width:min(760px,100%);max-height:calc(100vh - 32px);display:flex;flex-direction:column;gap:10px;padding:20px 22px;border-radius:20px;background:#1e1d1b;border:1px solid var(--edge);box-shadow:0 30px 80px rgba(0,0,0,.6);color:var(--ink)}
 .v13c h2{margin:0;font-size:20px;font-weight:500}.v13c p{margin:0;color:var(--ink-2);font-size:14px}
 .v13t{overflow:auto;min-height:0;border-radius:12px;border:1px solid var(--edge)}.v13t table{width:100%;border-collapse:collapse;font-size:13px}
@@ -1254,6 +1254,20 @@ body.wo-enter #woPage .wcol>.card,body.wo-enter #woNudge{animation:woRise .55s c
 @media (max-width:1150px){#woPage .wgrid{grid-template-columns:1fr 1fr}#woPage .c-today{grid-column:1/3;grid-row:auto}#woPage .c-map{grid-column:1;grid-row:auto}#woPage .c-week,#woPage .c-protein{grid-column:2;grid-row:auto}#woPage .c-body,#woPage .c-photo,#woPage .c-chal{grid-column:auto}}
 @media (max-width:760px){#woPage .wgrid{grid-template-columns:1fr}#woPage .wgrid>*{grid-column:1!important;grid-row:auto!important}#ex .ex-body{grid-template-columns:1fr;overflow:auto}#ex .ex-top,#ex .ex-prog,#ex .ex-body{padding-left:18px;padding-right:18px}#woPage .stats3,#woPage .tape{grid-template-columns:1fr 1fr}}
 
+/* active watching dialog (works in both modes) */
+#awQ{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;padding:24px;background:rgba(8,8,8,.62);backdrop-filter:blur(6px)}
+#awQ .aw-c{width:min(720px,100%);border-radius:22px;padding:26px 28px 24px;background:#1c1b1a;box-shadow:inset 0 1px rgba(255,255,255,.06),0 0 0 1px rgba(255,255,255,.09),0 30px 60px -20px rgba(0,0,0,.7);color:#eeeae4}
+#awQ .aw-top{display:flex;align-items:center;gap:18px}#awQ .aw-ring{position:relative;flex:none;width:92px;height:92px}#awQ .aw-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+#awQ circle{fill:none;stroke-width:5}#awQ .bg{stroke:rgba(255,255,255,.08)}#awQ .fg{stroke:var(--aw-acc,#b9a8ff);stroke-linecap:round;stroke-dasharray:264;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear}
+#awQ .aw-ring b{position:absolute;inset:0;display:grid;place-items:center;font-weight:300;font-size:26px;font-variant-numeric:tabular-nums}
+#awQ .aw-k{font-weight:600;font-size:11.5px;letter-spacing:.16em;color:var(--aw-acc,#b9a8ff)}#awQ h2{margin:4px 0 2px;font-weight:600;font-size:22px;line-height:1.3}
+#awQ .aw-u{font-size:15px;color:#b4ada4}#awQ .aw-d{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:1px;background:#7f7972}#awQ .aw-d.phy{background:#5aa9ff}#awQ .aw-d.chem{background:#5fe08a}#awQ .aw-d.maths{background:#ff9f43}
+#awQ .aw-pts{margin:20px 0 6px;display:grid;gap:10px}#awQ .aw-pt{display:grid;grid-template-columns:30px 1fr;align-items:center;gap:10px}#awQ .aw-pt span{font-size:13px;color:#7f7972;text-align:right}
+#awQ .aw-pt input{width:100%;box-sizing:border-box;font:inherit;font-size:15px;color:#eeeae4;background:#121110;border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:11px 14px}#awQ .aw-pt input:focus{outline:none;border-color:var(--aw-acc,#b9a8ff)}
+#awQ .aw-h{margin:6px 0 0 40px;font-size:12.5px;color:#7f7972}#awQ .aw-b{display:flex;align-items:center;gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.07)}
+#awQ .aw-x{flex:1;font-size:13px;color:#b4ada4}#awQ .aw-x b{color:#eeeae4;font-weight:500}#awQ .aw-seg{display:flex;gap:3px;margin-top:6px}#awQ .aw-seg i{width:22px;height:5px;border-radius:3px;background:rgba(255,255,255,.1)}#awQ .aw-seg i.f{background:#b4ada4}#awQ .aw-seg i.n{background:var(--aw-acc,#b9a8ff)}
+html.shadow #awQ{--aw-acc:#7dffa8}html.shadow #awQ .aw-c{background:#121413;color:#eceeec;font-family:var(--font,inherit)}html.shadow #awQ .aw-d.chem{background:#0d9488}
+.aw-l{margin-top:14px}.aw-l h4{margin:0 0 8px;font-weight:500}.aw-l h4 small{color:#7f7972;font-weight:400;margin-left:6px}.aw-r{display:grid;grid-template-columns:90px 1fr;gap:10px;padding:6px 0;border-top:1px solid rgba(255,255,255,.06);font-size:13px}.aw-r b{font-weight:500;color:#b4ada4}.aw-r ol{margin:0;padding-left:18px}
 </style>
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#1a1918">
 <link rel="stylesheet" href="system.css"><script>try{if(localStorage.getItem("lockin-mode-v1")==="\"shadow\"")document.documentElement.classList.add("shadow")}catch(e){}</script></head>
@@ -1756,7 +1770,7 @@ $('#fsBtn').addEventListener('click',async()=>{
 const dkey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const addDays=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
 /* ================= Lock In data + scheduler ================= */
-const START=new Date(2026,10,18)/* the real run starts Wed 18 Nov 2026 (his call, 17 Nov): day 1. 11-17 Nov are not counted as missed */,EXAM=new Date(2027,7,3),CLASSES_BY=new Date(2027,4,31),JULY=new Date(2027,6,1);
+const START=new Date(2026,10,19)/* the real run starts Thu 19 Nov 2026 (his call, 18 Nov): day 1. 11-18 Nov are not counted as missed */,EXAM=new Date(2027,7,3),CLASSES_BY=new Date(2027,4,31),JULY=new Date(2027,6,1);
 const REC={mech:'https://t.me/Sci_Link/1007',therm:'https://t.me/Sci_Link/876',cur:'https://t.me/Sci_Link/1094',wave:'https://t.me/Sci_Link/1184',light:'https://t.me/Sci_Link/1214',mag:'https://t.me/Sci_Link/1207',elec:'https://t.me/Sci_Link/1255',matter:'https://t.me/Sci_Link/1354',estat:'https://t.me/Sci_Link/1448',mprop:'https://t.me/Sci_Link/1524',grav:'https://t.me/Sci_Link/1645',
   calc:'https://t.me/Sci_Link/855',redox:'https://www.youtube.com/live/Swwr_vNYU5s',bond:'https://t.me/Sci_Link/884',sblock:'https://youtu.be/G23RPKI--MY',pblock:'https://t.me/Sci_Link/865',dblock:'https://t.me/Sci_Link/865',period:'https://t.me/Sci_Link/858',kin:'https://t.me/Sci_Link/937',ener:'https://t.me/Sci_Link/1040',gas:'https://t.me/Sci_Link/1113',org:'https://t.me/Sci_Link/2194',isom:'https://youtu.be/upeffNyWyPA',guna:'https://youtube.com/live/Ibfn2DWZHog',equil:'https://t.me/Sci_Link/1331',echem:'https://t.me/Sci_Link/1498',ind:'https://t.me/Sci_Link/1227',
   mSep:'https://t.me/Vikumlk/213',mOct:'https://t.me/Vikumlk/214',mNov:'https://t.me/Vikumlk/234',mPure26:'https://t.me/Vikumlk/117',mApp26:'https://t.me/Vikumlk/119'};
@@ -3057,7 +3071,29 @@ function v13Report(KEY,VER){KEY=KEY||'lockin-v13-check';VER=VER||13;let R;try{R=
   CS=fresh;saveCS();
 })();
 
-setTimeout(()=>{try{v13Report();v13Report('lockin-v14-check',14)}catch(e){}},3500);/* shown once, after the intro */
+setTimeout(()=>{try{v13Report();v13Report('lockin-v14-check',14)}catch(e){}},3500);
+/* ---------- A3 coaching rules (his, 18 Nov 2026) ----------
+   1. Completion under 70% for 3 days in a row: say so plainly and offer ONE lighter day (tomorrow's evening practice becomes
+      free time; classes, papers, consolidation and recall stay). Not a reset. Offered at most once a week. lockin-light-v1.
+   2. 50/10: suggested only after 7 days with Focus data where 90%+ of started sessions were finished. lockin-fstart-v1. */
+function dayDone(k){const L=(CS.days[k]||[]).filter(e=>e.kind==='class'||e.kind==='study'||e.kind==='paper');if(!L.length||L.some(e=>e.free))return null;const m=L.reduce((a,e)=>a+e.e-e.s,0),d=L.filter(e=>e.done).reduce((a,e)=>a+e.e-e.s,0);return m?d/m:null}
+function lightCheck(){const LT=lsGet('lockin-light-v1',{used:[],asked:''}),t0=new Date(today0),tk=dkey(t0);
+  if(LT.asked&&(t0-new Date(LT.asked+'T00:00'))/864e5<7)return;
+  const ks=[1,2,3].map(i=>dkey(addDays(t0,-i)));if(ks.some(k=>k<dkey(START)))return;
+  const r=ks.map(dayDone);if(r.some(x=>x==null||x>=.7))return;
+  const tm=dkey(addDays(t0,1)),cut=(CS.days[tm]||[]).filter(e=>e.kind==='study'&&!e.cons&&!e.recall&&!e.keep&&e.s>=1140&&!e.done);
+  const d=document.createElement('div');d.id='lightQ';d.setAttribute('role','dialog');d.setAttribute('aria-label','Lighter day');
+  d.innerHTML=`<div class="v13c"><h2>Three days under 70%</h2><p>Completion: ${ks.slice().reverse().map((k,i)=>`${esc(fmtD(k))} <b>${Math.round(r[2-i]*100)}%</b>`).join(', ')}. The plan is not working at this load right now. Take one lighter day tomorrow: ${cut.length?`${cut.length} evening practice block${cut.length>1?'s':''} (${Math.round(cut.reduce((a,e)=>a+e.e-e.s,0)/60*10)/10} h) become free time.`:'nothing extra to drop tomorrow, so only rest early.'} Classes, consolidation and recall stay. This is not a reset.</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end"><button class="pbtn" id="lightNo">Keep the full plan</button><button class="pbtn pri" id="lightYes">Make tomorrow lighter</button></div></div>`;
+  document.body.appendChild(d);LT.asked=tk;lsSet('lockin-light-v1',LT);
+  d.querySelector('#lightNo').addEventListener('click',()=>d.remove());
+  d.querySelector('#lightYes').addEventListener('click',()=>{for(const e of cut){e.title='Free time (lighter day)';e.sub='One lighter day after three days under 70%. Rest properly.';e.kind='life';e.subj='life';e.tag='';delete e.refs}
+    LT.used.push(tm);lsSet('lockin-light-v1',LT);saveCS();try{renderRoutine();renderWeek()}catch(e){}d.remove();toast('Tomorrow is lighter. Back to the full plan the day after.')})}
+function fiftyCheck(){const S0=lsGet('lockin-fstart-v1',{}),ks=Object.keys(S0).filter(k=>k>=dkey(START)&&k<dkey(new Date(today0))).sort().slice(-7);if(ks.length<7||fMode!=='pomo')return;
+  const st=ks.reduce((a,k)=>a+S0[k],0),dn=ks.reduce((a,k)=>a+((FO.log[k]||{}).n||0),0);if(!st||dn/st<.9)return;
+  const seen=lsGet('lockin-5010-seen','');if(seen&&(new Date(today0)-new Date(seen+'T00:00'))/864e5<7)return;lsSet('lockin-5010-seen',dkey(new Date(today0)));
+  toast(`Last 7 days: ${Math.round(dn/st*100)}% of your Focus sessions finished (${dn} of ${st}). You can move to 50/10 now (Focus page, top).`)}
+setTimeout(()=>{try{lightCheck()}catch(e){}try{fiftyCheck()}catch(e){}},5200);/* shown once, after the intro */
 /* ---------- Past-paper question bank (qbank.js): which Paper I questions test each unit ---------- */
 function qbFor(u){const Q=window.QBANK||{},out=[];for(const sj of ['chem','phy','maths'])for(const y of Object.keys(Q[sj]||{}).sort().reverse()){const qs=Object.entries(Q[sj][y]).filter(([,k])=>k===u).map(([n])=>+n).sort((a,b)=>a-b);if(qs.length)out.push({sj,y,qs})}return out}
 function qbLink(sj,y){const P=(((typeof LIB!=='undefined'&&LIB[sj])||{})[y]||{}).p||[];const f=P.find(x=>/Paper I\b|MCQ|Full/.test(x[0]))||P[0];return f?(/^https?:/.test(f[1])?f[1]:'https://drive.google.com/file/d/'+f[1]+'/view'):''}
@@ -3352,11 +3388,12 @@ function fDone(){
   clearInterval(fI);fRun=false;chime();
   if(fPhase==='focus'){const k=dkey(new Date()),t=FO.log[k]||(FO.log[k]={min:0,n:0});t.min+=FMODES[fMode].f;t.n++;FO.sessions++;saveFO();spLog();
     toast(`Session ${t.n} done. Take your break.`);if(typeof hop==='function'){hop();say(['Nice work! Stretch a bit.','That’s one more! 💪','Break time. Drink water.'][t.n%3],3200)}
-    fSet('break');fEnd=Date.now()+fLeft*1000;fRun=true;fI=setInterval(fTick,250);fShow();
+    fSet('break');const goBreak=()=>{fEnd=Date.now()+fLeft*1000;fRun=true;clearInterval(fI);fI=setInterval(fTick,250);fShow()};let aw=false;try{aw=awOpen(t.n,goBreak)}catch(e){}if(!aw)goBreak();
   }else{toast('Break over. Ready when you are.');fSet('focus');if(typeof say==='function')say('Back to it?',2500)}
 }
 $('#fGo').addEventListener('click',()=>{
   if(fRun){clearInterval(fI);fRun=false;fLeft=Math.max(0,(fEnd-Date.now())/1000);fShow();return}
+  if(fPhase==='focus'&&fLeft>=fTotal-1){const S0=lsGet('lockin-fstart-v1',{}),k0=dkey(new Date());S0[k0]=(S0[k0]||0)+1;lsSet('lockin-fstart-v1',S0)}
   fEnd=Date.now()+fLeft*1000;fRun=true;clearInterval(fI);fI=setInterval(fTick,250);fShow();
   if(fPhase==='focus'&&typeof say==='function')say('I’ll keep watch. 👀',2400);
 });
@@ -3433,7 +3470,33 @@ $('#cfForm').addEventListener('submit',e=>{e.preventDefault();
 $('#cfN').addEventListener('click',e=>{if(!e.target.closest('#cfGo'))return;const u=cfPick??cfAuto();lbS=cfSubjOf(u)||'phy';lbOpen=lbS==='maths'?null:u;go('Library')});
 /* Library: the question list for one unit */
 function cfOpen(u){return CF.filter(x=>x.u===u&&!x.ok).length}
-function cfList(u){const L=CF.filter(x=>x.u===u).sort((a,b)=>(a.ok-b.ok)||(a.d<b.d?1:-1));if(!L.length)return '';
+/* ---------- Active watching (built 18 Nov 2026 from his approved mock, active-watch-demo.html) ----------
+   After each finished Focus session inside a recording block: write 3 points from memory (no notes, no rewinding), before the
+   break starts. Saved in lockin-aw-v1 as {date:[{t,unit,title,pts:[...]}]} and listed on the unit's Library card.
+   In Shadow mode, up to 4 full sets a day earn 15 XP each (system.js ledger). */
+const AWKEY='lockin-aw-v1';
+function awBlock(){const n=new Date(),m=n.getHours()*60+n.getMinutes();return (CS.days[dkey(n)]||[]).find(e=>e.kind==='class'&&!e.fixed&&m>=e.s&&m<=e.e+5)}
+function awOpen(n,done){const b=awBlock();if(!b||document.getElementById('awQ'))return false;
+  const A=lsGet(AWKEY,{}),k=dkey(new Date()),today=(A[k]||[]).filter(x=>x.pts.filter(p=>p.trim()).length>=3).length,sh=document.documentElement.classList.contains('shadow');
+  const d=document.createElement('div');d.id='awQ';d.setAttribute('role','dialog');d.setAttribute('aria-label','Write 3 points from memory');
+  const sj={phy:'Physics',chem:'Chemistry',maths:'Maths'}[b.subj]||'';
+  d.innerHTML=`<div class="aw-c"><div class="aw-top"><div class="aw-ring"><svg viewBox="0 0 92 92" aria-hidden="true"><circle class="bg" cx="46" cy="46" r="42"/><circle class="fg" cx="46" cy="46" r="42"/></svg><b id="awT">1:00</b></div>
+    <div><div class="aw-k">SESSION ${n} DONE · RECORDING</div><h2>Write 3 points from memory</h2><div class="aw-u"><i class="aw-d ${esc(b.subj)}"></i><span class="si">${esc(b.title)}</span> · ${sj}</div></div></div>
+    <div class="aw-pts">${[1,2,3].map(i=>`<label class="aw-pt"><span>${i}</span><input maxlength="200" ${i===1?'autofocus':''} placeholder="${i===3?'One more thing you just heard':'Something you just learned'}" aria-label="Point ${i}"></label>`).join('')}</div>
+    <p class="aw-h">No notes, no rewinding. What you can't recall is what to re-watch first.</p>
+    <div class="aw-b"><div class="aw-x">${sh?`Verified recall <b>+15 XP</b> · today <b>${Math.min(4,today)} of 4</b>`:`Saved today <b>${Math.min(4,today)} of 4</b>`}<div class="aw-seg">${[0,1,2,3].map(i=>`<i class="${i<today?'f':i===today?'n':''}"></i>`).join('')}</div></div>
+      <button class="pbtn" id="awSkip">Skip${sh?', no XP':''}</button><button class="pbtn pri" id="awSave">Save points</button></div></div>`;
+  document.body.appendChild(d);const ins=[...d.querySelectorAll('input')];setTimeout(()=>ins[0].focus(),50);
+  let left=60;const tm=setInterval(()=>{left=Math.max(0,left-1);const el=d.querySelector('#awT');if(el)el.textContent=`${Math.floor(left/60)}:${String(left%60).padStart(2,'0')}`;const fg=d.querySelector('.fg');if(fg)fg.style.strokeDashoffset=264*(1-left/60)},1000);
+  const close=save=>{clearInterval(tm);if(save){const pts=ins.map(i=>i.value.trim());if(pts.some(Boolean)){const A2=lsGet(AWKEY,{});(A2[k]||(A2[k]=[])).push({t:Date.now(),unit:b.unit||'',iid:b.iid||'',title:b.title,pts});lsSet(AWKEY,A2);
+      toast(pts.filter(Boolean).length>=3?'3 points saved to the unit card.':'Saved. Three points count as verified recall.')}}d.remove();try{done&&done()}catch(e){}};
+  ins.forEach((i,j)=>i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(j<2)ins[j+1].focus();else close(true)}}));
+  d.querySelector('#awSave').addEventListener('click',()=>close(true));d.querySelector('#awSkip').addEventListener('click',()=>close(false));
+  d.addEventListener('keydown',e=>{if(e.key==='Escape')close(false)});return true}
+function awList(u){const A=lsGet(AWKEY,{}),L=[];for(const d of Object.keys(A).sort().reverse())for(const x of A[d])if(x.unit===u)L.push(Object.assign({d},x));if(!L.length)return '';
+  return `<div class="aw-l"><h4>Recalled from memory <small>${L.length} session${L.length>1?'s':''}</small></h4>${L.slice(0,8).map(x=>`<div class="aw-r"><b>${esc(fmtD(x.d))}</b><ol>${x.pts.filter(Boolean).map(p=>`<li>${esc(p)}</li>`).join('')}</ol></div>`).join('')}</div>`}
+function cfList(u){return cfList0(u)+awList(u)}
+function cfList0(u){const L=CF.filter(x=>x.u===u).sort((a,b)=>(a.ok-b.ok)||(a.d<b.d?1:-1));if(!L.length)return '';
   return `<div class="lb-cf"><h4>Confused about</h4><ul>${L.map(x=>`<li class="${x.ok?'ok':''}"><input type="checkbox" data-cf="${x.id}" ${x.ok?'checked':''} aria-label="Answered"><span class="q">${esc(x.q)}</span><span class="qd">${fmtD(x.d)}</span><button class="x" data-cfx="${x.id}" aria-label="Delete question" title="Delete">×</button></li>`).join('')}</ul></div>`}
 $('#lbList').addEventListener('change',e=>{const c=e.target.closest('[data-cf]');if(!c)return;const x=CF.find(y=>y.id===c.dataset.cf);if(!x)return;
   x.ok=c.checked;x.okAt=c.checked?dkey(new Date()):undefined;saveCF();renderLibrary();if(c.checked)toast('Nice, one less thing to be confused about.')});
@@ -3806,7 +3869,7 @@ const renderWorkout=(()=>{
 'use strict';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const KEY='lockin-workout-v1',PKEY='lockin-wo-photos-v1';
-const WSTART=new Date(2026,10,11),MAINT=new Date(2027,6,1);
+const WSTART=new Date(2026,10,16)/* training week 1 = the week of day 1 (19 Nov), so neck isometrics run weeks 1-2 */,MAINT=new Date(2027,6,1);
 const pad=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
@@ -3892,7 +3955,9 @@ function plan(type,d){
   const p=P[type];const wn=weekNo(addD(d,-((d.getDay()+6)%7)));if(p&&type!=='maint'&&wn>0&&wn%6===0){const h=a=>a.map(([e,n])=>[e,Math.max(1,Math.ceil(n/2))]);return Object.assign({},p,{n:p.n+' · deload',main:h(p.main),acc:h(p.acc)})}
   return p;
 }
-const TYPE_BY_DAY=[null,'upperA','light','lowerA','upperB','lowerB','condlite'];const TYPES=['upperA','light','lowerA','upperB','lowerB','condlite'];
+/* 18 Nov 2026, his call: back to his own split (CLAUDE.md section 8): Mon/Thu upper body, Tue/Fri legs and core, Wed/Sat conditioning,
+   Sunday rest. "Light pump" came from the Workout v2 arena plan (16 Nov); its types stay in plan() so old logs still show. */
+const TYPE_BY_DAY=[null,'upper','legs','cond','upper','legs','cond'];const TYPES=['upper','legs','cond'];
 const TNAME={upperA:'Upper A',light:'Light pump',lowerA:'Lower A',upperB:'Upper B',lowerB:'Lower B',condlite:'Conditioning lite',maint:'Maintenance',upper:'Upper body',legs:'Legs and core',cond:'Conditioning'};
 /* July and August: three short sessions a week (Mon, Wed, Fri) */
 const typeOn=d=>d>=MAINT?([1,3,5].includes(d.getDay())?'maint':null):TYPE_BY_DAY[d.getDay()];
