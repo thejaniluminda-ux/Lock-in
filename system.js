@@ -27,6 +27,10 @@ const study=e=>e&&e.kind!=='life'&&e.kind!=='review';
 /* most important block: a paper beats a class beats a unit study block; then the longest; then the earliest */
 function mib(day){const w=e=>e.kind==='paper'?3:e.kind==='class'?2:e.unit?1:0;
   return (CS.days[day]||[]).filter(e=>study(e)&&w(e)>0).sort((a,b)=>(w(b)-w(a))||((b.e-b.s)-(a.e-a.s))||a.s-b.s)[0]||null}
+const SX_EMO=/(?:[\u{1F300}-\u{1FAFF}\u{1F000}-\u{1F2FF}\u{2600}-\u{26FF}\u{2705}\u{2728}\u{274C}\u{274E}\u{2753}-\u{2757}\u{2764}\u{2795}-\u{2797}\u{27B0}\u{27BF}\u{2B50}\u{2B55}\u{231A}\u{231B}\u{23E9}-\u{23FA}]️?|‍|️)+/gu;
+function sxDeEmoji(root){if(!document.documentElement.classList.contains('shadow'))return;const w=document.createTreeWalker(root||document.body,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(n.parentElement&&n.parentElement.closest('input,textarea,script,style'))continue;const v=n.nodeValue;if(SX_EMO.test(v)){SX_EMO.lastIndex=0;n.nodeValue=v.replace(SX_EMO,'').replace(/^\s+(?=\S)/,m=>m.includes('\n')?m:'')}SX_EMO.lastIndex=0}}
+try{new MutationObserver(ms=>{if(!document.documentElement.classList.contains('shadow'))return;for(const m of ms){if(m.type==='characterData')sxDeEmoji(m.target.parentNode||document.body);else m.addedNodes.forEach(a=>{if(a.nodeType===1)sxDeEmoji(a);else if(a.nodeType===3&&a.parentNode)sxDeEmoji(a.parentNode)})}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+  new MutationObserver(()=>sxDeEmoji(document.body)).observe(document.documentElement,{attributes:true,attributeFilter:['class']});setTimeout(()=>sxDeEmoji(document.body),0)}catch(e){}
 function ledger(){const ev=[],put=(cat,d,x,why)=>{if(x>0&&d&&d>=st)ev.push({cat,d,x,why})}/* nothing before day 1 earns XP (his rule, 18 Nov) */,tk=todayK(),st=dk(START);
   for(const d in CS.days){if(d>tk||d<st)continue;let m=0;
     for(const e of CS.days[d])if(e.done&&study(e)){const take=Math.min(e.e-e.s,XP.dayCapMin-m);if(take>0){m+=take;put('blocks',d,take*XP.blockPerMin)}}
@@ -198,18 +202,18 @@ function rankHtml(T,lv,rank){const [nl,nr]=nextRank(lv.L),S=shadow(),seg=14,f=Ma
       <svg viewBox="0 0 ${W} 40" preserveAspectRatio="none"><path class="sl" d="${sl}"/><path class="yl" d="${yl}"/></svg>
       <div class="sx-who"><span>You <b>${fmH(S.you)} h</b></span><span>${S.Foe} <b>${fmH(S.at(nowMin()))} h</b></span></div>`}
   return `<div class="sx-lvl"><b id="sxLvN">${lv.L}</b><div><span>${rank}</span><small>Level ${lv.L} · next rank ${nr} at level ${nl}</small></div></div>
-    <div class="sx-segs" id="sxXp">${segHtml(seg,f)}</div><div class="sx-xpr"><span><b>${lv.into}</b> / ${lv.need} XP</span><em>+${T.today} today</em></div>
+    <div class="sx-segs" id="sxXp">${segHtml(seg,f)}</div><div class="sx-xpr"><span><b>${lv.into}</b> / ${lv.need} XP</span><em>+${T.today} XP today</em></div>
     <div class="sx-sr"><div class="sx-t"><span>${S.plan?'Race vs the plan':'Shadow race'}</span><small>${S.plan?'days 1-7 · Focus only':'finished Focus sessions only'}</small></div>${race}
       <div class="sx-sec"><span>Right answers <b>${S.right}</b>${S.shRight!=null?' vs '+S.shRight:''}</span><span>Mistakes fixed <b>${S.fixed}</b>${S.shFixed!=null?' vs '+S.shFixed:''}</span></div></div>`}
 function misHtml(){const M=missions(),tk=todayK(),m=nowMin(),b=mib(tk);if(!M.length)return `<div class="sx-ph"><div><h3>Today's missions</h3><p>The exam is done. Nothing left to prove here.</p></div></div>`;
   const xp=x=>x.mib?XP.mib:x.t==='Practice'?30:x.t==='Body'?XP.workout:XP.sleep;
   return `<div class="sx-ph"><div><h3>Today's missions</h3><p>${M.length} missions · +${M.reduce((a,x)=>a+xp(x),0)} XP available</p></div></div>`+M.map((x,i)=>{let n=8,f=0,a='0',bb='1',r='';
-    if(x.mib&&b){n=5;const tot=b.e-b.s,el=x.done?tot:Math.max(0,Math.min(tot,m-b.s));f=Math.floor(el/tot*n);a=fmH(el);bb=fmH(tot)+' h';r=x.done?'Done':m>=b.s&&m<b.e?'Now':hm(b.s)}
+    if(x.mib&&b){n=5;const tot=b.e-b.s,el=x.done?tot:Math.max(0,Math.min(tot,m-b.s));f=Math.floor(el/tot*n);a=fmH(el);bb=fmH(tot)+' h block';r=x.done?'Done':m>=b.s&&m<b.e?'Now':hm(b.s)}
     else if(x.prog){n=10;f=parseInt(x.prog);a=String(f);bb='10';r=x.done?'Done':`${10-f} to go`}
     else{f=x.done?n:0;a=x.done?'1':'0';r=x.done?'Done':x.s.match(/\d\d:\d\d/)?.[0]||''}
     const cur=x.mib&&b&&!x.done&&m>=b.s&&m<b.e;
     return `<div class="sx-m${x.done?' ok':i===0?' mib':''}"><div class="sx-mt"><span class="k">${x.t}</span><span class="x">+${xp(x)} XP</span></div><div class="tt${/[\u0D80-\u0DFF]/.test(x.s)?' si':''}">${esc2(x.s)}</div>
-      <div class="cnt"><span><b>${a}</b> of ${bb}</span><span>${cur?'<button class="sx-go" data-begin>Begin</button>':r}</span></div><div class="sx-segs sm">${segHtml(n,f)}</div></div>`}).join('')}
+      <div class="cnt"><span><b>${a}</b> of ${bb}</span><span>${cur?'<button class="sx-go" data-begin>Focus</button>':r}</span></div><div class="sx-segs sm">${segHtml(n,f)}</div></div>`}).join('')}
 function mastHtml(){let G=[];try{const last=mqLast();for(const sj of ['chem','phy'])for(const g of mqGroups(sj)){const m=mqMast(sj,g,last);G.push({k:g.k,n:m.n,m:m.m,gain:g.per*(1-m.m)})}}catch(e){}
   if(!G.length)return `<div class="sx-ph"><div><h3>Mastery</h3><p>Weights file not loaded yet</p></div></div>`;
   const tried=G.filter(g=>g.n>0).sort((a,b)=>a.m-b.m),weak=tried.slice(0,3);for(const g of G.filter(g=>!g.n).sort((a,b)=>b.gain-a.gain))if(weak.length<3)weak.push(g);
@@ -415,7 +419,7 @@ function barTick(){const n=now();document.querySelectorAll('[data-sxday]').forEa
 function focBuild(){const P=document.getElementById('focPage');if(!P||P.querySelector('#sxFoc'))return;const d=document.createElement('div');d.id='sxFoc';
   let tk='';for(let i=0;i<60;i++){const a=(i/60*360-90)*Math.PI/180,r1=188,r2=i%5?177:168;tk+=`<line class="t${i%5?'':' M'}" x1="${(200+r1*Math.cos(a)).toFixed(1)}" y1="${(200+r1*Math.sin(a)).toFixed(1)}" x2="${(200+r2*Math.cos(a)).toFixed(1)}" y2="${(200+r2*Math.sin(a)).toFixed(1)}"/>`}
   d.innerHTML=`<div class="sx2-col"><section class="sx2-pl sxf-blk"><div id="sxfBlk"></div>
-      <form class="sxf-cf" id="sxfCf" autocomplete="off"><div class="lbl">Stuck on something? One line, then keep going.</div><div class="in"><input id="sxfCfIn" maxlength="300" placeholder="Your question" aria-label="Question you can't answer yet"><button class="sx2-btn sm" type="submit">Save</button></div><select id="sxfCfU" aria-label="Unit this question belongs to"></select><div id="sxfCfL"></div></form></section></div>
+      <form class="sxf-cf" id="sxfCf" autocomplete="off"><div class="lbl">Stuck? Write one line and keep going.</div><div class="in"><input id="sxfCfIn" maxlength="300" placeholder="Your question" aria-label="Question you can't answer yet"><button class="sx2-btn sm" type="submit">Save</button></div><select id="sxfCfU" aria-label="Unit this question belongs to"></select><div id="sxfCfL"></div></form></section></div>
     <section class="sx2-pl sxf-dial" id="sxfDial"><div class="sxf-ban" id="sxfBan" role="status" hidden></div>
       <div class="sx2-seg" id="sxfModes" role="group" aria-label="Session length"><button type="button" data-m="pomo">25 / 5</button><button type="button" data-m="deep">50 / 10</button></div>
       <div class="sxf-face"><svg viewBox="0 0 400 400" id="sxfRing" aria-hidden="true">${tk}<circle cx="200" cy="200" r="152" fill="none" stroke="rgba(255,255,255,.05)"/></svg>
@@ -478,9 +482,9 @@ function sesInfo(){const tk=todayK(),{b,cur}=blockNow(),done=(FO.log[tk]||{n:0})
   if(b&&cur){const inB=(SYS.ses[tk]||[]).filter(x=>x[0]>b.s&&x[0]<=b.e).length,tot=Math.max(inB+1,Math.round((b.e-b.s)/per));return{n:inB+1,tot,done}}return{n:done+1,tot:0,done}}
 function focFull(){const D=q1('#sxFoc');if(!D)return;const brk=fPhase==='break',I=sesInfo(),full=!fRun&&fLeft>=fTotal-.5;
   D.classList.toggle('brk',brk);D.classList.toggle('run',fRun);
-  q1('#sxfSt').textContent=brk?`BREAK · ${FMODES[fMode].b} MIN`:full?'READY':!fRun?'PAUSED':`FOCUS · SESSION ${I.n}${I.tot?' OF '+I.tot:''}`;
+  q1('#sxfSt').textContent=brk?`BREAK · ${FMODES[fMode].b} MIN`:full?'READY':!fRun?'PAUSED':`FOCUS · SESSION ${I.done+1} TODAY`;
   const m=nowMin(),left=fRun?(fEnd-Date.now())/1000:fLeft;q1('#sxfSub').textContent=brk?(fRun?`Back at ${hm(m+Math.ceil(left/60))}`:'Break paused'):fRun?`Break at ${hm(m+Math.ceil(left/60))}`:full?`${FMODES[fMode].f} minutes · press Lock in`:'Paused · the shadow does not wait';
-  const fd=I.tot?I.n-1:I.done,nd=I.tot?Math.min(I.tot,12):Math.max(4,Math.ceil((I.done+1)/4)*4);q1('#sxfDots').innerHTML=Array.from({length:nd},(_,i)=>`<i class="${i<fd?'f':i===fd&&!brk&&fRun?'n':''}"></i>`).join('');q1('#sxfDots').title=I.tot?`Session ${I.n} of ${I.tot} in this block`:`${I.done} sessions today`;
+  const fd=I.done,nd=Math.min(12,Math.max(4,Math.ceil((I.done+1)/4)*4));q1('#sxfDots').innerHTML=Array.from({length:nd},(_,i)=>`<i class="${i<fd?'f':i===fd&&!brk&&fRun?'n':''}"></i>`).join('');q1('#sxfDots').title=I.tot?`Session ${I.n} of ${I.tot} in this block`:`${I.done} sessions today`;
   D.querySelectorAll('#sxfModes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===fMode));
   const sj=(typeof b2FSubj!=='undefined'&&b2FSubj)||(curBlock()||{}).subj;D.querySelectorAll('#sxfSj button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===sj));
   q1('#sxfGo').textContent=q1('#fGo').textContent;const qb=q1('#sxfQuit'),armed=Date.now()-P2.quitT<4000;
@@ -502,7 +506,7 @@ document.addEventListener('visibilitychange',()=>{if(typeof fRun==='undefined')r
 
 /* ================= CALENDAR ================= */
 const CAL_SJ=['phy','chem','maths'];
-function calPost(){if(!isShadow()||typeof curKeys==='undefined'||!curKeys.length)return;const tk=todayK(),m=nowMin(),X=focusNode();
+function calPost(){if(!isShadow()||typeof curKeys==='undefined'||!curKeys.length)return;const tk=todayK(),m=nowMin(),X=focusNode();document.querySelectorAll('#cBody .col').forEach(c=>{c.querySelector('.sx-pre')?.remove();if(c.dataset.k&&c.dataset.k<dk(START)){const p=document.createElement('div');p.className='sx-pre';p.textContent='Before Day 1';c.appendChild(p)}});
   document.querySelectorAll('#cBody .col').forEach(col=>{const k=col.dataset.k,L=CS.days[k]||[],by=new Map(L.map(e=>[String(e.id),e]));
     const evs=[...col.querySelectorAll('.ev')].map(el=>({el,e:by.get(el.dataset.id)})).filter(x=>x.e).sort((a,b)=>a.e.s-b.e.s);
     let run=[];const flush=()=>{if(run.length>1){const f=run[0],l=run[run.length-1];f.el.style.height=Math.max(12,(l.e.e-f.e.s)/60*HH-2)+'px';f.el.classList.add('sx-merge');
@@ -562,7 +566,7 @@ function libOpen(I,tk,X){const{u,bl,d,xs,xd,nx}=I,k=u.k,rec=REC[u.rec||k]||'',S=
   const row=(e,i,first)=>{const now=X&&X.date===e.date&&X.s===e.s&&X.title===e.title,miss=!e.done&&e.date<tk;
     return `<div class="sxl-d${e.done?' ok':''}${now?' now':''}${e===first?' nx':''}${miss?' miss':''}"><span class="n num">${p2(i+1)}</span><b class="si">${esc2(e.title)}</b><span class="d num">${e.done?fmtD(e.date):now?'Now · '+hm(e.s):e.date===tk?'Today · '+hm(e.s):miss?fmtD(e.date)+' · missed':e===first?'Next · '+fmtD(e.date):fmtD(e.date)}</span><span class="tk" aria-label="${e.done?'done':'not done'}">${e.done?'✓':''}</span></div>`};
   const first=bl.find(e=>!e.done&&e.date>=tk&&!(X&&X.date===e.date&&X.s===e.s)),fx=xs.find(e=>!e.done&&e.date>=tk);
-  let body='';if(t==='days')body=(bl.map((e,i)=>row(e,i,first)).join('')||'<p class="sx2-cap">No class days for this unit in the plan.</p>')+(xs.length?`<div class="sxl-xh">Extras · ${xd} of ${xs.length}</div>${xs.map((e,i)=>row(e,i,fx)).join('')}`:'');
+  let body='';if(t==='days')body=(typeof awList==='function'?awList(k):'')+(bl.map((e,i)=>row(e,i,first)).join('')||'<p class="sx2-cap">No class days for this unit in the plan.</p>')+(xs.length?`<div class="sxl-xh">Extras · ${xd} of ${xs.length}</div>${xs.map((e,i)=>row(e,i,fx)).join('')}`:'');
   else if(t==='sum'){smOpen[k]=true;body=sumHtml(k);(S.ch||[]).forEach((c,i)=>{if(c.ic)body=body.split(`>${c.ic} ${i+1}`).join(`>${i+1}`).split(`<h4>${c.ic} `).join(`<h4><span class="sxn num">${p2(i+1)}</span>`)});body=body.split('⚠').join(WARN)}else if(t==='story')body=storyHtml(k);else if(t==='fb')body=fbList(k)||'<p class="sx2-cap">No formulas listed for this unit yet.</p>';
   else if(t==='qb')body=qbList(k)||'<p class="sx2-cap">No tagged past questions for this unit yet.</p>';else body=cfList(k)||'<p class="sx2-cap">Nothing here. Questions you write in Focus land on this tab.</p>';
   const nd=unitNeeds(k).filter(x=>UNIT_BY[x]),ul=unitUnlocks(k).filter(x=>!isX(UNIT_BY[x]));
