@@ -460,3 +460,13 @@ html.shadow #woPage .c-week .wbr{height:64px}
 html.shadow #cBody .ev .tg{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html.shadow .sxl-qb{margin-top:16px}html.shadow .sxl-qb .qb{padding:12px 0 0;border-top:1px solid rgba(255,255,255,.07)}html.shadow .sxl-qb .qb h4{font-size:13px;font-weight:500;margin:0 0 6px}html.shadow .sxl-qb .qb-r b{font-family:var(--sx-mono);font-weight:400;color:var(--sx-i2)}html.shadow .sxl-qb .qb-r span{color:var(--sx-i2)}html.shadow .sxl-qb a{color:var(--sx-ink)}
 html.shadow #shx .sx-rest{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07)}html.shadow #shx .sx-rest h4{margin:0 0 6px;font:500 12.5px var(--font);color:var(--sx-i3)}html.shadow #shx .sx-rest>div{display:grid;grid-template-columns:42px 12px minmax(0,1fr);gap:6px;align-items:baseline;padding:6px 0;font-size:13.5px;color:var(--sx-i2);border-top:1px solid rgba(255,255,255,.05)}html.shadow #shx .sx-rest .num{font:400 12px var(--sx-mono);color:var(--sx-i3)}html.shadow #shx .sx-rest .si{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}html.shadow #shx .sx-rest .sx2-dot{align-self:center}
+/* Workout in Shadow mode: the shared top bar (Day, A/L, clock) like the other Shadow pages; the big glowing title goes */
+html.shadow body.page-wo main>.top{position:absolute;right:30px;top:12px;z-index:6;margin:0;padding:0;display:block!important;min-height:0}
+html.shadow body.page-wo main>.top>:not(.corner),html.shadow body.page-wo main>.top .corner>:not(.bwrap){display:none!important}
+html.shadow body.page-wo main{position:relative;padding-top:12px}
+html:not(.shadow) #woPage>.sx2-barw{display:none}
+html.shadow #woPage>.sx2-barw{grid-column:1/-1}
+html.shadow #woPage .pp-top .rp-h{display:none}html.shadow #woPage .pp-top{margin:0 0 10px}html.shadow #woPage #phaseLine{margin:0;color:var(--sx-i3)}
+html.shadow #woPage .c-week .wbr{height:44px}
+html.shadow #cBody .ev.sx-short .tg{display:none}
+html.shadow #woPage #tdName{text-shadow:none!important}

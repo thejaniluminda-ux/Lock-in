@@ -405,12 +405,12 @@ const q1=s=>document.querySelector(s);
 const P2={msel:{},tab:{},A:{n:0,sec:0},awayAt:0,prevPh:'',prevLeft:0,quitT:0,links:false,sig:''};
 const pageOf=()=>{const c=document.body.className;return /\bpage-foc\b/.test(c)?'foc':/\bpage-cal\b/.test(c)?'cal':/\bpage-lib\b/.test(c)?'lib':''};
 const goP=n=>{try{(typeof vgo==='function'?vgo:go)(n)}catch(e){}};
-const PGN={foc:'Focus',cal:'Calendar',lib:'Library'};
+const PGN={foc:'Focus',cal:'Calendar',lib:'Library',wo:'Workout'};
 const ssm=s=>{s=Math.max(0,Math.round(s));return `${Math.floor(s/60)}:${p2(s%60)}`};
 const dayW=k=>{const x=new Date(k+'T00:00');return k===todayK()?'Today':DOW3[x.getDay()]+(Math.abs((x-new Date(todayK()+'T00:00'))/864e5)>6?' '+x.getDate():'')};
 
 /* ---------- shared bar: crumb, page switcher, day / exam / clock ---------- */
-function bars(){for(const[id,pg]of[['focPage','foc'],['calPage','cal'],['libPage','lib']]){const P=document.getElementById(id);if(!P||P.querySelector(':scope>.sx2-barw'))continue;
+function bars(){for(const[id,pg]of[['focPage','foc'],['calPage','cal'],['libPage','lib'],['woPage','wo']]){const P=document.getElementById(id);if(!P||P.querySelector(':scope>.sx2-barw'))continue;
   const b=document.createElement('div');b.className='sx2-barw';b.innerHTML=`<div class="sx2-crumb">Shadow Protocol / <b>${PGN[pg]}</b></div><span class="sx2-sp"></span><div class="sx2-pill" data-sxday></div><div class="sx2-pill" data-sxexam></div><div class="sx2-pill"><b class="num" data-sxclk></b></div>`;P.prepend(b)}
   barTick()}
 function barTick(){const n=now();document.querySelectorAll('[data-sxday]').forEach(e=>e.innerHTML=dayNo()<1?`Day 1 starts tomorrow`:`Day <b class="num">${dayNo()}</b> / ${daysTotal()}`);
@@ -508,7 +508,7 @@ document.addEventListener('visibilitychange',()=>{if(typeof fRun==='undefined')r
 
 /* ================= CALENDAR ================= */
 const CAL_SJ=['phy','chem','maths'];
-function calPost(){if(!isShadow()||typeof curKeys==='undefined'||!curKeys.length)return;const tk=todayK(),m=nowMin(),X=focusNode();document.querySelectorAll('#cBody .col').forEach(c=>{c.querySelector('.sx-pre')?.remove();if(c.dataset.k&&c.dataset.k<dk(START)){const p=document.createElement('div');p.className='sx-pre';p.textContent='Before Day 1';c.appendChild(p)}});
+function calPost(){if(!isShadow()||typeof curKeys==='undefined'||!curKeys.length)return;const tk=todayK(),m=nowMin(),X=focusNode();document.querySelectorAll('#cBody .col').forEach(c=>{c.querySelector('.sx-pre')?.remove();if(c.dataset.k&&c.dataset.k<dk(START)){const p=document.createElement('div');p.className='sx-pre';p.textContent='Before Day 1';c.appendChild(p)}});document.querySelectorAll('#cBody .ev').forEach(e=>e.classList.toggle('sx-short',e.offsetHeight<56));
   document.querySelectorAll('#cBody .col').forEach(col=>{const k=col.dataset.k,L=CS.days[k]||[],by=new Map(L.map(e=>[String(e.id),e]));
     const evs=[...col.querySelectorAll('.ev')].map(el=>({el,e:by.get(el.dataset.id)})).filter(x=>x.e).sort((a,b)=>a.e.s-b.e.s);
     let run=[];const flush=()=>{if(run.length>1){const f=run[0],l=run[run.length-1];f.el.style.height=Math.max(12,(l.e.e-f.e.s)/60*HH-2)+'px';f.el.classList.add('sx-merge');
