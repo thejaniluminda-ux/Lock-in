@@ -3486,7 +3486,7 @@ function awOpen(n,done){const b=awBlock();if(!b||document.getElementById('awQ'))
   const sj={phy:'Physics',chem:'Chemistry',maths:'Maths'}[b.subj]||'';
   d.innerHTML=`<div class="aw-c"><div class="aw-top"><div class="aw-ring"><svg viewBox="0 0 92 92" aria-hidden="true"><circle class="bg" cx="46" cy="46" r="42"/><circle class="fg" cx="46" cy="46" r="42"/></svg><b id="awT">1:00</b></div>
     <div><div class="aw-k">SESSION ${n} DONE · RECORDING</div><h2>Write 3 points from memory</h2><div class="aw-u"><i class="aw-d ${esc(b.subj)}"></i><span class="si">${esc(b.title)}</span> · ${sj}</div></div></div>
-    <div class="aw-pts">${[1,2,3].map(i=>`<label class="aw-pt"><span>${i}</span><input maxlength="200" placeholder="${i===3?'One more thing you just heard':'Something you just learned'}" aria-label="Point ${i}"></label>`).join('')}</div>
+    <div class="aw-pts">${[1,2,3].map(i=>`<label class="aw-pt"><span>${i}</span><input maxlength="200" placeholder="${['','The main idea of this session','A formula, definition or step','One more thing you just heard'][i]}" aria-label="Point ${i}"></label>`).join('')}</div>
     <p class="aw-h">No notes, no rewinding. What you can't recall is what to re-watch first.</p>
     <div class="aw-b"><div class="aw-x">${sh?`Verified recall <b>+15 XP</b> · today <b>${Math.min(4,today)} of 4</b>`:`Saved today <b>${Math.min(4,today)} of 4</b>`}<div class="aw-seg">${[0,1,2,3].map(i=>`<i class="${i<today?'f':i===today?'n':''}"></i>`).join('')}</div></div>
       <button class="pbtn" id="awSkip">Skip${sh?', no XP':''}</button><button class="pbtn pri" id="awSave">Save points</button></div></div>`;
