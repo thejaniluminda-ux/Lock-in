@@ -303,6 +303,7 @@ html.shadow #cBody .ev .lv{background:none;color:var(--maths);padding:0;font-fam
 html.shadow #cBody .ev.done{opacity:.5}html.shadow #cBody .ev.done .et{text-decoration:none}html.shadow #cBody .ev.done .et::after{content:' ✓';color:var(--sx-i2)}
 html.shadow #cBody .ev.sx-miss{opacity:.55}html.shadow #cBody .ev.sx-miss .et{text-decoration:line-through;text-decoration-color:rgba(255,255,255,.4)}
 html.shadow #cBody .ev.sx-now{box-shadow:inset 3px 0 0 var(--sj),0 0 0 1.5px var(--sx-acc),0 0 26px -6px rgba(125,255,168,.6);z-index:2}
+html.shadow #cBody.sx-lk .ev.sx-sel{box-shadow:inset 3px 0 0 var(--sj),0 0 0 2px rgba(238,234,228,.9);opacity:1;z-index:3}/* the block he picked for the links view (24 Nov 2026) */
 html.shadow #cBody .ev.sx-tiny{padding:0 6px 0 9px;display:flex;align-items:center;font-size:10.5px;line-height:1.1}
 html.shadow #cBody .ev.sx-tiny .et{font-weight:400;white-space:nowrap!important;display:block!important;overflow:hidden;text-overflow:ellipsis}
 html.shadow #cBody .ev.sx-tiny .em,html.shadow #cBody .ev.sx-tiny .tg{display:none}
@@ -453,6 +454,7 @@ html.shadow #sxFoc .sxf-later>div{display:grid;grid-template-columns:44px 12px m
 html.shadow #sxFoc .sxf-later .num{font:400 12px var(--sx-mono);color:var(--sx-i3)}html.shadow #sxFoc .sxf-later .sx2-dot{align-self:center}
 html.shadow #sxFoc .sxf-later .si{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 html.shadow #shx .sx-weak div span:first-child{white-space:nowrap;font-size:13.5px}html.shadow #shx .sx-weak div{gap:6px}
+html.shadow #shx .sx-weak{min-width:0}html.shadow #shx .sx-weak div span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}html.shadow #shx .sx-weak div span:last-child{flex:none}/* fix 24 Nov 2026: long unit names pushed "untried" out of the Mastery card at 1366 px */
 html.shadow .sxl-open{align-items:start}html.shadow .sxl-open>.sxl-main2{min-height:0}
 html.shadow #woPage .si{font-family:var(--font),'Noto Sans Sinhala','Iskoola Pota',sans-serif}
 html.shadow #woPage #wkStrip{display:none}
