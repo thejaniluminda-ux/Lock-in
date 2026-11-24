@@ -223,7 +223,7 @@ function mastHtml(){let G=[];try{const last=mqLast();for(const sj of ['chem','ph
   return `<div class="sx-ph"><div><h3>Mastery</h3><p>Paper I units · closer to the centre = stronger</p></div></div>
     <div class="sx-rad"><svg viewBox="0 0 104 104"><defs><linearGradient id="sxSw" gradientUnits="userSpaceOnUse" x1="52" y1="52" x2="104" y2="52"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
       ${[50,34,18].map(r=>`<circle cx="52" cy="52" r="${r}" fill="none" stroke="rgba(255,255,255,.08)"/>`).join('')}${dots}<g class="sx-sweep"><path d="M52 52 L102 52 A50 50 0 0 0 ${52+50*Math.cos(-.7)} ${52+50*Math.sin(-.7)} Z" fill="url(#sxSw)"/></g></svg>
-      <div class="sx-weak"><div class="h">Weakest now</div>${weak.map(g=>`<div><span>${esc2(MQN[g.k]||g.k)}</span><span>${g.n?Math.round(g.m*100)+'%':'untried'}</span></div>`).join('')}</div></div>`}
+      <div class="sx-weak"><div class="h">Weakest now</div>${weak.map(g=>`<div><span title="${esc2(MQN[g.k]||g.k)}">${esc2(MQN[g.k]||g.k)}</span><span>${g.n?Math.round(g.m*100)+'%':'untried'}</span></div>`).join('')}</div></div>`}
 function recHtml(){const P=['nights asleep','focus session','class','nights the phone','mistake','past-paper','workout','study block','full paper'],R=record().sort((a,b)=>P.findIndex(p=>a[1].startsWith(p))-P.findIndex(p=>b[1].startsWith(p))).slice(0,3);
   return `<div class="sx-rh"><h3>The Record</h3><span>evidence, not promises</span></div>${R.length?`<div class="sx-rr">${R.map(([n,s])=>`<div><b class="num">${n}</b><span>${esc2(s)}</span></div>`).join('')}</div>`:'<p class="sx-cap">Empty for now. Finished sessions, early nights and fixed mistakes land here.</p>'}`}
 function radioHtml(){bakuLine();const L=(SYS.radio[todayK()]||[]).slice(-3),n=(SYS.msg[todayK()]||{n:0}).n;
@@ -402,7 +402,7 @@ let rsT=0;addEventListener('resize',()=>{clearTimeout(rsT);rsT=setTimeout(()=>{i
 /* ===P2=== Phase 2: Focus, Calendar and Library redesigned for Shadow mode. The app's own controls, data and handlers
    stay in charge; Shadow mode lays them out again and adds panels that read the same data. Normal mode is untouched. */
 const q1=s=>document.querySelector(s);
-const P2={msel:{},tab:{},A:{n:0,sec:0},awayAt:0,prevPh:'',prevLeft:0,quitT:0,links:false,sig:''};
+const P2={msel:{},tab:{},A:{n:0,sec:0},awayAt:0,prevPh:'',prevLeft:0,quitT:0,links:false,sel:null,sig:''};
 const pageOf=()=>{const c=document.body.className;return /\bpage-foc\b/.test(c)?'foc':/\bpage-cal\b/.test(c)?'cal':/\bpage-lib\b/.test(c)?'lib':''};
 const goP=n=>{try{(typeof vgo==='function'?vgo:go)(n)}catch(e){}};
 const PGN={foc:'Focus',cal:'Calendar',lib:'Library',wo:'Workout'};
@@ -413,7 +413,7 @@ const dayW=k=>{const x=new Date(k+'T00:00');return k===todayK()?'Today':DOW3[x.g
 function bars(){for(const[id,pg]of[['focPage','foc'],['calPage','cal'],['libPage','lib'],['woPage','wo']]){const P=document.getElementById(id);if(!P||P.querySelector(':scope>.sx2-barw'))continue;
   const b=document.createElement('div');b.className='sx2-barw';b.innerHTML=`<div class="sx2-crumb">Shadow Protocol / <b>${PGN[pg]}</b></div><span class="sx2-sp"></span><div class="sx2-pill" data-sxday></div><div class="sx2-pill" data-sxexam></div><div class="sx2-pill"><b class="num" data-sxclk></b></div>`;P.prepend(b)}
   barTick()}
-function barTick(){const n=now();document.querySelectorAll('[data-sxday]').forEach(e=>e.innerHTML=dayNo()<1?`Day 1 starts tomorrow`:`Day <b class="num">${dayNo()}</b> / ${daysTotal()}`);
+function barTick(){const n=now(),t0=new Date(todayK()+'T00:00');/* exam period and after: same wording as the Home counter (fix 24 Nov 2026: it said Day 254 / 252) */document.querySelectorAll('[data-sxday]').forEach(e=>e.innerHTML=t0>EXAM_END?'Exam over':n>=EXAM?`Exam day <b class="num">${Math.round((t0-EXAM)/864e5)+1}</b> / 26`:dayNo()<1?`Day 1 starts tomorrow`:`Day <b class="num">${dayNo()}</b> / ${daysTotal()}`);
   document.querySelectorAll('[data-sxexam]').forEach(e=>e.innerHTML=n<EXAM?`A/L in <b class="num">${Math.ceil((EXAM-n)/864e5)}</b> days`:'A/L');document.querySelectorAll('[data-sxclk]').forEach(e=>e.textContent=hm(nowMin()))}
 
 /* ================= FOCUS ================= */
@@ -530,17 +530,20 @@ function calSide(){const side=q1('#calPage .cside');if(!side)return;let box=side
   box.innerHTML=`<section class="card sx2-cu"><h2>Catch-up owed</h2><div class="big num">${fmH(oh)}</div><p>${owe.length?`${owe.length} block${owe.length>1?'s':''} · due by ${fmtD(due)}${late?` · <b class="warn">${late} overdue</b>`:''}`:'Nothing owed. Keep it that way.'}</p></section>
     <section class="card sx2-wk"><h2>${wkLab}</h2><div class="sx2-row"><span>Blocks done</span><b class="num">${sd} / ${st}</b></div><div class="sx2-row"><span>Class hours</span><b class="num">${nf(cd)} / ${nf(ch)}</b></div><div class="sx2-row"><span>Focus, verified</span><b class="num">${fmH(foc)} h</b></div></section>`;
   const bar=q1('#calPage .cbar');if(bar&&!bar.querySelector('#sxLinks')){const b=document.createElement('button');b.id='sxLinks';b.type='button';b.className='tbtn sx2-only';bar.querySelector('#cFs')?.before(b);b.addEventListener('click',()=>{P2.links=!P2.links;P2.lkScrolled=0;calLinks()})}
-  const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide links':'Links for the current block';lb.setAttribute('aria-pressed',P2.links)}}
-function calLinks(){const cb=q1('#cBody');if(!cb)return;cb.querySelector('#sxLk')?.remove();cb.classList.toggle('sx-lk',P2.links);const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide links':'Links for the current block';lb.setAttribute('aria-pressed',P2.links)}
-  if(!P2.links||!isShadow())return;const X=focusNode();if(!X)return;const G=graphAll(),S=new Set([X.i,...X.par,...X.kids]);X.kids.forEach(i=>G[i].kids.forEach(j=>{if(G[j].unit&&G[j].unit===G[i].unit)S.add(j)}));
+  /* the block he clicks becomes the selected block for the links view (24 Nov 2026, his request); none selected = the current block */
+  const cbd=q1('#cBody');if(cbd&&!cbd.dataset.sxSel){cbd.dataset.sxSel='1';cbd.addEventListener('click',ev=>{if(!isShadow())return;const el=ev.target.closest('.ev'),col=el&&el.closest('.col');if(!el||!col)return;P2.sel={k:col.dataset.k,id:String(el.dataset.id)};P2.lkScrolled=1;if(P2.links)calLinks()})}
+  const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide links':'Links for the selected block';lb.setAttribute('aria-pressed',P2.links)}}
+function calLinks(){const cb=q1('#cBody');if(!cb)return;cb.querySelector('#sxLk')?.remove();cb.classList.toggle('sx-lk',P2.links);const lb=q1('#sxLinks');if(lb){lb.textContent=P2.links?'Hide links':'Links for the selected block';lb.setAttribute('aria-pressed',P2.links)}
+  cb.querySelectorAll('.ev.sx-sel').forEach(e=>e.classList.remove('sx-sel'));if(!P2.links||!isShadow())return;const G=graphAll();let X=null,picked=false;if(P2.sel){X=G.find(n=>n.date===P2.sel.k&&String(n.id)===P2.sel.id)||null;picked=!!X;if(!X){const e0=(CS.days[P2.sel.k]||[]).find(e=>String(e.id)===P2.sel.id);if(e0&&toast)toast('That block has no links. Showing the current block.');P2.sel=null}}if(!X)X=focusNode();if(!X)return;const S=new Set([X.i,...X.par,...X.kids]);X.kids.forEach(i=>G[i].kids.forEach(j=>{if(G[j].unit&&G[j].unit===G[i].unit)S.add(j)}));
   const elOf=n=>{if(!curKeys.includes(n.date))return null;return cb.querySelector(`.col[data-k="${n.date}"] .ev[data-id="${CSS.escape(String(n.id))}"]`)};
+  if(picked){const se=elOf(X);if(se)se.classList.add('sx-sel')}
   const sc=q1('#cScroll'),hd=q1('#cHead');if(sc&&!P2.lkScrolled){P2.lkScrolled=1;let top=1e9;for(const i of S){const el=elOf(G[i]);if(el)top=Math.min(top,el.offsetTop)}if(top<1e9){sc.scrollTop=Math.max(0,top-8)}}
   const r0=cb.getBoundingClientRect();let h='';const lit=new Set();
   for(const i of S){const n=G[i];for(const pi of n.par){if(!S.has(pi))continue;const a=elOf(G[pi]),b=elOf(n);if(!a||!b)continue;lit.add(a);lit.add(b);const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
     const x1=ra.right-r0.left,y1=ra.top+Math.min(ra.height/2,18)-r0.top,x2=rb.left-r0.left,y2=rb.top+Math.min(rb.height/2,18)-r0.top,dx=Math.max(30,Math.abs(x2-x1)/2),on=pi===X.i||i===X.i;
     h+=`<path class="${on?'n':''}" d="M${x1.toFixed(1)} ${y1.toFixed(1)} C${(x1+dx).toFixed(1)} ${y1.toFixed(1)} ${(x2-dx).toFixed(1)} ${y2.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}"/><circle class="${on?'n':''}" cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="3"/>`}}
   cb.querySelectorAll('.ev').forEach(e=>e.classList.toggle('sx-dim',!lit.has(e)));
-  if(!h){toast&&toast('The current block has no links in this week.');return}
+  if(!h){toast&&toast((picked?'The selected block':'The current block')+' has no links in this week.');return}
   cb.insertAdjacentHTML('beforeend',`<svg id="sxLk" aria-hidden="true">${h}</svg>`)}
 
 /* ================= LIBRARY ================= */

@@ -1770,7 +1770,7 @@ $('#fsBtn').addEventListener('click',async()=>{
 const dkey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const addDays=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
 /* ================= Lock In data + scheduler ================= */
-const START=new Date(2026,10,19)/* the real run starts Thu 19 Nov 2026 (his call, 18 Nov): day 1. 11-18 Nov are not counted as missed */,EXAM=new Date(2027,7,3),CLASSES_BY=new Date(2027,4,31),JULY=new Date(2027,6,1);
+const START=new Date(2026,10,25)/* the real run starts Wed 25 Nov 2026 (his call, 24 Nov, after the hospital): day 1 from zero. Nothing before it counts as missed */,EXAM=new Date(2027,7,3),CLASSES_BY=new Date(2027,4,31),JULY=new Date(2027,6,1);
 const REC={mech:'https://t.me/Sci_Link/1007',therm:'https://t.me/Sci_Link/876',cur:'https://t.me/Sci_Link/1094',wave:'https://t.me/Sci_Link/1184',light:'https://t.me/Sci_Link/1214',mag:'https://t.me/Sci_Link/1207',elec:'https://t.me/Sci_Link/1255',matter:'https://t.me/Sci_Link/1354',estat:'https://t.me/Sci_Link/1448',mprop:'https://t.me/Sci_Link/1524',grav:'https://t.me/Sci_Link/1645',
   calc:'https://t.me/Sci_Link/855',redox:'https://www.youtube.com/live/Swwr_vNYU5s',bond:'https://t.me/Sci_Link/884',sblock:'https://youtu.be/G23RPKI--MY',pblock:'https://t.me/Sci_Link/865',dblock:'https://t.me/Sci_Link/865',period:'https://t.me/Sci_Link/858',kin:'https://t.me/Sci_Link/937',ener:'https://t.me/Sci_Link/1040',gas:'https://t.me/Sci_Link/1113',org:'https://t.me/Sci_Link/2194',isom:'https://youtu.be/upeffNyWyPA',guna:'https://youtube.com/live/Ibfn2DWZHog',equil:'https://t.me/Sci_Link/1331',echem:'https://t.me/Sci_Link/1498',ind:'https://t.me/Sci_Link/1227',
   mSep:'https://t.me/Vikumlk/213',mOct:'https://t.me/Vikumlk/214',mNov:'https://t.me/Vikumlk/234',mPure26:'https://t.me/Vikumlk/117',mApp26:'https://t.me/Vikumlk/119'};
@@ -1937,9 +1937,10 @@ function buildPlan(hist){
     const ws=b.t.map(t=>t[2]||60),tot=ws.reduce((a,c)=>a+c,0);let pos=(ds.indexOf(kOf(x))+.5)/ds.length*tot;
     for(let j=0;j<ws.length;j++){if(pos<ws[j])return b.t[j];pos-=ws[j]}return b.t[b.t.length-1]};
   /* v14 Maths catch-up: every live class held before day 1 becomes a 5 h recording, in blueprint order (September, October,
-     then the November classes of 3, 6, 10, 13 and 17 Nov; their topics are the plan's best estimate from the blueprint month) */
+     then every November class before day 1; their topics are the plan's best estimate from the blueprint month).
+     v15 (24 Nov 2026, restart from 25 Nov): the November list runs up to the day before START (3, 6, 10, 13, 17, 20, 24 Nov) */
   {const L=MCU.map(m=>({si:m[0],en:m[1],tag:m[2],rec:REC[m[3]],from:m[3]==='mSep'?'September':'October'}));
-    const seen={};for(const ds of ['2026-11-03','2026-11-06','2026-11-10','2026-11-13','2026-11-17']){const t=liveTopic(new Date(ds+'T00:00'));if(!t)continue;seen[t[1]]=(seen[t[1]]||0)+1;
+    const seen={};for(const ds of (()=>{const o=[];for(let x=new Date(2026,10,1);x<START;x=addD(x,1))if(x.getDay()===2||x.getDay()===5)o.push(kOf(x));return o})()){const t=liveTopic(new Date(ds+'T00:00'));if(!t)continue;seen[t[1]]=(seen[t[1]]||0)+1;
       L.push({si:t[0]+(seen[t[1]]>1?' '+seen[t[1]]:''),en:t[1]+(seen[t[1]]>1?' (class '+seen[t[1]]+')':''),tag:'Live '+ds.slice(8)+' Nov',rec:REC.mNov,from:'November'})}
     L.forEach((m,i)=>mcu.push({iid:'mcu:'+(i+1),unit:'',deps:[],subj:'maths',h:5,title:`ගණිත පසු පන්තිය: ${m.si}`,sub:`Combined Maths catch-up recording: ${m.en} (${m.from} live class you missed)`,tag:'Maths catch-up',rec:m.rec,topic:{si:m.si,en:m.en,rec:m.rec}}))}
   let ADD=null;
@@ -2173,7 +2174,7 @@ function buildPlan(hist){
 const CKEY='lockin-plan-v2';
 let CS=null;
 try{const s=JSON.parse(localStorage.getItem(CKEY)||'null');if(s&&s.v>=2&&s.v<=14)CS=s}catch(e){}
-if(!CS)CS={v:14,days:buildPlan().days,off:{},fresh:true};
+if(!CS)CS={v:15,days:buildPlan().days,off:{},fresh:true};
 /* if the browser's storage is full, say so loudly instead of silently losing the change */
 let _sfw=0;function storageFull(){const n=Date.now();if(n-_sfw<8000)return;_sfw=n;try{toast('Storage is full, so this change was NOT saved. Make a backup now, then delete some progress photos.')}catch(e){alert('Storage is full, so this change was NOT saved. Make a backup now.')}}
 const saveCS=()=>{try{localStorage.setItem(CKEY,JSON.stringify(CS))}catch(e){storageFull()}};
@@ -2708,7 +2709,7 @@ $('#mNext').addEventListener('click',()=>{miniM=new Date(miniM.getFullYear(),min
 $('#mGrid').addEventListener('click',e=>{const b=e.target.closest('.md');if(!b)return;viewD=dOf(b.dataset.k);renderWeek();renderMini()});
 document.querySelectorAll('[data-f]').forEach(c=>c.addEventListener('change',()=>{filt[c.dataset.f]=c.checked;renderWeek()}));
 $('#cCreate').addEventListener('click',e=>{const tk=kOf(today0),k=curKeys.includes(tk)?tk:curKeys[0];openForm({date:k,s:1140,e:1200,title:'',sub:'',subj:'phy',tag:''},true,e.currentTarget.getBoundingClientRect())});
-$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:14,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
+$('#cReset').addEventListener('click',()=>{snapAct('reset');CS={v:15,days:applyBlueprint(buildPlan().days),off:{}};saveCS();renderWeek();renderMini();renderRoutine();renderRings();renderBars();renderStreak();undoToast('Plan rebuilt from scratch.')});
 /* ================= Report: weak-spot radar ================= */
 const UNITS={
   phy:[['Mechanics','Mechanics',16],['Waves','Waves',15],['Current electricity','Current el.',15],['Thermal physics','Thermal',14],['Light','Light',8],['Magnetic fields','Magnetism',8],['Electronics','Electronics',6],['Electrostatics','Electrostatics',5],['Matter and radiation','Matter & rad.',5],['Measurement','Measurement',5],['Mechanical properties','Mech. properties',4],['Gravitation','Gravitation',3]],
@@ -3003,7 +3004,7 @@ function rebuildOrder(keepPast,keepToday){
     if(m)m.done=true;
     else if(keepToday)(days[k]||(days[k]=[])).push(Object.assign({},e,{user:true,sub:(e.sub||'')+' · kept from your old plan'}));
   }
-  CS={v:14,days,off:{},slid:old.slid||[]};
+  CS={v:15,days,off:{},slid:old.slid||[]};
   if(keepToday){const back=[];for(const k of Object.keys(CS.days).sort())if(k>=sk)for(const e of CS.days[k])if(e.kind==='class'&&e.iid&&!e.fixed&&!oldIid.has(base(e.iid))&&!back.some(b=>b.iid===base(e.iid)))back.push({iid:base(e.iid),title:e.title,to:k});CS.repaired=back}
   for(const e of redo)cuPlace(cuItem(e));
   for(const k in (old.off||{}))if(k>=sk&&old.off[k]){CS.off[k]=true;(CS.days[k]||[]).filter(x=>x.kind!=='life'&&x.kind!=='review'&&!x.fixed&&!x.done&&!x.user).forEach(skipToCU);CS.days[k]=(CS.days[k]||[]).filter(x=>x.fixed||x.user)}
@@ -3016,7 +3017,7 @@ function v13Restart(){const old=CS,sk=kOf(START),base=x=>String(x||'').replace(/
   const byKey={};for(const k in days)if(k>=sk)for(const x of days[k])if(x.unit)byKey[x.unit+'|'+x.title]=x;
   for(const k in old.days)if(k>=sk)for(const e of old.days[k]){if(!e.done&&!e.user)continue;if(e.user){(days[k]||(days[k]=[])).push(e);continue}
     const m=e.unit?byKey[e.unit+'|'+e.title]:(days[k]||[]).find(x=>x.title===e.title&&!x.done);if(m&&!m.done)m.done=true;else(days[k]||(days[k]=[])).push(Object.assign({},e,{user:true}))}
-  CS={v:14,days,off:{},slid:[]}}
+  CS={v:15,days,off:{},slid:[]}}
 function v13Ticks(P){const o=[];for(const k of Object.keys(P.days||{}).sort())for(const e of P.days[k])if(e.done&&e.kind!=='life'&&e.kind!=='review')o.push({k,s:e.s,unit:e.unit||'',title:e.title,kind:e.kind});return o}
 function v13Report(KEY,VER){KEY=KEY||'lockin-v13-check';VER=VER||13;let R;try{R=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}if(!R||R.seen)return;
   const key=x=>x.k+'|'+x.unit+'|'+x.title,A=new Set(R.after.map(key)),lost=R.before.filter(x=>!A.has(key(x))),cls=R.before.filter(x=>x.kind==='class');
@@ -3027,9 +3028,33 @@ function v13Report(KEY,VER){KEY=KEY||'lockin-v13-check';VER=VER||13;let R;try{R=
     <div class="v13t"><table><thead><tr><th>Date</th><th>Time</th><th>Ticked block</th><th>After</th></tr></thead><tbody>${R.before.map(row).join('')||'<tr><td colspan="4">Nothing ticked yet.</td></tr>'}</tbody></table></div>
     <button class="pbtn pri" id="v13ok">OK</button></div>`;
   document.body.appendChild(d);d.querySelector('#v13ok').addEventListener('click',()=>{R.seen=true;try{localStorage.setItem(KEY,JSON.stringify(R))}catch(e){}d.remove()})}
+/* plan v15 (24 Nov 2026, his call after a long hospital stay): restart from zero on Wed 25 Nov 2026 = Day 1. Nothing counts
+   as done, nothing before Day 1 counts as missed or owes catch-up. The old plan is kept in lockin-plan-v2-pre15 (pre14 is
+   dropped only if storage is full). His own blocks from Day 1 on stay. Every Maths live class before Day 1 is a catch-up recording. */
+function v15Restart(){const old=CS,sk=kOf(START),n=v13Ticks(old).length;let copy=false;
+  const put=()=>{try{localStorage.setItem('lockin-plan-v2-pre15',JSON.stringify(old));return true}catch(e){return false}};
+  copy=put();if(!copy){try{localStorage.removeItem('lockin-plan-v2-pre13');localStorage.removeItem('lockin-plan-v2-pre14')}catch(e){}copy=put()}
+  const days=applyBlueprint(buildPlan().days);
+  for(const k in old.days)if(k>=sk)for(const e of old.days[k])if(e.user)(days[k]||(days[k]=[])).push(Object.assign({},e,{done:false}));
+  CS={v:15,days,off:{},slid:[]};
+  for(const K of ['lockin-v13-check','lockin-v14-check'])try{const R=JSON.parse(localStorage.getItem(K)||'null');if(R&&!R.seen){R.seen=true;localStorage.setItem(K,JSON.stringify(R))}}catch(e){}
+  try{localStorage.setItem('lockin-v15-check',JSON.stringify({t:Date.now(),old:n,copy,seen:false}))}catch(e){}
+  try{const S=JSON.parse(localStorage.getItem('lockin-system-v1')||'null');if(S){for(const f of ['ses','radio','msg','misSeen','mbSnap','mbFix','sleep','phone','away'])if(S[f])for(const d in S[f])if(d<sk)delete S[f][d];S.started=null;S.seenL=null;S.seenRank=null;S.guard=null;localStorage.setItem('lockin-system-v1',JSON.stringify(S))}}catch(e){}}
+function v15Report(){let R;try{R=JSON.parse(localStorage.getItem('lockin-v15-check')||'null')}catch(e){}if(!R||R.seen||document.getElementById('v13chk'))return;
+  const last=f=>{let o='';for(const k in CS.days)for(const e of CS.days[k])if(e.kind==='class'&&f(e)&&k>o)o=k;return o?fmtD(o):'not in the plan'};
+  const nM=new Set();for(const k in CS.days)for(const e of CS.days[k])if(e.iid&&/^mcu:/.test(e.iid))nM.add(e.iid.replace(/[ab]$/,''));
+  const d=document.createElement('div');d.id='v13chk';d.setAttribute('role','dialog');d.setAttribute('aria-label','Plan restarted');
+  d.innerHTML=`<div class="v13c"><h2>Plan restarted from Day 1: ${esc(fmtD(kOf(START)))}</h2>
+    <p>Everything starts from zero. No class, recording, seminar or past-paper block counts as done, and the days before Day 1 do not count as missed or owe any catch-up.</p>
+    <p>The ${nM.size} Combined Maths live classes from September to ${esc(fmtD(kOf(addDays(START,-1))))} are in the plan as catch-up recordings, done by ${esc(last(e=>/^mcu:/.test(e.iid||'')))}. Chemistry classes finish ${esc(last(e=>e.subj==='chem'))}, Physics ${esc(last(e=>e.subj==='phy'))}.</p>
+    <p>${R.copy?`Your old plan${R.old?` (with its ${R.old} ticked block${R.old>1?'s':''})`:''} is kept as a copy in this browser and goes into your next backup.`:'<b style="color:#ff8a7a">The old plan copy could not be saved (storage full).</b> Restore your last backup if you need it.'} Workout, papers, marks, mistakes, formulas and your questions are untouched.</p>
+    <button class="pbtn pri" id="v13ok">OK</button></div>`;
+  document.body.appendChild(d);d.querySelector('#v13ok').addEventListener('click',()=>{R.seen=true;try{localStorage.setItem('lockin-v15-check',JSON.stringify(R))}catch(e){}d.remove()})}
 (function migrate(){
   if(CS.fresh){delete CS.fresh;applyBlueprint(CS.days);saveCS();return}
-  if(CS.v===14){applyBlueprint(CS.days);saveCS();return}
+  if(CS.v===15){applyBlueprint(CS.days);saveCS();return}
+  /* v12, v13 and v14 go straight to the v15 restart (nothing done yet, Day 1 = 25 Nov 2026) */
+  if(CS.v===14||CS.v===13||CS.v===12){v15Restart();saveCS();return}
   /* v13 to v14 (18 Nov 2026, day 1, his rules): learn before practise, only 5 h recordings split (3 h + 2 h), Maths catch-up
      recordings for every live class before day 1, spaced recall at 1/3/7/21 days, interleaved practice, 12 h hard days
      (Mon/Wed/Fri) and 11 h other days. The plan is rebuilt from 18 Nov; every ticked block is kept and listed for him to confirm */
@@ -3067,7 +3092,7 @@ function v13Report(KEY,VER){KEY=KEY||'lockin-v13-check';VER=VER||13;let R;try{R=
     for(const k in CS.days)if(k>=tk)retimeDay(k,CS.days[k]);
     CS.v=4;}
   if(CS.v===4){restartPlan();CS.v=9;saveCS();return}
-  const old=CS,fresh={v:14,days:applyBlueprint(buildPlan().days),off:old.off||{}};
+  const old=CS,fresh={v:15,days:applyBlueprint(buildPlan().days),off:old.off||{}};
   for(const k in old.days)for(const e of old.days[k]){
     if(e.user){(fresh.days[k]||(fresh.days[k]=[])).push(e);continue}
     if(e.done){const m=(fresh.days[k]||[]).find(x=>x.title===e.title&&!x.done);if(m)m.done=true}
@@ -3075,7 +3100,7 @@ function v13Report(KEY,VER){KEY=KEY||'lockin-v13-check';VER=VER||13;let R;try{R=
   CS=fresh;saveCS();
 })();
 
-setTimeout(()=>{try{v13Report();v13Report('lockin-v14-check',14)}catch(e){}},3500);
+setTimeout(()=>{try{v13Report();v13Report('lockin-v14-check',14);v15Report()}catch(e){}},3500);
 /* ---------- A3 coaching rules (his, 18 Nov 2026) ----------
    1. Completion under 70% for 3 days in a row: say so plainly and offer ONE lighter day (tomorrow's evening practice becomes
       free time; classes, papers, consolidation and recall stay). Not a reset. Offered at most once a week. lockin-light-v1.
@@ -3182,12 +3207,13 @@ function renderLibrary(){
 }
 function renderMathsLib(box,tk){
   const cur=tk.slice(0,7);let tot=0,dn=0;
-  const mcuBl=[];for(const d in CS.days)for(const e of CS.days[d])if(e.subj==='maths'&&e.kind==='class'&&/missed class/.test(e.sub))mcuBl.push(e);
+  const mcuBl=[];for(const d in CS.days)for(const e of CS.days[d])if(e.subj==='maths'&&e.kind==='class'&&/^mcu:/.test(e.iid||''))mcuBl.push(e)/* v15 fix: catch-up recordings are found by their mcu: id (the old 'missed class' text match found none) */;
   const cards=BP.map(b=>{
     const past=b.m<cur,now=b.m===cur;
     let bl=[];for(const d in CS.days)if(d.startsWith(b.m))for(const e of CS.days[d])if(e.bp===b.m)bl.push(e);
     let note='';
     if(b.m==='2026-09'||b.m==='2026-10'){const mine=mcuBl.filter(e=>(b.m==='2026-09'?['mSep']:['mOct']).some(r=>e.rec===REC[r]));bl=mine;note='Missed. Catching up from recordings in the evenings.'}
+    if(b.m==='2026-11'){const mine=mcuBl.filter(e=>e.rec===REC.mNov);if(mine.length){bl=mine.concat(bl);note='Classes before Day 1 are catch-up recordings.'}}
     const d=bl.filter(e=>e.done).length;tot+=bl.length;dn+=d;
     const marks=b.t.reduce((a,t)=>a+(t[2]||0),0);
     return `<article id="lb-m-${b.m}" class="lb-card mm${now?' now':''}${past&&!note?' past':''}" style="--sub:var(--maths)">
@@ -3209,9 +3235,9 @@ const lmCol=s=>getComputedStyle(document.documentElement).getPropertyValue('--'+
 const lmX=u=>/x$/.test(u.k)&&u.k!=='redox';
 function lmUnits(s){
   if(s==='maths'){
-    const mcuBl=[];for(const d in CS.days)for(const e of CS.days[d])if(e.subj==='maths'&&e.kind==='class'&&/missed class/.test(e.sub))mcuBl.push(e);
+    const mcuBl=[];for(const d in CS.days)for(const e of CS.days[d])if(e.subj==='maths'&&e.kind==='class'&&/^mcu:/.test(e.iid||''))mcuBl.push(e)/* v15 fix: catch-up recordings are found by their mcu: id (the old 'missed class' text match found none) */;
     return BP.map((b,i)=>{let bl=[];for(const d in CS.days)if(d.startsWith(b.m))for(const e of CS.days[d])if(e.bp===b.m)bl.push(e);
-      const miss=b.m==='2026-09'||b.m==='2026-10';if(miss)bl=mcuBl.filter(e=>e.rec===REC[b.m==='2026-09'?'mSep':'mOct']);
+      const miss=b.m==='2026-09'||b.m==='2026-10';if(miss)bl=mcuBl.filter(e=>e.rec===REC[b.m==='2026-09'?'mSep':'mOct']);if(b.m==='2026-11')bl=mcuBl.filter(e=>e.rec===REC.mNov).concat(bl);
       bl.sort((a,c)=>a.date<c.date?-1:a.date>c.date?1:a.s-c.s);
       /* Sep/Oct recordings run alongside the November live classes, so November doesn't wait for them */
       const d=i===0||b.m==='2026-11'?[]:['m:'+BP[i-1].m];
@@ -3734,7 +3760,7 @@ function alerts(){
   if(t.getDate()<=3)out.push({id:'month-'+tk.slice(0,7),ic:'🗓️',t:'New month',s:`This month in Maths: ${(BP.find(b=>b.m===tk.slice(0,7))||{t:[]}).t.map(x=>x[1]).join(', ')||'papers and revision'}. Check the teacher’s timetable.`,go:'Library'});
   const lb=localStorage.getItem('lockin-lastbackup'),age=lb?Math.round((today0-new Date(lb+'T00:00'))/864e5):99,started=today0>=START;
   if(started&&age>=7)out.push({id:'bk-'+tk,ic:'💾',t:'Back up your progress',s:lb?`Last backup ${age} days ago.`:'You haven’t backed up yet. It takes one click.',act:'backup'});
-  if(!started){const d=Math.round((START-today0)/864e5);out.push({id:'start',ic:'🔒',t:d===1?'Lock In starts tomorrow':`Lock In starts in ${d} days`,s:'Alarm for 6:00. First block is wake, water, stretch.'})}
+  if(!started){const d=Math.round((START-today0)/864e5);out.push({id:'start-'+dkey(START),ic:'🔒',t:d===1?'Lock In starts tomorrow':`Lock In starts in ${d} days`,s:'Alarm for 6:00. First block is wake, water, stretch.'})}
   return out;
 }
 function renderBell(){
@@ -4672,7 +4698,7 @@ function dayStat(d){const dk=ymd(d),td=ymd(today()),t=typeOn(d),L=logsOn(dk),ex=
   const first=S.logs.reduce((m,l)=>l.d<m?l.d:m,td);/* days before the first logged workout count as "before you started", not missed */
   if(d<WSTART||dk<first)return'pre';if(dk>td)return t?'fut':'rest';
   const done=ex.done!=null||ex.mini||L.some(l=>l.mini)||(t&&L.length>=Math.ceil(plannedSets(t,d)/2));
-  if(!t)return L.length?'extra':'rest';if(done)return'done';if(dk===td)return L.length?'part':'today';return L.length?'part':'miss'}
+  if(!t)return L.length?'extra':'rest';if(done)return'done';if(dk<ymd(START)&&!L.length)return'pre';/* v15: days before Day 1 (25 Nov, after the hospital) are never misses */if(dk===td)return L.length?'part':'today';return L.length?'part':'miss'}
 function renderCons(){const d=today(),mon=addD(d,-((d.getDay()+6)%7));let h='<div class="cg8"><span></span>'+['M','T','W','T','F','S','S'].map(x=>`<span style="text-align:center">${x}</span>`).join('');
   let planned=0,doneN=0,wkP=0,wkD=0;
   for(let w=7;w>=0;w--){const m=addD(mon,-7*w);h+=`<span>${m.getDate()} ${MON[m.getMonth()].slice(0,3)}</span>`;
