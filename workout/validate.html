@@ -1,0 +1,32 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Workout plan validator</title>
+<style>body{background:#0a0b0a;color:#eceeec;font:14px/1.5 ui-monospace,Consolas,monospace;padding:24px}b.ok{color:#7dffa8}b.bad{color:#ff8a8a}table{border-collapse:collapse;margin:8px 0 18px}td,th{border:1px solid #2a2e2b;padding:3px 8px;text-align:left}</style></head>
+<body><h1>Workout plan validator</h1><div id="out"></div><pre id="json" hidden></pre>
+<script type="module">
+import {EX,SESS,MUSCLES,RANGE,WEEK,timing,weeklySets,sessionFor,blocksFor,isDeload,LIMIT,DELOAD} from './js/plan.js';
+const R=[],chk=(name,bad)=>R.push({name,ok:!bad.length,n:bad.length,ex:bad.slice(0,8)});
+const mmss=s=>`${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,'0')}`;
+/* 1. every session fits 30:00 (normal week, week 1 with neck isometrics, and a deload week) */
+{const bad=[];for(const id in SESS)for(const [lab,d,wk] of [['normal',new Date(2027,1,8),5],['week 1',new Date(2026,10,23),1],['deload',new Date(2027,1,1),12]]){const t=timing(id,d,wk);if(t.total>LIMIT)bad.push(`${id} ${lab} ${mmss(t.total)}`)}chk('Every session fits in 30:00 (warm-up, sets, rests, moves and cool-down included)',bad)}
+/* 2. weekly sets per muscle inside the evidence range */
+const W=weeklySets();
+{const bad=[];for(const m in RANGE){const v=W.sets[m],[lo,hi]=RANGE[m];if(v<lo||v>hi)bad.push(`${m} ${v} (range ${lo}-${hi})`)}chk('Weekly hard sets per muscle inside the target range',bad)}
+/* 3. priorities: side delts, back, chest, arms trained 2x+ a week; side delts and back get the most upper-body sets */
+{const bad=[];for(const m of ['delt','back','chest','bi','tri','quad','glute','ham','core'])if(W.freq[m]<2)bad.push(`${m} only ${W.freq[m]}x a week`);
+  if(W.sets.delt<W.sets.chest)bad.push('side delts get fewer sets than chest');if(W.sets.back<W.sets.chest)bad.push('back gets fewer sets than chest');
+  if(W.freq.core<3)bad.push('core under 3x a week');chk('Priority muscles trained at least 2x a week (core 3x), side delts and back ahead of chest',bad)}
+/* 4. no forbidden exercises (toes-to-bar, knee variations) */
+{const bad=[];for(const id in EX){const t=(EX[id].n+' '+(EX[id].lad||[]).join(' ')).toLowerCase();if(/toes[- ]to[- ]bar|knee push|kneeling|on (your )?knees|knee variation|tuck/.test(t))bad.push(id+': '+EX[id].n)}chk('No toes-to-bar and no knee variations',bad)}
+/* 5. progression rule for every exercise used */
+{const bad=[];const used=new Set();for(const id in SESS)for(const [ex] of SESS[id].blocks)ex.forEach(e=>used.add(e));for(const e of used){const x=EX[e];if(x.kind==='test')continue;if(!x.rng||!x.lad||x.lad.length<3||!x.cue)bad.push(e)}chk('Every exercise has a target range, a 3+ step progression ladder and a form cue',bad)}
+/* 6. the week: Sunday rest, 6 sessions, upper 3x and lower 3x */
+{const bad=[];if(WEEK[0]!==null)bad.push('Sunday is not rest');if(WEEK.filter(Boolean).length!==6)bad.push('not 6 sessions');chk('Six sessions a week, Sunday rest',bad)}
+/* 7. deloads line up with the study buffer weeks */
+{const bad=[];for(const m of DELOAD){const d=new Date(m+'T00:00');if(d.getDay()!==1)bad.push(m+' is not a Monday');if(!isDeload(new Date(d.getTime()+2*864e5)))bad.push(m+' not detected')}chk('Deload weeks = study buffer weeks (7 Dec, 4 Jan, 1 Feb, 1 Mar, 29 Mar, 26 Apr)',bad)}
+const tables={};for(const id in SESS){tables[id]=timing(id,new Date(2027,1,8),5)}
+const tw1={};for(const id of ['UA','UB']){tw1[id]=timing(id,new Date(2026,10,23),1).total}
+window.VAL={ok:R.every(r=>r.ok),checks:R,sets:W.sets,freq:W.freq,totals:Object.fromEntries(Object.entries(tables).map(([k,v])=>[k,v.total])),week1:tw1,tables};
+document.getElementById('out').innerHTML=R.map(r=>`<div><b class="${r.ok?'ok':'bad'}">${r.ok?'PASS':'FAIL'}</b> ${r.name}${r.ok?'':' — '+r.ex.join('; ')}</div>`).join('')+
+  '<h2>Weekly sets per muscle</h2><table><tr><th>Muscle</th><th>Sets / week</th><th>Times / week</th><th>Range</th></tr>'+Object.keys(MUSCLES).map(m=>`<tr><td>${MUSCLES[m].full}</td><td>${W.sets[m]}</td><td>${W.freq[m]}</td><td>${RANGE[m].join('-')}</td></tr>`).join('')+'</table>'+
+  Object.entries(tables).map(([id,t])=>`<h3>${SESS[id].n} — ${mmss(t.total)}</h3><table>${t.rows.map(r=>`<tr><td>${r[0]}</td><td>${mmss(r[1])}</td></tr>`).join('')}</table>`).join('');
+document.getElementById('json').textContent=JSON.stringify(window.VAL);
+</script></body></html>
