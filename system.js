@@ -1,11 +1,11 @@
-/* Lock In · Shadow Protocol (Phase 1: engine, mode switch, Signal home).
+/* Lock In · Shadow Protocol (Phase 1: engine, Signal home). Since 25 Nov 2026 Shadow Protocol is the only UI: html.shadow is set in index.html and there is no mode switch.
    Reads the app's existing data; never writes to it. Its own state: lockin-system-v1 (sleep and phone check-ins,
    seen rank, message counts, intervention log) and lockin-profile-v1 (his own words and target, typed in the app,
-   never in this file). Mode lives in lockin-mode-v1. All three are lockin-* keys, so backup/restore includes them.
+   never in this file). The old lockin-mode-v1 key may still sit in storage but nothing reads it. All are lockin-* keys, so backup/restore includes them.
    XP is recalculated from the data every time (nothing is stored), so ticking then unticking gives exactly zero. */
 (()=>{
 'use strict';
-const SK='lockin-system-v1',PK='lockin-profile-v1',MK='lockin-mode-v1';
+const SK='lockin-system-v1',PK='lockin-profile-v1';
 const rd=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k)||'null');return v??d}catch(e){return d}};
 const wr=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let SYS=Object.assign({v:1,sleep:{},phone:{},seenRank:null,seenL:null,started:null,msg:{},log:[],off:{},ses:{},radio:{},mbSnap:{},mbFix:{},misSeen:{}},rd(SK,{}));
@@ -303,7 +303,7 @@ function lvSeq(rankUp,from,lv,rank,done){done=done||(()=>{});const o=document.cr
     else{const ts=(t-hit)/700;sh[0].style.opacity=RM||ts<0||ts>1?0:.6*(1-ts);sh[0].style.transform=`scale(${1+1.6*eo(cl(ts))})`;nx.style.opacity=cl((t-hit-250)/400)}
     if(RM){setTimeout(end,T);return}if(t>=T-250){end();return}requestAnimationFrame(frame)};requestAnimationFrame(frame)}
 function firstLaunch(L,rank,xp,done){const days=Math.max(1,Math.round((new Date(todayK()+'T00:00')-START)/864e5)+1);logI('first');
-  overlay(`<div class="sh-first"><div class="sh-k">Shadow Protocol</div><p>Starting level from ${days} day${days>1?'s':''} of your real history: ${xp} XP.</p><h2>${rank} · Level ${L}</h2><p class="sh-note">Normal mode is still there. The eye icon switches back.</p></div>`,0,done)}
+  overlay(`<div class="sh-first"><div class="sh-k">Shadow Protocol</div><p>Starting level from ${days} day${days>1?'s':''} of your real history: ${xp} XP.</p><h2>${rank} · Level ${L}</h2></div>`,0,done)}
 function overlay(html,ms,done){const o=document.createElement('div');o.className='sh-ov';o.innerHTML=html;document.body.appendChild(o);requestAnimationFrame(()=>o.classList.add('on'));
   let c=false;const close=()=>{if(c)return;c=true;o.classList.remove('on');setTimeout(()=>{o.remove();done&&done()},300)};o.addEventListener('click',close);if(ms)setTimeout(close,ms);return o}
 
@@ -378,15 +378,11 @@ function targetPop(){if(document.querySelector('.sx-pop'))return;const P=prof(),
 function sleepGuard(){const m=nowMin();if(!isShadow()||!(m>=1380||m<270))return;const night=m<270?dk(add(now(),-1)):todayK();if(SYS.guard===night)return;SYS.guard=night;saveSys();
   logI('say:sleep');overlay(`<div class="sh-first"><div class="sh-k">${hm(m)}</div><h2>Sleep is part of the plan.</h2><p>Close it.</p></div>`,0)}
 
-/* ---------- mode switch ---------- */
+/* ---------- Shadow fonts ---------- */
 function fonts(){if(document.getElementById('sxFonts'))return;const l=document.createElement('link');l.id='sxFonts';l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500&display=swap';document.head.appendChild(l)}
-function setMode(on,animate){const h=document.documentElement;if(on===isShadow())return;if(on)fonts();
-  const go2=()=>{h.classList.toggle('shadow',on);wr(MK,on?'shadow':'normal');const b=document.getElementById('modeBtn');if(b)b.setAttribute('aria-pressed',on);logI(on?'mode:shadow':'mode:normal');if(!on&&bpEl){bpEl.remove();bpEl=null}render(true);if(on)sleepGuard()};
-  if(animate&&!R_M()){const s=document.createElement('div');s.className='sh-scan';document.body.appendChild(s);setTimeout(go2,260);setTimeout(()=>s.remove(),700)}else go2()}
 
 /* ---------- events ---------- */
 document.addEventListener('click',e=>{
-  const mb=e.target.closest('#modeBtn');if(mb){setMode(!isShadow(),true);return}
   if(e.target.closest('[data-target]')){targetPop();return}
   if(!box||!box.contains(e.target))return;
   if(e.target.closest('[data-bpopen]')){openFull();return}
@@ -654,10 +650,8 @@ function p2refresh(){bars();barTick();const pg=pageOf();if(!isShadow())return;
 function p2boot(){p2wrap();mapWire();bars();focBuild();
   document.addEventListener('click',e=>{const g=e.target.closest('[data-sxgo]');if(g){goP(g.dataset.sxgo);return}
     const bk=e.target.closest('[data-sxback]');if(bk){lbOpen=null;renderLibrary();return}const t=e.target.closest('[data-sxt]');if(t){const[k,v]=t.dataset.sxt.split('|');P2.tab[k]=v;renderLibrary();if(!e.detail)q1('.sxl-tabs [aria-selected="true"]')?.focus()}});
-  const sigC=()=>pageOf()+'|'+isShadow();let last=sigC();
-  const mo=new MutationObserver(()=>{const s=sigC();if(s===last)return;const wasSh=last.endsWith('true');last=s;const pg=pageOf();
-    if(isShadow()){if(pg)p2refresh();return}
-    if(wasSh){q1('#sxLk')?.remove();q1('#cBody')?.classList.remove('sx-lk');try{renderWeek();renderLibrary()}catch(e){}}});
+  let last=pageOf();
+  const mo=new MutationObserver(()=>{const pg=pageOf();if(pg===last)return;last=pg;if(pg)p2refresh()});
   mo.observe(document.body,{attributes:true,attributeFilter:['class']});mo.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
   setInterval(()=>{if(!isShadow())return;const pg=pageOf();if(pg==='foc')focTick()},250);
   setInterval(()=>{if(!isShadow())return;barTick();const pg=pageOf();if(pg==='foc'){logSessions();focFull()}if(pg==='cal'&&P2.links)calLinks()},20000);
@@ -666,12 +660,11 @@ function p2boot(){p2wrap();mapWire();bars();focBuild();
 
 /* ---------- boot ---------- */
 function boot(){const main=document.querySelector('main');if(!main)return;if(isShadow())fonts();box=document.createElement('div');box.id='shx';box.setAttribute('aria-label','Shadow Protocol home');const top=main.querySelector(':scope>.top');top?top.after(box):main.prepend(box);
-  const b=document.getElementById('modeBtn');if(b)b.setAttribute('aria-pressed',isShadow());
   render(true);sleepGuard();p2boot();
   new MutationObserver(()=>{if(onHome()){if(!box.querySelector('.sx-grid'))render(true);else{render();drawGraph(true);wave()}}}).observe(document.body,{attributes:true,attributeFilter:['class']});
   const rows=document.getElementById('rows');if(rows)new MutationObserver(()=>render()).observe(rows,{childList:true,subtree:true,attributes:true});
   setInterval(()=>{if(logSessions()&&onHome())render()},15000);logSessions();snapMB();setInterval(()=>{snapMB();if(!document.hidden)render()},20000);
   /* tests and the demo button need a way to fire moments by hand */
-  window.ShadowProtocol={totals,levelOf,rankOf,ledger,trajectory,XP,RANKS,setMode,render:()=>render(true),openFull,closeFull,fitAll,zoomC,graphAll,homeGraph,shadow,logSessions,lvSeq:(u)=>{const T=totals(),lv=levelOf(T.tot);lvSeq(!!u,Math.max(1,lv.L-1),lv,rankOf(lv.L))}}}
+  window.ShadowProtocol={totals,levelOf,rankOf,ledger,trajectory,XP,RANKS,render:()=>render(true),openFull,closeFull,fitAll,zoomC,graphAll,homeGraph,shadow,logSessions,lvSeq:(u)=>{const T=totals(),lv=levelOf(T.tot);lvSeq(!!u,Math.max(1,lv.L-1),lv,rankOf(lv.L))}}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
