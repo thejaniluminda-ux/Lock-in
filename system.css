@@ -467,3 +467,39 @@ html.shadow #woPage .pp-top .rp-h{display:none}html.shadow #woPage .pp-top{margi
 html.shadow #woPage .c-week .wbr{height:44px}
 html.shadow #cBody .ev.sx-short .tg{display:none}
 html.shadow #woPage #tdName{text-shadow:none!important}
+/* ---- due now (night review, recall check) and class finish line: restored 25 Nov 2026 when Shadow became the only UI ---- */
+#shx .sx-due{display:flex;flex-direction:column;gap:6px;margin:0 0 8px}
+#shx .sx-du{display:flex;align-items:center;gap:12px;padding:8px 10px 8px 12px;border-radius:12px;background:rgba(255,255,255,.03);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+#shx .sx-du.now{box-shadow:inset 0 0 0 1px rgba(125,255,168,.45)}
+#shx .sx-du .w{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
+#shx .sx-du .k{font:500 10.5px var(--sx-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--sx-i2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#shx .sx-du b{font-weight:500;font-size:13.5px;color:var(--sx-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#shx .sx-du-b{border:0;cursor:pointer;font:500 12.5px var(--font);padding:5px 12px;border-radius:999px;background:var(--sx-p2);color:var(--sx-ink);box-shadow:0 0 0 1px var(--sx-ln2);flex:none}
+#shx .sx-du-b:hover{background:var(--sx-p3)}
+#shx .sx-du .sx-go{flex:none}
+#shx .sx-fin{display:flex;align-items:baseline;gap:8px;margin-top:10px;padding-top:9px;border-top:1px solid var(--sx-ln);font-size:12px;color:var(--sx-i2)}
+#shx .sx-fin b{font-weight:500;color:var(--sx-ink)}#shx .sx-fin b.late{color:#ff8a7a}
+#shx .sx-fin small{margin-left:auto;color:var(--sx-i3);font-size:11.5px;white-space:nowrap}
+.sx-dlg .card2{width:min(480px,92vw);max-height:86vh;overflow:auto;box-sizing:border-box}
+.sx-dlg .sx-dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font:500 11px 'Geist Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#a6ada8}
+.sx-dlg [data-dlgx]{border:0;background:none;color:#a6ada8;font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;border-radius:8px}
+.sx-dlg [data-dlgx]:hover{color:#eceeec;background:rgba(255,255,255,.06)}
+.sx-dlg h3.si{font-size:16px;line-height:1.5;margin:0 0 14px}
+.sx-dlg .nr{margin:0;padding:0;border:0;background:none;gap:16px}
+.sx-dlg .nr-h b{font:600 17px 'Geist',system-ui,sans-serif;color:#eceeec}
+.sx-dlg .nr-h span{color:#6b736d}
+.sx-dlg .nr-f{color:#a6ada8;font-size:12.5px;margin:0}
+.sx-dlg .nr-f input[type=number]{width:110px}
+.sx-dlg .nr-f em{color:#cfd4d0}
+.sx-dlg label.nr-c{display:flex;align-items:center;gap:9px;margin:0;color:#cfd4d0;font-size:13px;line-height:1.45}
+.sx-dlg .nr-c input{display:inline-block;width:auto;margin:0;flex:none;accent-color:#eceeec}
+.sx-dlg .nr-b{gap:10px}
+.sx-dlg .nr-b button{color:#eceeec;background:#1a1d1b;border:1px solid rgba(255,255,255,.12);font:500 13.5px 'Geist',system-ui,sans-serif;padding:9px 18px;cursor:pointer}
+.sx-dlg .nr-b button:hover{background:#222624}
+.sx-dlg .nr-b .pri{background:#eceeec;color:#0a0b0a;border-color:#eceeec}
+.sx-dlg .nr-b .pri:hover{background:#fff}
+.sx-dlg .rate{margin:0;padding:0;border:0;background:none;color:#a6ada8;font-size:13px;gap:10px}
+.sx-dlg .rate>span{flex-basis:100%}
+.sx-dlg .rate button{width:44px;height:44px;background:#1a1d1b;border:1px solid rgba(255,255,255,.12);color:#eceeec;font:500 15px 'Geist Mono',monospace}
+.sx-dlg .rate button:hover,.sx-dlg .rate button.on{background:#eceeec;color:#0a0b0a}
+.sx-dlg .rate small{color:#6b736d}

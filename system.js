@@ -208,7 +208,7 @@ function rankHtml(T,lv,rank){const [nl,nr]=nextRank(lv.L),S=shadow(),seg=14,f=Ma
       <div class="sx-sec"><span>Right answers <b>${S.right}</b>${S.shRight!=null?' vs '+S.shRight:''}</span><span>Mistakes fixed <b>${S.fixed}</b>${S.shFixed!=null?' vs '+S.shFixed:''}</span></div></div>`}
 function misHtml(){const M=missions(),tk=todayK(),m=nowMin(),b=mib(tk);if(!M.length)return `<div class="sx-ph"><div><h3>Today's missions</h3><p>The exam is done. Nothing left to prove here.</p></div></div>`;
   const xp=x=>x.mib?XP.mib:x.t==='Practice'?30:x.t==='Body'?XP.workout:XP.sleep;
-  return `<div class="sx-ph"><div><h3>Today's missions</h3><p>${M.length} missions · +${M.reduce((a,x)=>a+xp(x),0)} XP available</p></div></div>`+M.map((x,i)=>{let n=8,f=0,a='0',bb='1',r='';
+  return `<div class="sx-ph"><div><h3>Today's missions</h3><p>${M.length} missions · +${M.reduce((a,x)=>a+xp(x),0)} XP available</p></div></div>`+dueHtml()+M.map((x,i)=>{let n=8,f=0,a='0',bb='1',r='';
     if(x.mib&&b){n=5;const tot=b.e-b.s,el=x.done?tot:Math.max(0,Math.min(tot,m-b.s));f=Math.floor(el/tot*n);a=fmH(el);bb=fmH(tot)+' h block';r=x.done?'Done':m>=b.s&&m<b.e?'Now':hm(b.s)}
     else if(x.prog){n=10;f=parseInt(x.prog);a=String(f);bb='10';r=x.done?'Done':`${10-f} to go`}
     else{f=x.done?n:0;a=x.done?'1':'0';r=x.done?'Done':x.s.match(/\d\d:\d\d/)?.[0]||''}
@@ -225,7 +225,7 @@ function mastHtml(){let G=[];try{const last=mqLast();for(const sj of ['chem','ph
       ${[50,34,18].map(r=>`<circle cx="52" cy="52" r="${r}" fill="none" stroke="rgba(255,255,255,.08)"/>`).join('')}${dots}<g class="sx-sweep"><path d="M52 52 L102 52 A50 50 0 0 0 ${52+50*Math.cos(-.7)} ${52+50*Math.sin(-.7)} Z" fill="url(#sxSw)"/></g></svg>
       <div class="sx-weak"><div class="h">Weakest now</div>${weak.map(g=>`<div><span title="${esc2(MQN[g.k]||g.k)}">${esc2(MQN[g.k]||g.k)}</span><span>${g.n?Math.round(g.m*100)+'%':'untried'}</span></div>`).join('')}</div></div>`}
 function recHtml(){const P=['nights asleep','focus session','class','nights the phone','mistake','past-paper','workout','study block','full paper'],R=record().sort((a,b)=>P.findIndex(p=>a[1].startsWith(p))-P.findIndex(p=>b[1].startsWith(p))).slice(0,3);
-  return `<div class="sx-rh"><h3>The Record</h3><span>evidence, not promises</span></div>${R.length?`<div class="sx-rr">${R.map(([n,s])=>`<div><b class="num">${n}</b><span>${esc2(s)}</span></div>`).join('')}</div>`:'<p class="sx-cap">Empty for now. Finished sessions, early nights and fixed mistakes land here.</p>'}`}
+  return `<div class="sx-rh"><h3>The Record</h3><span>evidence, not promises</span></div>${R.length?`<div class="sx-rr">${R.map(([n,s])=>`<div><b class="num">${n}</b><span>${esc2(s)}</span></div>`).join('')}</div>`:'<p class="sx-cap">Empty for now. Finished sessions, early nights and fixed mistakes land here.</p>'}`+finHtml()}
 function radioHtml(){bakuLine();const L=(SYS.radio[todayK()]||[]).slice(-3),n=(SYS.msg[todayK()]||{n:0}).n;
   return `<div class="sx-who2"><div class="av">${typeof bkSvg==='function'?bkSvg('sleepy'):''}</div><div><b>Baku · race engineer</b><small>${n} of 4 messages today</small></div></div>
     <canvas class="sx-wave" id="sxWave"></canvas><div class="sx-tx">${L.length?L.map(l=>`<div><span>${l.t}</span>${esc2(l.text)}</div>`).join(''):'<div class="q">Radio quiet. Nothing to report yet.</div>'}</div>
@@ -254,6 +254,41 @@ let wt=0,waveRaf=0;function wave(){cancelAnimationFrame(waveRaf);const c=box&&bo
   const talk=Date.now()-(SYS.lastSay||0)<6000;wt+=.1;g.clearRect(0,0,c.width,c.height);const n=48,w=c.width/n;
   for(let i=0;i<n;i++){const a=talk?.2+.8*Math.abs(Math.sin(wt*1.6+i*.55)*Math.cos(wt*.6+i*.21)):.08+.05*Math.sin(wt*.5+i*.4);g.fillStyle=`rgba(236,238,236,${.25+a*.55})`;const h=a*52;g.fillRect(i*w+1,30-h/2,w-3,h)}
   if(!R_M()&&isShadow()&&!document.body.className.includes('page-'))waveRaf=requestAnimationFrame(wave)}
+
+/* ---------- due now: night review and recall rating (restored 25 Nov 2026 when Shadow became the only UI).
+   Both reuse index.html's own code: nrHtml/saveReview (lockin-review-*) and rateHtml/saveRate (lockin-recall-v1).
+   The recall tick goes through the routine row's own tick button, so ticking works exactly as on the old Home. ---------- */
+const DUE_TAGS=['Consolidate','Recap'],DW3=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const dShort=k=>{const d=new Date(k+'T00:00');return `${DW3[d.getDay()]} ${d.getDate()} ${M3[d.getMonth()]}`};
+function dueOf(k){k=k||todayK();const tk=todayK(),m=nowMin(),today=k===tk,past=k<tk,out=[];
+  if((!today&&!past)||(typeof START!=='undefined'&&new Date(k+'T00:00')<START)||new Date(k+'T00:00')>EXAM_END)return out;
+  const L=(CS.days[k]||[]).slice().sort((a,b)=>a.s-b.s),rev=L.find(e=>e.kind==='review');
+  for(const e of L)if(DUE_TAGS.includes(e.tag)&&e.unit&&!e.conf&&(past||m>=e.s))out.push({kind:'recall',ev:e,now:today&&m>=e.s&&m<e.e});
+  if(rev&&!rev.done&&(past||m>=rev.s-30))out.push({kind:'review',ev:rev,now:today&&m>=rev.s-30});
+  return out}
+function dueHtml(){const D=dueOf();if(!D.length)return '';
+  return `<div class="sx-due">${D.slice(-2).reverse().map(d=>{const r=d.kind==='review';
+    return `<div class="sx-du${d.now?' now':''}"><div class="w"><span class="k">${r?'Night review':'Recall'} · ${hm(d.ev.s)}</span><b class="${r?'':'si'}" title="${esc2(r?'':d.ev.title)}">${r?'About a minute':esc2(d.ev.title)}</b></div><button type="button" class="${d.now?'sx-go':'sx-du-b'}" data-sxdue="${d.kind}|${esc2(d.ev.id)}">${r?'Open':d.ev.done?'Rate':'Done · rate'}</button></div>`}).join('')}</div>`}
+function dueView(k){if(typeof viewKey==='undefined')return false;if(viewKey!==k||nrOpen||rateFor){viewKey=k;nrOpen=false;rateFor=null;renderRoutine()}return true}
+function dueDlg(head,body,onClick){q1('.sx-dlg')?.remove();const o=document.createElement('div');o.className='sx-pop sx-dlg';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label',head);
+  o.innerHTML=`<div class="card2"><div class="sx-dh"><span>${esc2(head)}</span><button type="button" data-dlgx aria-label="Close">×</button></div>${body}</div>`;document.body.appendChild(o);
+  let done=false;const key=e=>{if(e.key==='Escape')close()};
+  const close=()=>{if(done)return;done=true;o.remove();document.removeEventListener('keydown',key);const tk=typeof todayKey!=='undefined'?todayKey:todayK();if(viewKey!==tk){viewKey=tk;nrOpen=false;rateFor=null;renderRoutine()}render()};
+  document.addEventListener('keydown',key);o.addEventListener('click',e=>{if(e.target===o||e.target.closest('[data-dlgx]')){close();return}onClick(e,close)});return {o,close}}
+function openReview(k){const rev=(CS.days[k]||[]).find(e=>e.kind==='review');if(!rev||rev.done||!dueView(k))return false;
+  const D=dueDlg(k===todayK()?'Tonight · '+hm(rev.s):dShort(k),nrHtml(),(e,close)=>{if(e.target.closest('#nrLater')){close();return}if(e.target.closest('#nrSave')){saveReview();close()}});
+  D.o.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='nrL'){e.preventDefault();saveReview();D.close()}});setTimeout(()=>D.o.querySelector('#nrH')?.focus(),30);logI('open:review',{k});return true}
+function openRecall(k,id){if(!dueView(k))return false;const ev=(CS.days[k]||[]).find(x=>x.id===id);if(!ev)return false;
+  if(!ev.done){const t=document.querySelector(`#rows .r[data-id="${CSS.escape(String(id))}"] .tick`);if(t&&!t.disabled)t.click()}
+  if(!ev.done)return false;
+  dueDlg('Recall check · '+(k===todayK()?hm(ev.s):dShort(k)),`<h3 class="si">${esc2(ev.title)}</h3>${rateHtml(ev)}`,(e,close)=>{const b=e.target.closest('[data-rate]');if(b){saveRate(b.dataset.id,+b.dataset.rate);close()}});logI('open:recall',{k});return true}
+/* used by the Calendar day sheet button: open what is due for that day */
+function openDue(k,kind,id){k=k||todayK();const D=dueOf(k);let p=kind?D.find(d=>d.kind===kind&&(!id||d.ev.id===id)):null;
+  if(!p){const r=D.find(d=>d.kind==='review'),c=D.find(d=>d.kind==='recall');p=k<todayK()||nowMin()>=720?(r||c):(c||r)}
+  if(!p)return false;return p.kind==='review'?openReview(k):openRecall(k,p.ev.id)}
+/* projected end of Physics and Chemistry classes (the old Home rings card line), red when past CLASSES_BY */
+function finHtml(){let f=null;try{f=typeof classesFinish==='function'?classesFinish():null}catch(e){}if(!f)return '';
+  return `<div class="sx-fin"><span>Classes finish</span><b class="num${f.late?' late':''}">${dShort(f.k)}</b><small>${typeof CLASSES_BY!=='undefined'?'target '+dShort(dk(CLASSES_BY)):''}</small></div>`}
 
 /* ---------- render ---------- */
 const onHome=()=>isShadow()&&!/\bpage-/.test(document.body.className);
@@ -383,6 +418,7 @@ function fonts(){if(document.getElementById('sxFonts'))return;const l=document.c
 
 /* ---------- events ---------- */
 document.addEventListener('click',e=>{
+  const du=e.target.closest('[data-sxdue]');if(du){const[kd,id]=du.dataset.sxdue.split('|');openDue(todayK(),kd,id);return}
   if(e.target.closest('[data-target]')){targetPop();return}
   if(!box||!box.contains(e.target))return;
   if(e.target.closest('[data-bpopen]')){openFull();return}
@@ -665,6 +701,6 @@ function boot(){const main=document.querySelector('main');if(!main)return;if(isS
   const rows=document.getElementById('rows');if(rows)new MutationObserver(()=>render()).observe(rows,{childList:true,subtree:true,attributes:true});
   setInterval(()=>{if(logSessions()&&onHome())render()},15000);logSessions();snapMB();setInterval(()=>{snapMB();if(!document.hidden)render()},20000);
   /* tests and the demo button need a way to fire moments by hand */
-  window.ShadowProtocol={totals,levelOf,rankOf,ledger,trajectory,XP,RANKS,render:()=>render(true),openFull,closeFull,fitAll,zoomC,graphAll,homeGraph,shadow,logSessions,lvSeq:(u)=>{const T=totals(),lv=levelOf(T.tot);lvSeq(!!u,Math.max(1,lv.L-1),lv,rankOf(lv.L))}}}
+  window.ShadowProtocol={totals,levelOf,rankOf,ledger,trajectory,XP,RANKS,openDue,dueOf,render:()=>render(true),openFull,closeFull,fitAll,zoomC,graphAll,homeGraph,shadow,logSessions,lvSeq:(u)=>{const T=totals(),lv=levelOf(T.tot);lvSeq(!!u,Math.max(1,lv.L-1),lv,rankOf(lv.L))}}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();

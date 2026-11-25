@@ -1449,7 +1449,7 @@ html.shadow #awQ{--aw-acc:#7dffa8}html.shadow #awQ .aw-c{background:#121413;colo
   </main>
 </div>
 <div class="toast" id="toast" role="status"></div>
-<aside id="daySheet" aria-label="Day routine"><div class="ds-h"><div><h2 id="dsTitle"></h2><p id="dsSub"></p></div><button class="ds-x" data-x aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div id="dsRows"></div><div class="ds-f"><button class="tbtn2" id="dsHome">Open on Home</button></div></aside>
+<aside id="daySheet" aria-label="Day routine"><div class="ds-h"><div><h2 id="dsTitle"></h2><p id="dsSub"></p></div><button class="ds-x" data-x aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div><div id="dsRows"></div><div class="ds-f"><button class="tbtn2" id="dsHome">Review and recall</button></div></aside>
 <div id="partQ" role="dialog" aria-label="Where did you stop in the recording?"><span id="pqTxt"></span><input id="pqIn" inputmode="numeric" placeholder="h:mm:ss" aria-label="Where you stopped, h:mm:ss" autocomplete="off"><button class="pbtn" data-pq="all">Watched it all</button><button class="pbtn pri" data-pq="save">Save</button><button class="pbtn" data-pq="no" aria-label="Close">×</button></div>
 <div id="fin" role="status"><span id="finTxt"></span><button class="pbtn" data-no>No</button><button class="pbtn pri" data-yes>Yes, move my plan up</button></div>
 <div id="ex" role="dialog" aria-modal="true" aria-label="Workout session">
@@ -2152,6 +2152,8 @@ setInterval(()=>{const n=new Date(),m=n.getHours()*60+n.getMinutes();if(!autoNud
 function renderRings(){}
 function renderBars(){}
 function renderStreak(){}
+/* projected finish: the last Physics/Chemistry class still in the plan (was the rings card line; Shadow shows it in The Record) */
+function classesFinish(){let endK='';for(const k in CS.days)if(CS.days[k].some(e=>e.kind==='class'&&e.subj!=='maths'&&!e.done)&&k>endK)endK=k;return endK?{k:endK,late:endK>dkey(CLASSES_BY)}:null}
 
 /* old Home mini calendar: removed (Shadow only); no-op for its callers */
 function renderCal(){}
@@ -3607,7 +3609,7 @@ function showDaySheet(k){
 }
 $('#daySheet').addEventListener('click',e=>{
   if(e.target.closest('[data-x]')){$('#daySheet').classList.remove('show');return}
-  if(e.target.closest('#dsHome')){const k=$('#daySheet').dataset.k;$('#daySheet').classList.remove('show');calFs(false);go('Home');showDay(k);return}
+  if(e.target.closest('#dsHome')){const k=$('#daySheet').dataset.k;$('#daySheet').classList.remove('show');calFs(false);go('Home');/* Shadow Home shows today only: open that day's night review or recall check instead */if(!(window.ShadowProtocol&&ShadowProtocol.openDue(k)))toast(k>todayKey?'That day has not come yet. Nothing to review.':'Nothing to review or rate for that day.');return}
   const t=e.target.closest('.tick');if(!t||t.disabled)return;
   const k=$('#daySheet').dataset.k,ev=(CS.days[k]||[]).find(x=>x.id===t.closest('.ds-r').dataset.id);if(!ev)return;
   ev.done=!ev.done;saveCS();showDaySheet(k);renderWeek();renderRoutine();renderRings();renderBars();if(ev.done)offerFinish(ev);
