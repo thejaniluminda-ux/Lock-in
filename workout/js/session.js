@@ -38,7 +38,7 @@ export function start(o){const {S,T,TK,SID,H}=o,el=document.getElementById('woSe
      Mid-set and last-reps cues are timers from the set announcement; any button press cancels them. */
   let pend=[],restLen=0,cueT=[],cueTok=0;
   function clearCues(){cueTok++;cueT.forEach(clearTimeout);cueT=[]}
-  function announce(q,x,rng){clearCues();const nm=x.n,st=`Set ${q.set} of ${q.of}.`;
+  function announce(q,x,rng){clearCues();
     if(x.kind==='test'){voice(COACH()?[...pend,['dynamic',[ID.name(q.e)]],['moment','test.go']]:[...pend,['dynamic',[ID.name(q.e)]],['moment','workout.begin']]);pend=[];return}
     const cue=COACH()&&q.set===1?x.cue:'';
     const kind=x.kind==='reps'?'reps':x.mode==='count'?'count':x.mode==='hold'?'max':'hold',cueId=ID.cue(q.e==='neck'&&x.kind==='hold'?'neck-iso':q.e);
