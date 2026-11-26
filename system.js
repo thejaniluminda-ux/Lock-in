@@ -201,7 +201,7 @@ function rankHtml(T,lv,rank){const [nl,nr]=nextRank(lv.L),S=shadow(),seg=14,f=Ma
     const yl=pts(Math.min(nowMin(),1380)).map((t,i)=>(i?'L':'M')+x(t)+' '+y(cumAt(todayK(),t))).join(' '),sl=pts(1380).map((t,i)=>(i?'L':'M')+x(t)+' '+y(S.at(t))).join(' ');
     race=`<div class="sx-g"><b class="num">${g>=0?'+':'−'}${fmH(Math.abs(g))}</b><span>${g>=0?'ahead of':'behind'} ${S.foe}</span></div>
       <svg viewBox="0 0 ${W} 40" preserveAspectRatio="none"><path class="sl" d="${sl}"/><path class="yl" d="${yl}"/></svg>
-      <div class="sx-who"><span>You <b>${fmH(S.you)} h</b></span><span>${S.Foe} <b>${fmH(S.at(nowMin()))} h</b></span></div>`}
+      <div class="sx-who"><span>You today <b>${fmH(S.you)} h</b></span><span>${S.Foe} by now <b>${fmH(S.at(nowMin()))} h</b></span></div>`}
   return `<div class="sx-lvl"><b id="sxLvN">${lv.L}</b><div><span>${rank}</span><small>Level ${lv.L} · next rank ${nr} at level ${nl}</small></div></div>
     <div class="sx-segs" id="sxXp">${segHtml(seg,f)}</div><div class="sx-xpr"><span><b>${lv.into}</b> / ${lv.need} XP</span><em>+${T.today} XP today</em></div>
     <div class="sx-sr"><div class="sx-t"><span>${S.plan?'Race vs the plan':'Shadow race'}</span><small>${S.plan?'days 1-7 · Focus only':'finished Focus sessions only'}</small></div>${race}
@@ -217,16 +217,16 @@ function misHtml(){const M=missions(),tk=todayK(),m=nowMin(),b=mib(tk);if(!M.len
       <div class="cnt"><span><b>${a}</b> of ${bb}</span><span>${cur?'<button class="sx-go" data-begin>Focus</button>':r}</span></div><div class="sx-segs sm">${segHtml(n,f)}</div></div>`}).join('')+((()=>{const L=(CS.days[tk]||[]).filter(e=>isStudy(e)&&e.s>=m).sort((x,y)=>x.s-y.s).slice(0,5);return L.length?`<div class="sx-rest"><h4>Rest of today</h4>${L.map(e=>`<div><span class="num">${hm(e.s)}</span><i class="sx2-dot" style="--sj:${SJC[e.subj]||'#8b928d'}"></i><span class="si">${esc2(e.title)}</span></div>`).join('')}</div>`:''})())}
 function mastHtml(){let G=[];try{const last=mqLast();for(const sj of ['chem','phy'])for(const g of mqGroups(sj)){const m=mqMast(sj,g,last);G.push({k:g.k,n:m.n,m:m.m,gain:g.per*(1-m.m)})}}catch(e){}
   if(!G.length)return `<div class="sx-ph"><div><h3>Mastery</h3><p>Weights file not loaded yet</p></div></div>`;
-  const tried=G.filter(g=>g.n>0).sort((a,b)=>a.m-b.m),weak=tried.slice(0,3);for(const g of G.filter(g=>!g.n).sort((a,b)=>b.gain-a.gain))if(weak.length<3)weak.push(g);
+  const tried=G.filter(g=>g.n>=5).sort((a,b)=>a.m-b.m),weak=tried.slice(0,3);for(const g of G.filter(g=>g.n<5).sort((a,b)=>b.gain-a.gain))if(weak.length<3)weak.push(g);
   const C=52,rnd=s=>{let x=Math.sin(s)*1e4;return x-Math.floor(x)};let dots='';
   G.forEach((g,i)=>{const a=rnd(i+3)*Math.PI*2,r=g.n?8+(1-g.m)*40:46,X=C+r*Math.cos(a),Y=C+r*Math.sin(a),w=weak.includes(g);dots+=w?`<circle cx="${X}" cy="${Y}" r="4.5" fill="none" stroke="#eceeec" stroke-width="1.2"/><circle cx="${X}" cy="${Y}" r="1.8" fill="#eceeec"/>`:`<circle cx="${X}" cy="${Y}" r="1.8" fill="rgba(236,238,236,${g.n?.6:.25})"/>`});
   return `<div class="sx-ph"><div><h3>Mastery</h3><p>Paper I units · closer to the centre = stronger</p></div></div>
     <div class="sx-rad"><svg viewBox="0 0 104 104"><defs><linearGradient id="sxSw" gradientUnits="userSpaceOnUse" x1="52" y1="52" x2="104" y2="52"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
       ${[50,34,18].map(r=>`<circle cx="52" cy="52" r="${r}" fill="none" stroke="rgba(255,255,255,.08)"/>`).join('')}${dots}<g class="sx-sweep"><path d="M52 52 L102 52 A50 50 0 0 0 ${52+50*Math.cos(-.7)} ${52+50*Math.sin(-.7)} Z" fill="url(#sxSw)"/></g></svg>
-      <div class="sx-weak"><div class="h">Weakest now</div>${weak.map(g=>`<div><span title="${esc2(MQN[g.k]||g.k)}">${esc2(MQN[g.k]||g.k)}</span><span>${g.n?Math.round(g.m*100)+'%':'untried'}</span></div>`).join('')}</div></div>`}
-function recHtml(){const P=['nights asleep','focus session','class','nights the phone','mistake','past-paper','workout','study block','full paper'],R=record().sort((a,b)=>P.findIndex(p=>a[1].startsWith(p))-P.findIndex(p=>b[1].startsWith(p))).slice(0,3);
-  return `<div class="sx-rh"><h3>The Record</h3><span>evidence, not promises</span></div>${R.length?`<div class="sx-rr">${R.map(([n,s])=>`<div><b class="num">${n}</b><span>${esc2(s)}</span></div>`).join('')}</div>`:'<p class="sx-cap">Empty for now. Finished sessions, early nights and fixed mistakes land here.</p>'}`+finHtml()}
-function radioHtml(){bakuLine();const L=(SYS.radio[todayK()]||[]).slice(-3),n=(SYS.msg[todayK()]||{n:0}).n;
+      <div class="sx-weak"><div class="h">Weakest now</div>${weak.map(g=>`<div><span title="${esc2(MQN[g.k]||g.k)}">${esc2(MQN[g.k]||g.k)}</span><span>${g.n>=5?Math.round(g.m*100)+'%':g.n?g.n+' tried':'untried'}</span></div>`).join('')}</div></div>`}
+function recHtml(){const P=['nights asleep','focus session','class','nights the phone','mistake','past-paper','workout','study block','full paper'],R=record().sort((a,b)=>P.findIndex(p=>a[1].startsWith(p))-P.findIndex(p=>b[1].startsWith(p))).slice(0,innerHeight>950?6:3);
+  return `<div class="sx-rh"><h3>The Record</h3><span>since Day 1</span></div>${R.length?`<div class="sx-rr">${R.map(([n,s])=>`<div><b class="num">${n}</b><span>${esc2(s)}</span></div>`).join('')}</div>`:'<p class="sx-cap">Empty for now. Finished sessions, early nights and fixed mistakes land here.</p>'}`+finHtml()}
+function radioHtml(){bakuLine();const L=(SYS.radio[todayK()]||[]).slice(innerHeight>950?-8:-3),n=(SYS.msg[todayK()]||{n:0}).n;
   return `<div class="sx-who2"><div class="av">${typeof bkSvg==='function'?bkSvg('sleepy'):''}</div><div><b>Baku · race engineer</b><small>${n} of 4 messages today</small></div></div>
     <canvas class="sx-wave" id="sxWave"></canvas><div class="sx-tx">${L.length?L.map(l=>`<div><span>${l.t}</span>${esc2(l.text)}</div>`).join(''):'<div class="q">Radio quiet. Nothing to report yet.</div>'}</div>
     <div class="sx-ask">${checks()}</div>`}
@@ -235,7 +235,7 @@ let HG=null,flowRaf=0;
 function drawGraph(force){const g=box&&box.querySelector('#sxGraph');if(!g||!g.clientWidth)return;const H0=homeGraph(Math.max(3,Math.min(5,Math.floor(g.clientWidth/185))));
   const sig=g.clientWidth+'x'+g.clientHeight+'|'+H0.nodes.map(n=>n.i+':'+nodeState(n,H0.X)).join(',');if(!force&&HG&&HG.sig===sig)return;HG={sig,...H0};
   const unit=H0.X?(H0.X.unit?(String(H0.X.sub||'').split(',')[0]||H0.X.unit):''):'';box.querySelector('#sxUnit').textContent=H0.X?`${SUBJ[H0.X.subj]||''}${H0.X.unit?' · '+unit:''}`:'Nothing scheduled';
-  const W=g.clientWidth,H=g.clientHeight,nc=Math.max(1,H0.cols.length),cw=W/nc,rows=HG.rows||1,rh=Math.min(H>700?210:135,(H-60)/Math.max(rows,1)),off=Math.max(34,Math.min(H>700?96:80,(H-rh*(rows-1)-80)/2));
+  const W=g.clientWidth,H=g.clientHeight,nc=Math.max(1,H0.cols.length),cw=W/nc,rows=HG.rows||1,rh=H>700?Math.min(300,(H-150)/Math.max(rows-1,1)):Math.min(135,(H-60)/Math.max(rows,1)),off=Math.max(34,Math.min(H>700?70:80,(H-rh*(rows-1)-80)/2));
   box.querySelector('#sxCols').style.gridTemplateColumns=`repeat(${nc},1fr)`;box.querySelector('#sxCols').innerHTML=H0.cols.map(c=>`<span class="${c==='Today'?'today':''}">${c}</span>`).join('');
   g.querySelectorAll('.sx-nd').forEach(n=>n.remove());const pos={};
   for(const n of H0.nodes){const st=nodeState(n,H0.X),el=document.createElement('div');el.className='sx-nd '+st;el.dataset.i=n.i;const x=n._c*cw+8,y=off+n._r*rh;pos[n.i]=el;
@@ -298,15 +298,16 @@ function earlyOpen(){if(typeof earlyList!=='function')return;const L=earlyList()
     const it=e.target.closest('[data-eab]');if(it){sel=it.dataset.eab;draw();return}
     if(e.target.closest('[data-eago]')){const w=earlyWarn(sel);if(w.length&&!e.target.closest('[data-eaforce]')){warn(w);return}apply(close);return}
     if(e.target.closest('[data-eaback]')){draw();return}
+    const jb=e.target.closest('[data-eaj]');if(jb){const t=box.querySelector(`[data-eas="${jb.dataset.eaj}"]`);if(t)box.scrollTop=t.offsetTop-box.offsetTop;return}
     if(e.target.closest('[data-eax]'))close()});
   const card=D.o.querySelector('.card2');card.classList.add('sx-ea');
   card.insertAdjacentHTML('beforeend',`<p class="sx-cap">Pick the class you already watched. It counts as done today, the next class of that subject moves into its slot, and its review moves to tomorrow 06:15.</p>
-    <input type="search" class="ea-q" placeholder="Search by unit, class or date" aria-label="Search classes"><div class="ea-l" role="listbox" aria-label="Upcoming classes"></div><div class="ea-f"></div>`);
+    <input type="search" class="ea-q" placeholder="Search by unit, class or date" aria-label="Search classes"><div class="ea-j" aria-label="Jump to a subject"></div><div class="ea-l" role="listbox" aria-label="Upcoming classes"></div><div class="ea-f"></div>`);
   const box=card.querySelector('.ea-l'),foot=card.querySelector('.ea-f'),inp=card.querySelector('.ea-q');
   const when=x=>(x.k===tk?'Today':dShort(x.k))+' · '+hm(x.s)+(x.parts>1?' · '+x.parts+' parts':'');
   function list(){const f=q.trim().toLowerCase(),M=L.filter(x=>!f||(x.title+' '+x.usi+' '+x.uen+' '+EA_SJ[x.subj]+' '+when(x)).toLowerCase().includes(f));
     if(!M.length)return `<p class="ea-n">${L.length?'No class matches that search.':'No upcoming classes left to mark.'}</p>`;let h='',sj='',un=null;
-    for(const s of ['phy','chem','maths']){const S=M.filter(x=>x.subj===s);if(!S.length)continue;h+=`<div class="ea-s"><i class="sx2-dot" style="--sj:${SJC[s]||'#8b928d'}"></i>${EA_SJ[s]}<span>${S.length}</span></div>`;
+    for(const s of ['phy','chem','maths']){const S=M.filter(x=>x.subj===s);if(!S.length)continue;h+=`<div class="ea-s" data-eas="${s}"><i class="sx2-dot" style="--sj:${SJC[s]||'#8b928d'}"></i>${EA_SJ[s]}<span>${S.length}</span></div>`;
       const U=[];for(const x of S)if(!U.includes(x.unit))U.push(x.unit);
       for(const u of U){const I=S.filter(x=>x.unit===u),a=I[0];h+=`<div class="ea-u"><span class="si">${esc2(a.usi)}</span><small>${esc2(a.uen)}</small></div>`+
         I.map(x=>`<button type="button" class="ea-i${sel===x.b?' on':''}" role="option" aria-selected="${sel===x.b}" data-eab="${esc2(x.b)}"><span class="si" title="${esc2(x.title)}">${esc2(x.title)}</span><span class="num">${when(x)}</span></button>`).join('')}}
@@ -315,9 +316,13 @@ function earlyOpen(){if(typeof earlyList!=='function')return;const L=earlyList()
     foot.innerHTML=`<span class="ea-sel${x?' si':''}">${x?esc2(x.title):'Nothing picked yet'}</span><button type="button" class="ea-b" data-eax>Cancel</button><button type="button" class="ea-b pri" data-eago${x?'':' disabled'}>Mark done today</button>`}
   function warn(w){foot.innerHTML=`<div class="ea-w"><b>${w.length===1?'This class comes first and is not done yet:':'These come first and are not done yet:'}</b><span class="si">${w.slice(0,4).map(esc2).join(' · ')}${w.length>4?' · +'+(w.length-4)+' more':''}</span><em>Mark this one anyway?</em></div><button type="button" class="ea-b" data-eaback>Back</button><button type="button" class="ea-b pri" data-eago data-eaforce>Mark anyway</button>`}
   function apply(close){const x=L.find(y=>y.b===sel);if(!x)return;const r=doneEarly(sel);logI('early',{b:sel,ok:!!r});close();try{renderWeek()}catch(e){}}
-  inp.addEventListener('input',()=>{q=inp.value;box.innerHTML=list()});draw();setTimeout(()=>{card.setAttribute('tabindex','-1');card.focus({preventScroll:true})},30)}
+  /* review round 2: subject chips with counts show that Chemistry and Maths follow below */
+  const jumps=()=>{const f=q.trim().toLowerCase(),M=L.filter(x=>!f||(x.title+' '+x.usi+' '+x.uen+' '+EA_SJ[x.subj]+' '+when(x)).toLowerCase().includes(f));card.querySelector('.ea-j').innerHTML=['phy','chem','maths'].map(s=>{const n=M.filter(x=>x.subj===s).length;return n?`<button type="button" class="ea-jb" data-eaj="${s}"><i class="sx2-dot" style="--sj:${SJC[s]||'#8b928d'}"></i>${EA_SJ[s]} <b class="num">${n}</b></button>`:''}).join('')};
+  inp.addEventListener('input',()=>{q=inp.value;box.innerHTML=list();jumps();box.scrollTop=0});jumps();draw();setTimeout(()=>{card.setAttribute('tabindex','-1');card.focus({preventScroll:true})},30)}
 document.addEventListener('click',e=>{if(e.target.closest('#earlyBtn'))earlyOpen()});
 
+/* missions column: a fade and "more below" cue while there is more to scroll (26 Nov 2026) */
+function misMore(){const m=box&&box.querySelector('#sxMis');if(!m)return;const f=()=>m.classList.toggle('sx-more',m.scrollHeight>m.clientHeight+4&&m.scrollTop+m.clientHeight<m.scrollHeight-4);requestAnimationFrame(f);if(!m.__mm){m.__mm=1;m.addEventListener('scroll',f,{passive:true});addEventListener('resize',f)}}
 /* ---------- render ---------- */
 const onHome=()=>isShadow()&&!/\bpage-/.test(document.body.className);
 function render(force){if(!box||!isShadow()||!onHome())return;if(force||!box.querySelector('.sx-grid'))shell();
@@ -325,7 +330,7 @@ function render(force){if(!box||!isShadow()||!onHome())return;if(force||!box.que
   box.querySelector('#sxDay').innerHTML=new Date(todayK()+'T00:00')>EXAM_END?'Exam over':now()>=EXAM?`Exam day <b>${Math.round((new Date(todayK()+'T00:00')-EXAM)/864e5)+1}</b> / 26`:dayNo()<1?`Day 1 starts tomorrow`:`Day <b>${dayNo()}</b> / ${daysTotal()}`;
   box.querySelector('#sxExam').innerHTML=now()<EXAM?`A/L in <b>${Math.ceil((EXAM-now())/864e5)}</b> days`:'A/L';box.querySelector('#sxClk').textContent=hm(nowMin());
   box.querySelector('.sx-tgt').innerHTML=P.course?`Target <b>${esc2(P.course)}</b>${P.z?' · Z '+esc2(P.z):''}`:'Set your target';
-  setPanel('sxRank',rankHtml(T,lv,rank));setPanel('sxMis',misHtml());setPanel('sxMast',mastHtml());setPanel('sxRec',recHtml());if(setPanel('sxRadio',radioHtml()))wave();
+  setPanel('sxRank',rankHtml(T,lv,rank));setPanel('sxMis',misHtml());misMore();setPanel('sxMast',mastHtml());setPanel('sxRec',recHtml());if(setPanel('sxRadio',radioHtml()))wave();
   requestAnimationFrame(()=>{drawGraph(force);if(!waveRaf)wave()});events(T,lv,rank)}
 /* ---------- moments: mission complete, level-up, rank-up, first launch ---------- */
 let queued=[];
@@ -584,11 +589,11 @@ function calSide(){const side=q1('#calPage .cside');if(!side)return;let box=side
   const keys=curKeys,tk=todayK(),hrs={phy:0,chem:0,maths:0};let st=0,sd=0,ch=0,cd=0,foc=0;
   for(const k of keys){for(const e of CS.days[k]||[]){if(!isStudy(e))continue;if(hrs[e.subj]!=null)hrs[e.subj]+=(e.e-e.s)/60;st++;if(e.done)sd++;if(e.kind==='class'){ch+=(e.e-e.s)/60;if(e.done)cd+=(e.e-e.s)/60}}foc+=((FO.log||{})[k]||{min:0}).min}
   const nf=x=>+x.toFixed(1);
-  document.querySelectorAll('#calPage .filt label').forEach(l=>{const f=l.querySelector('input')?.dataset.f;let b=l.querySelector('.sx-h');if(!b){b=document.createElement('b');b.className='sx-h num';l.appendChild(b)}b.textContent=hrs[f]!=null?nf(hrs[f])+' h':''});
+  document.querySelectorAll('#calPage .filt label').forEach(l=>{const f=l.querySelector('input')?.dataset.f;let b=l.querySelector('.sx-h');if(!b){b=document.createElement('b');b.className='sx-h num';l.appendChild(b)}b.textContent=hrs[f]!=null?fmH(hrs[f]*60)+' h':''});
   const owe=[];for(const k in CS.days)for(const e of CS.days[k])if(e.cu&&!e.done)owe.push(e);const oh=owe.reduce((a,e)=>a+(e.e-e.s),0),due=owe.map(e=>e.cu.due).sort()[0],late=owe.filter(e=>e.date<tk).length;
   const wkLab=keys[0]<=tk&&tk<=keys[6]?'This week':'That week';
-  box.innerHTML=`<section class="card sx2-cu"><h2>Catch-up owed</h2><div class="big num">${fmH(oh)}</div><p>${owe.length?`${owe.length} block${owe.length>1?'s':''} · due by ${fmtD(due)}${late?` · <b class="warn">${late} overdue</b>`:''}`:'Nothing owed. Keep it that way.'}</p></section>
-    <section class="card sx2-wk"><h2>${wkLab}</h2><div class="sx2-row"><span>Blocks done</span><b class="num">${sd} / ${st}</b></div><div class="sx2-row"><span>Class hours</span><b class="num">${nf(cd)} / ${nf(ch)}</b></div><div class="sx2-row"><span>Focus, verified</span><b class="num">${fmH(foc)} h</b></div></section>`;
+  box.innerHTML=`<section class="card sx2-cu${owe.length?'':' zero'}"><h2>Catch-up owed${owe.length?'':' <b class="num">0:00</b>'}</h2>${owe.length?`<div class="big num">${fmH(oh)}</div>`:''}<p>${owe.length?`${owe.length} block${owe.length>1?'s':''} · due by ${fmtD(due)}${late?` · <b class="warn">${late} overdue</b>`:''}`:'Nothing owed. Keep it that way.'}</p></section>
+    <section class="card sx2-wk"><h2>${wkLab}</h2><div class="sx2-row"><span>Blocks done</span><b class="num">${sd} / ${st}</b></div><div class="sx2-row"><span>Class hours</span><b class="num">${fmH(cd*60)} / ${fmH(ch*60)}</b></div><div class="sx2-row"><span>Focus, verified</span><b class="num">${fmH(foc)} h</b></div></section>`;
   const bar=q1('#calPage .cbar');if(bar&&!bar.querySelector('#sxLinks')){const b=document.createElement('button');b.id='sxLinks';b.type='button';b.className='tbtn sx2-only';bar.querySelector('#cFs')?.before(b);b.addEventListener('click',()=>{P2.links=!P2.links;P2.lkScrolled=0;calLinks()})}
   /* the block he clicks becomes the selected block for the links view (24 Nov 2026, his request); none selected = the current block */
   const cbd=q1('#cBody');if(cbd&&!cbd.dataset.sxSel){cbd.dataset.sxSel='1';cbd.addEventListener('click',ev=>{if(!isShadow())return;const el=ev.target.closest('.ev'),col=el&&el.closest('.col');if(!el||!col)return;P2.sel={k:col.dataset.k,id:String(el.dataset.id)};P2.lkScrolled=1;if(P2.links)calLinks()})}
@@ -693,7 +698,7 @@ function mapClamp(){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,
 function mapZoom(f,cx,cy){const vp=q1('#sxmVp'),V=SM.V;if(cx==null){cx=vp.clientWidth/2;cy=vp.clientHeight/2}const k=Math.min(1.6,Math.max(.4,V.k*f));V.x=cx-(cx-V.x)*k/V.k;V.y=cy-(cy-V.y)*k/V.k;V.k=k;mapClamp();mapApply()}
 function mapFit(centre){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,f=Math.min(vp.clientWidth/D.W,vp.clientHeight/D.H);V.k=centre?1:Math.min(1,f);
   const c=D.pos[SM.sel[D.s]];V.x=0;V.y=0;if(centre&&c&&V.k>f){if((c[0]+D.NW)*V.k>vp.clientWidth*.85)V.x=vp.clientWidth/2-(c[0]+D.NW/2)*V.k;V.y=vp.clientHeight/2-(c[1]+D.NH/2)*V.k}mapClamp();mapApply()}
-function mapRender(){const box=q1('#lbList');if(!box)return;box.innerHTML=mapHtml();/* opens fitted to the viewport so no unit is cut off (26 Nov 2026) */requestAnimationFrame(()=>{mapFit(false);const vp=q1('#sxmVp'),D=SM.D;if(vp&&D){const k=Math.min(1,(vp.clientWidth-24)/D.W);if(k>SM.V.k){SM.V.k=k;SM.V.x=0;SM.V.y=0;mapClamp();mapApply()}}})}
+function mapRender(){const box=q1('#lbList');if(!box)return;box.innerHTML=mapHtml();/* opens at 100% (labels readable, 11 px and up) centred on today's unit; Fit shows every unit (review round 2, 26 Nov 2026) */requestAnimationFrame(()=>mapFit(true))}
 function mapWire(){document.addEventListener('click',e=>{if(!isShadow()||!q1('#sxm'))return;
     const z=e.target.closest('[data-mz]');if(z){const v=z.dataset.mz;if(v==='in')mapZoom(1.2);else if(v==='out')mapZoom(1/1.2);else if(v==='fit')mapFit(false);else{SM.fs=!SM.fs;q1('#sxm').classList.toggle('fs',SM.fs);document.body.classList.toggle('sx-mapfs',SM.fs);z.textContent=SM.fs?'Exit full screen':'Full screen';requestAnimationFrame(()=>mapFit(true))}return}
     const o=e.target.closest('[data-mopen]');if(o){SM.fs=false;document.body.classList.remove('sx-mapfs');lbV='cards';try{lsSet(LVKEY,'cards')}catch(x){}lbOpen=o.dataset.mopen;renderLibrary();return}

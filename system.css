@@ -553,3 +553,33 @@ html.shadow .sxl-card .t .state{flex:none}
 html.shadow .seg button{transition:color .15s}
 html.shadow #papPage>.sx2-barw,html.shadow #repPage>.sx2-barw{margin-top:-16px}
 #mqBody .mq-none span{font-size:14px;color:var(--sx-i2,#a6ada8);line-height:1.5}
+/* ---- 26 Nov 2026 review round 2 ---- */
+/* Home: compact missions on short screens, a fade + "more below" cue when the list scrolls */
+@media (max-height:820px){html.shadow #shx .sx-m{padding:7px 12px;margin-bottom:6px}html.shadow #shx .sx-m .tt{margin:0 0 3px;font-size:14px}html.shadow #shx .sx-m .cnt{margin-bottom:3px;min-height:20px}html.shadow #shx .sx-du{padding:6px 10px 6px 12px}html.shadow #shx .sx-mis .sx-ph{margin-bottom:6px}}
+html.shadow #shx .sx-mis.sx-more{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 46px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 46px),transparent)}
+/* Papers: the question log folds after 3 rows */
+#mqBody .mq-more>summary{cursor:pointer;list-style:none;padding:10px 0;font-size:13px;color:var(--sx-i2,#a6ada8)}
+#mqBody .mq-more>summary::-webkit-details-marker{display:none}
+#mqBody .mq-more>summary::before{content:"+ ";color:var(--sx-i3,#6b736d)}
+#mqBody .mq-more[open]>summary::before{content:"\2212  "}
+/* Already did a class: subject jump chips and a fade show that more subjects follow */
+.sx-ea .ea-j{display:flex;gap:6px;margin:0 0 10px;flex-wrap:wrap}
+.sx-ea .ea-jb{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);background:#1a1d1b;color:#cfd4d0;border-radius:999px;padding:5px 12px;font:500 12.5px "Geist",system-ui,sans-serif;cursor:pointer}
+.sx-ea .ea-jb:hover{background:#222624}
+.sx-ea .ea-jb b{color:#8b928d;font-weight:500}
+.sx-ea .ea-l{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 36px),transparent);padding-bottom:28px}
+/* Focus: chain names may use 2 lines */
+html.shadow #sxFoc .sxf-ch .c .si{white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35}
+/* Night review: the caret never touches the first digit */
+.sx-dlg .nr-f input[type=number],.sx-dlg .nr-f input[type=text]{padding:9px 14px!important}
+/* Library cards: long titles may use 2 lines */
+html.shadow .sxl-card .t h4{white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* Calendar: the side column fits a 768 px screen without clipping */
+@media (max-height:820px){html.shadow #calPage .cside{gap:8px}html.shadow #calPage .cside .create{padding:8px 14px;min-height:0}html.shadow #calPage .cside .card{padding:10px 14px}html.shadow #calPage .cside .mini .head{margin-bottom:4px}html.shadow #calPage .cside .mg .md,html.shadow #calPage .cside .mg .mw{height:22px;line-height:22px;font-size:11.5px}html.shadow #sxCalSide{gap:8px}html.shadow #sxCalSide .big{font-size:24px;margin:4px 0 2px}html.shadow #sxCalSide .sx2-row{padding:4px 0;font-size:13px}html.shadow #calPage .cside h2{font-size:14px}html.shadow #calPage .filt label{padding:2px 0;font-size:12.5px}html.shadow #calPage .filt h2{margin-bottom:4px}html.shadow #calPage #cReset{padding:6px 12px;font-size:12px}}
+/* nothing owed: the catch-up card is one line */
+html.shadow #sxCalSide .sx2-cu.zero h2{display:flex;justify-content:space-between;align-items:baseline}
+html.shadow #sxCalSide .sx2-cu.zero h2 b{font:400 15px var(--sx-mono);color:var(--sx-i2)}
+html.shadow #sxCalSide .sx2-cu.zero p{margin-top:2px}
+@media (max-height:820px){html.shadow #calPage .cside .mg .md,html.shadow #calPage .cside .mg .mw{height:20px;line-height:20px}html.shadow #calPage .filt label{padding:1px 0;line-height:1.35}}
+/* Home 1920: the Mastery card takes the spare height (bigger radar), Baku keeps only the room it needs */
+@media (min-height:950px){html.shadow #shx .sx-col>#sxMast{flex:1;display:flex;flex-direction:column}html.shadow #shx #sxMast .sx-rad{flex:1;grid-template-columns:1fr;justify-items:center;align-content:center;gap:22px}html.shadow #shx #sxMast .sx-rad svg{width:200px;height:200px}html.shadow #shx #sxMast .sx-weak{width:100%}html.shadow #shx .sx-radio{flex:0 0 auto;min-height:0}}

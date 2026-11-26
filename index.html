@@ -2210,7 +2210,7 @@ function renderWeekly(){
   const recAvg=W.rec.length?(W.rec.reduce((a,b)=>a+b,0)/W.rec.length).toFixed(1):'–';
   const marks=PP.log.filter(x=>x.t&&x.t>=mk&&x.t<=tk);
   const mbNew=MB.filter(m=>m.at>=mk&&m.at<=tk).length,mbDueN=mbDueNow().length,mbMast=MB.filter(m=>m.ok).length;
-  const h1=x=>x.toFixed(1);
+  const h1=x=>{const m=Math.round(x*60);return `${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}`};/* hours as h:mm, the same as Home, Focus and Calendar (26 Nov 2026) */
   $('#wrSub').textContent=`${fmtD(mk)} to ${fmtD(tk)}${t.getDay()===0?' · full week':' · so far'}`;
   $('#wrBox').innerHTML=`<div class="wr-g">
     <div class="wr-t"><small>Study done vs planned</small><b>${h1(W.done)} / ${h1(W.plan)} h</b><span>${pct}% done ${diff}</span><div class="wr-bar"><i style="width:${Math.min(100,pct)}%"></i></div>
@@ -3023,7 +3023,7 @@ $('#mbList').addEventListener('click',e=>{
    0 tries = 50%, so a couple of lucky answers can't jump to 100%. A wrong answer also goes into the mistake bank for spaced re-tests. ---------- */
 const QLKEY='lockin-qlog-v1';let QL=null;const qlGet=()=>QL||(QL=lsGet(QLKEY,[]));
 const MQN={echem:'Electrochemistry',ener:'Energetics',equil:'Equilibrium',ind:'Industrial',kin:'Kinetics',org:'Organic',gas:'Gas laws',inorg:'Inorganic + bonding',calc:'Calculations',
-  mech:'Mechanics',therm:'Thermal',wave:'Waves',cur:'Current electricity',light:'Light',mag:'Magnetism',estat:'Electrostatics',elec:'Electronics',matter:'Matter & radiation',mprop:'Properties of matter',meas:'Measurement',grav:'Gravitation'};
+  mech:'Mechanics',therm:'Thermal',wave:'Waves',cur:'Current electricity',light:'Light',mag:'Magnetism',estat:'Electrostatics',elec:'Electronics',matter:'Matter & radiation',mprop:'Properties of matter',meas:'Measurement (self-study)',grav:'Gravitation'};
 const MQE={concept:'Didn’t know',careless:'Careless',time:'Ran out of time'};
 function mqGroups(sj){const W=window.WEIGHTS;if(!W)return [];
   if(sj==='chem'){const P=W.chem.p1;return Object.keys(P).map(k=>({k,units:P[k].g,per:P[k].mean}))}
@@ -3038,8 +3038,10 @@ function renderMQ(){const box=$('#mqBody');if(!box)return;const sj=ppS;
   const exp=G.reduce((a,g)=>a+g.per*g.m,0),tried=G.reduce((a,g)=>a+g.n,0);
   const sd=Math.sqrt(G.reduce((a,g)=>a+g.per*g.m*(1-g.m)+g.per*g.per*g.m*(1-g.m)/(g.n+3),0));
   const all=mqQs(sj,top),wrong=all.filter(q=>last[q.id]&&last[q.id]!=='ok'),left=all.filter(q=>!last[q.id]);
-  const rows=[...wrong,...left].slice(0,10).map(q=>{const r=last[q.id],l=typeof qbLink==='function'?qbLink(sj,q.y):'';
-    return `<div class="mq-q"><span class="id">${q.y} Q${q.n}${l?`<a href="${l}" target="_blank" rel="noopener">↗</a>`:''}</span><span class="bt">${[['ok','✓ Right','ok'],['concept','✗ Didn’t know','x'],['careless','✗ Careless','x'],['time','✗ Time','x']].map(([v,t,c])=>`<button class="${c}${r===v?' on':''}" data-mq="${q.id}" data-r="${v}" data-u="${top.k}">${t}</button>`).join('')}</span></div>`}).join('');
+  const rowsA=[...wrong,...left].slice(0,10).map(q=>{const r=last[q.id],l=typeof qbLink==='function'?qbLink(sj,q.y):'';
+    return `<div class="mq-q"><span class="id">${q.y} Q${q.n}${l?`<a href="${l}" target="_blank" rel="noopener">↗</a>`:''}</span><span class="bt">${[['ok','✓ Right','ok'],['concept','✗ Didn’t know','x'],['careless','✗ Careless','x'],['time','✗ Time','x']].map(([v,t,c])=>`<button class="${c}${r===v?' on':''}" data-mq="${q.id}" data-r="${v}" data-u="${top.k}">${t}</button>`).join('')}</span></div>`});
+  /* review round 2: the first 3 questions show, the rest fold away behind one line */
+  const rows=rowsA.length>3?rowsA.slice(0,3).join('')+`<details class="mq-more"><summary>${rowsA.length-3} more questions for this unit</summary>${rowsA.slice(3).join('')}</details>`:rowsA.join('');
   const wr=qlGet().filter(x=>x.id.startsWith(sj+'-')&&x.r!=='ok'),cnt=t=>wr.filter(x=>x.r===t).length;
   const tip={concept:'<b>Didn’t know</b> → go back to the class notes and the unit summary before doing more questions.',careless:'<b>Careless</b> → you knew it. Underline the question word (NOT, incorrect, increasing) and check units before you choose.',time:'<b>Ran out of time</b> → do 10-question sets against a 15-minute timer; skip any question after 2 minutes and come back.'};
   const big=Object.keys(MQE).sort((a,b)=>cnt(b)-cnt(a))[0];
@@ -3126,7 +3128,7 @@ function renderPX(){const box=$('#px');if(!box)return;const sj=rpS;box.classList
     ${pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p.v)}" r="${p.now?6:4}" fill="${p.now?'var(--ink)':`var(--${sj})`}" style="animation-delay:${.6+i*.08}s"/><text x="${X(i)-12}" y="224">${p.lab}</text>`).join('')}</svg>`;
   const cur=P&&P.tried?P.exp/50*100:null,col=cur==null?'var(--ink-3x)':cur>=need?'var(--ok)':cur>=need-10?'var(--warn)':'var(--bad)';
   box.innerHTML=`<section class="hx-card hx-in" style="--i:1"><h3>Predicted Paper I · ${sj==='phy'?'Physics':'Chemistry'}</h3>${pts.length?ch+`<p class="hx-mut">Dots are mini-mocks (score out of 50). The white dot is today’s prediction from everything you have logged. The dashed line is the A-track pace for the next checkpoint.</p>`:`<p class="hx-mut" style="font-size:13px;margin-top:14px">No mini-mocks yet, so there is no chart. Your first one is the Sunday timed block from December, or Papers → Mini-mock any time. Each mini-mock adds a point here.</p>`}</section>
-    <section class="hx-card hx-in" style="--i:2"><h3>Mock pace</h3><div class="hx-big" style="margin-top:12px;color:${col}">${cur==null?'–':`<span data-hxn="${Math.round(cur)}">${Math.round(cur)}</span><small>%</small>`}</div><p class="hx-mut" style="font-size:13px">${cur==null?'Log past questions or take a mini-mock to see this.':`Needed by ${ck[0]}: ${need}%. ${cur>=need?'On pace. Keep the mocks weekly.':`Gap of ${Math.round(need-cur)} points. Biggest fix: ${MQN[P.top.k]||P.top.k}.`}`}</p></section>`;
+    <section class="hx-card hx-in" style="--i:2"><h3>Mock pace</h3>${cur==null?'':`<div class="hx-big" style="margin-top:12px;color:${col}"><span data-hxn="${Math.round(cur)}">${Math.round(cur)}</span><small>%</small></div>`}<p class="hx-mut" style="font-size:13px${cur==null?';margin-top:14px':''}">${cur==null?'No mini-mock yet. Your first one is on Sunday\'s timed block, or log 10 Paper I questions on the Papers page.':`Needed by ${ck[0]}: ${need}%. ${cur>=need?'On pace. Keep the mocks weekly.':`Gap of ${Math.round(need-cur)} points. Biggest fix: ${MQN[P.top.k]||P.top.k}.`}`}</p></section>`;
   box.querySelectorAll('[data-hxn]').forEach(el=>hxCount(el,+el.dataset.hxn))}
 
 
