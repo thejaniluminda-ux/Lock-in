@@ -72,7 +72,7 @@ function renderToday(){const el=$('#woToday');
 function setLevel(e,step){const x=EX[e];if(!x||!x.lad)return;S.lvl[e]=Math.max(0,Math.min(x.lad.length-1,step));persist();const h=HOST();h.toast&&h.toast(x.n+': '+x.lad[S.lvl[e]]);renderToday();renderStrength();if(SEL)selectMuscle(SEL)}
 function preview(d){const id=sessionFor(d);return `<div class="blk"><div class="blk-h"><span class="k">Next · ${DOW[d.getDay()]} ${esc(SESS[id].n)}</span><span>${Math.round(timing(id,d,trainingWeek(d)).total/60)} min planned</span></div>`+blocksFor(id,d).flatMap(([ex,r])=>ex.map(e=>`<div class="ex pv"><span class="ab"></span><div style="min-width:0"><div class="nm">${esc(EX[e].n)}</div><div class="vr">${esc(EX[e].lad?EX[e].lad[lv(e,d)]:EX[e].cue)}</div></div><div class="tg">× ${r}</div></div>`)).join('')+'</div>'}
 function slotPassed(){const n=today(),end=slotOf(T).split('–')[1];if(!end)return false;const [h,m]=end.split(':').map(Number);return n.getHours()*60+n.getMinutes()>h*60+m}
-function testLast(e){const k={t_push:'push',t_pull:'pull',t_plank:'plank',t_squat:'squat'}[e];const ms=Object.keys(S.chal).sort().filter(m=>m<TK.slice(0,7)&&S.chal[m].d);const m=ms.at(-1);const v=m?S.chal[m][k]:BASE[k];return `${m?'last':'18 Nov'} ${v}${e==='t_plank'?' s':''}`}
+function testLast(e){const k={t_push:'push',t_pull:'pull',t_plank:'plank',t_squat:'squat'}[e];const ms=Object.keys(S.chal).sort().filter(m=>m<TK.slice(0,7)&&S.chal[m].d);const m=ms.at(-1);const v=m?S.chal[m][k]:BASE[k];return `${m?'last':'start'} ${v}${e==='t_plank'?' s':''}`}
 function weekStrip(){return `<div class="week" role="list" aria-label="This week">${weekDays(T).map(({d,k,id})=>{const pre=d<START;const st=k===TK?'today':pre?'pre':!id?'rest':dayDone(S,k)?'done':k<TK?'miss':'';
     /* two plain lines: "Upper" / "B", "Test" / "max", "Rest"; days before Day 1 show a dash */
     const [l1,l2]=id?({TEST:['Test','max'],MAINT:['Keep','fit']}[id]||[SESS[id].n.split(' ')[0],SESS[id].n.split(' ')[1]||'']):pre?['–','']:['Rest',''];
@@ -101,6 +101,8 @@ async function holo(){const st=$('#woStage');
     st.classList.add('flat');const hn=$('#woHint');if(hn)hn.textContent='3D is off. Tap a muscle name below.';
     $('#woVF').addEventListener('click',()=>{st.classList.remove('backv');pressed('F')});$('#woVB').addEventListener('click',()=>{st.classList.add('backv');pressed('B')});return}
   H.setMuscles(levels(),SEL);H.onPick(m=>{selectMuscle(m);$('#woHint').style.opacity=0});
+  /* the hint fades on the first touch of the figure, or after 5 s, so it never sits over the head */
+  const hideHint=()=>{const h=$('#woHint');if(h)h.classList.add('gone')};st.addEventListener('pointerdown',hideHint,{once:true});setTimeout(hideHint,5000);
   $('#woVF').addEventListener('click',()=>{H.view('front');pressed('F')});$('#woVB').addEventListener('click',()=>{H.view('back');pressed('B')});
   watchVisible()}
 const pressed=w=>{$('#woVF').setAttribute('aria-pressed',w==='F');$('#woVB').setAttribute('aria-pressed',w==='B')};
@@ -116,7 +118,9 @@ function renderStrength(){const lifts=['pullup','dpush','bss','lat'];
     const isPB=best&&ks.length>1&&best.d===ks.at(-1)&&best.d!==ks[0];
     const info=`<div style="min-width:0"><div class="nm">${esc(x.n)}${isPB?'<span class="pb">New best</span>':''}</div><div class="vr">${esc(x.lad[lv(e)])}</div></div>`;
     /* no sets logged yet: one plain empty state in place of the chart and the numbers */
-    if(last==null)return `<div class="lift">${info}<div class="v none">No sets yet</div></div>`;
+    /* no working sets yet: show the latest challenge result for the same move, marked as a test, so Strength never contradicts the challenge card */
+    if(last==null){const tk={pullup:'pull',dpush:'push'}[e],cm=Object.keys(S.chal).filter(m=>S.chal[m]&&S.chal[m].d).sort().at(-1),tv=tk&&cm?parseInt(S.chal[cm][tk]):NaN;
+      return isNaN(tv)?`<div class="lift">${info}<div class="v none">No working sets yet</div></div>`:`<div class="lift">${info}<div class="v tst">${tv}<small>max test · ${fmtK(S.chal[cm].d)}</small></div></div>`}
     return `<div class="lift">${info}<span class="spk">${spark(vals)}</span><div class="v">${last}<small>best ${best?best.v:last}</small></div></div>`};
   const ms=Object.keys(S.chal).filter(m=>S.chal[m]&&S.chal[m].d).sort(),cur=ms.at(-1),prev=ms.at(-2),C=cur?S.chal[cur]:null,P=prev?S.chal[prev]:BASE;
   const nextTest=[...Array(40).keys()].map(i=>addD(T,i)).find(d=>sessionFor(d)==='TEST');
@@ -125,7 +129,7 @@ function renderStrength(){const lifts=['pullup','dpush','bss','lat'];
     return `<div><b>${v??'–'}${u}</b><span>${lab}</span>${dlt!=null?`<em${dlt===0?' style="color:var(--i3)"':dlt<0?' style="color:var(--warn)"':''}>${dlt>0?'+':''}${dlt===0?'same':dlt}</em><small>vs ${esc(pv)}${u}</small>`:''}</div>`};
   const when=sessionFor(T)==='TEST'?(C&&C.d===TK?' · done today':' · today'):nextTest?' · next '+fmtD(nextTest):' · challenges pause for the exam months';
   $('#woStr').innerHTML=`<div class="hd"><div><h2>Strength</h2><p class="sub">Best working-set reps in each session</p></div></div>${lifts.map(row).join('')}
-    <div class="hd" style="margin-top:14px"><div><h2>Monthly challenge</h2><p class="sub">${C?`${MON[+cur.slice(5)-1]} vs ${prev?MON[+prev.slice(5)-1]:'start (18 Nov)'}`:'Starting test, 18 Nov'}${when}</p></div></div>
+    <div class="hd" style="margin-top:14px"><div><h2>Monthly challenge</h2><p class="sub">${C?`${MON[+cur.slice(5)-1]} vs ${prev?MON[+prev.slice(5)-1]:'the starting test (18 Nov)'}`:'Starting test 18 Nov'}${when}</p></div></div>
     <div class="chal">${C?cell('push','push-ups')+cell('pull','pull-ups')+cell('plank','plank',' s')+cell('squat','squats'):`<div><b>${BASE.push}</b><span>push-ups</span></div><div><b>${BASE.pull}</b><span>pull-ups</span></div><div><b>${BASE.plank} s</b><span>plank</span></div><div><b>${BASE.squat}</b><span>squats</span></div>`}</div>`}
 
 /* ---------- body: weight, BMI, tape, face checklist, photos ---------- */
@@ -145,11 +149,11 @@ function renderBody(){const W=S.weights.slice().sort((a,b)=>a.d<b.d?-1:1),last=W
   $('#woBody').innerHTML=`<div class="hd"><div><h2>Body</h2></div><span class="sp"></span><div class="wbb"><button class="btn ghost wsm" data-bf="w" aria-expanded="${bodyForm==='w'}">Log weight</button><button class="btn ghost wsm" data-bf="t" aria-expanded="${bodyForm==='t'}">Tape</button></div></div><p class="sub bsub">Weekly weigh-in · height 183&nbsp;cm</p>
     ${bodyForm==='w'?`<form class="bform" data-f="w"><label>Weight today (kg)<input name="w" type="number" step="0.1" min="30" max="150" inputmode="decimal" required value="${(S.weights.find(x=>x.d===TK)||{}).w??''}"></label><button class="btn pri wsm" type="submit">Save</button><button class="btn ghost wsm" type="button" data-bf="">Cancel</button></form>`:''}
     ${bodyForm==='t'?`<form class="bform" data-f="t">${['waist','arm','chest','neck'].map(k=>`<label>${k[0].toUpperCase()+k.slice(1)} (cm)<input name="${k}" type="number" step="0.5" min="10" max="200" inputmode="decimal" value="${tl&&tl.d===TK&&tl[k]!=null?tl[k]:''}"></label>`).join('')}<button class="btn pri wsm" type="submit">Save</button><button class="btn ghost wsm" type="button" data-bf="">Cancel</button></form>`:''}
-    <div class="bstats"><div><b>${last?last.w:'–'}</b><span>kg now</span></div><div><b>${last&&first&&W.length>1?((last.w-first.w>=0?'+':'')+(last.w-first.w).toFixed(1)):'–'}</b><span>${first&&W.length>1?'kg since '+fmtK(first.d):'kg change'}</span></div><div><b>${bmi?bmi.toFixed(1):'–'}</b><span>BMI</span></div></div>
+    ${!W.length?`<div class="bempty"><div><b>Log your first weigh-in</b><span>Monday morning, before breakfast. BMI and the trend appear after it.</span></div>${bodyForm==='w'?'':'<button class="btn pri wsm" data-bf="w">Log weight</button>'}</div>`:`<div class="bstats"><div><b>${last?last.w:'–'}</b><span>kg now</span></div><div><b>${last&&first&&W.length>1?((last.w-first.w>=0?'+':'')+(last.w-first.w).toFixed(1)):'–'}</b><span>${first&&W.length>1?'kg since '+fmtK(first.d):'kg change'}</span></div><div><b>${bmi?bmi.toFixed(1):'–'}</b><span>BMI</span></div></div>
     ${P.length<2?'':`<svg class="wchart" viewBox="0 0 300 56" preserveAspectRatio="none" aria-label="Weight trend"><defs><linearGradient id="woWg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#9fe3ff" stop-opacity=".22"/><stop offset="1" stop-color="#9fe3ff" stop-opacity="0"/></linearGradient></defs>
       <path class="a" d="M0 56 ${P.map(p=>'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')} L300 56Z"/><path class="l" d="${P.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')}"/></svg>`}
-    <p class="note">${note}</p>
-    <div class="tape">${tc('waist','Waist')}${tc('arm','Arm')}${tc('chest','Chest')}${tc('neck','Neck')}</div>
+    <p class="note">${note}</p>`}
+    ${tl?`<div class="tape">${tc('waist','Waist')}${tc('arm','Arm')}${tc('chest','Chest')}${tc('neck','Neck')}</div>`:`<p class="note wsm tnone">Tape: waist, arm, chest and neck once a month. Tap <b>Tape</b> to add the first.</p>`}
     <div class="face" role="group" aria-label="Face today"><span class="k">Face today</span>${FACE.map(([k,n])=>`<button data-face="${k}" aria-pressed="${face.includes(k)}"><i></i>${n}</button>`).join('')}</div>
     <div class="phh"><span class="k">Photos${pm?' · '+MON[+pm.slice(5)-1]+' '+pm.slice(0,4):''}</span><span class="sp"></span>${fronts.length>=2?`<button class="btn ghost wsm" id="woCmpBtn" aria-pressed="${cmpOn}">${cmpOn?'Show photos':'Compare months'}</button>`:''}</div>
     ${cmpOn?`<div class="cmp" style="--x:50%"><img src="${PHOTOS[cmpA]}" alt="Front photo, ${cmpA}"><img class="after" src="${PHOTOS[cmpB]}" alt="Front photo, ${cmpB}"><i class="hdl"></i><span class="lbl a">${MON[+cmpA.slice(5)-1]}</span><span class="lbl b">${MON[+cmpB.slice(5)-1]}</span></div>

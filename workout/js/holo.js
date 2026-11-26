@@ -84,9 +84,16 @@ export class Holo{
     this.pu={uT:{value:this.assembleT},uTime:this.u.uTime,uSize:{value:5.5*r.getPixelRatio()},uBase:this.u.uBase,uFade:{value:1},uMotion:this.u.uMotion};
     this.pts=new THREE.Points(pg,new THREE.ShaderMaterial({uniforms:this.pu,vertexShader:PVERT,fragmentShader:PFRAG,transparent:true,...this.LIGHT,depthWrite:false,depthTest:false}));
     this.pts.frustumCulled=false;this.rig.add(this.pts);
-    /* platform rings under the feet */
-    const ring=new THREE.Group();for(const [rad,op] of [[0.42,0.5],[0.56,0.28],[0.72,0.14]]){const geo=new THREE.RingGeometry(rad,rad+0.004,96);const mm=new THREE.MeshBasicMaterial({color:0x5fb8ff,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide});const me=new THREE.Mesh(geo,mm);me.rotation.x=-Math.PI/2;ring.add(me)}
-    const disc=new THREE.Mesh(new THREE.CircleGeometry(0.42,64),new THREE.MeshBasicMaterial({color:0x2a6fb0,transparent:true,opacity:0.12,blending:THREE.AdditiveBlending,depthWrite:false}));disc.rotation.x=-Math.PI/2;ring.add(disc);ring.position.y=0.003;this.ring=ring;this.mkProps();this.scene.add(ring);
+    /* platform rings under the feet: drawn in one shader on a flat plane, with each ring at least one pixel wide (fwidth),
+       so seen almost edge-on they stay smooth lines instead of breaking into stray dashes (26 Nov fix) */
+    const ring=new THREE.Group(),rm=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,
+      uniforms:{uC:{value:new THREE.Color(0x5fb8ff)},uD:{value:new THREE.Color(0x2a6fb0)}},
+      vertexShader:`varying vec2 vU;void main(){vU=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+      fragmentShader:`uniform vec3 uC;uniform vec3 uD;varying vec2 vU;
+float band(float r,float R,float op){float w=max(0.003,fwidth(r)*1.1);return op*(1.0-smoothstep(0.0,w,abs(r-R)))*clamp(0.004/w,0.35,1.0);}
+void main(){float r=length(vU-0.5)*1.6;float a=band(r,0.42,0.5)+band(r,0.56,0.28)+band(r,0.72,0.14);float d=0.12*(1.0-smoothstep(0.42-max(0.003,fwidth(r)),0.42,r));
+vec3 c=uC*a+uD*d;if(max(c.r,max(c.g,c.b))<0.002)discard;gl_FragColor=vec4(c,1.0);}`});
+    const pl=new THREE.Mesh(new THREE.PlaneGeometry(1.6,1.6),rm);pl.rotation.x=-Math.PI/2;ring.add(pl);ring.position.y=0.003;this.ring=ring;this.mkProps();this.scene.add(ring);
     /* bloom */
     this.comp=new EffectComposer(r);this.comp.addPass(new RenderPass(this.scene,this.cam));
     this.bloom=new UnrealBloomPass(new THREE.Vector2(W/2,H/2),0.6,0.5,0.12);this.comp.addPass(this.bloom);this.comp.addPass(new OutputPass());
@@ -97,11 +104,11 @@ export class Holo{
     if(this.reduced){this.render()}else this.loop();return this}
   resize(){if(!this.renderer)return;const W=this.el.clientWidth,H=this.el.clientHeight;if(!W||!H)return;this.cam.aspect=W/H;this.cam.updateProjectionMatrix();if(!this.inSession)this.fitStand();this.renderer.setSize(W,H);this.comp.setSize(W,H);this.bloom.resolution.set(W/2,H/2);this.applyOff();this.render()}
   /* body map framing: the whole standing body, head to feet and the floor ring, fits the stage at any size (25 Nov fix: feet were cut at 1366) */
-  fitStand(){const W=this.el.clientWidth||600,H=this.el.clientHeight||600,a=W/H,t=Math.tan(this.cam.fov*Math.PI/360),d=Math.min(this.ctl.maxDistance,Math.max(1.02/t,0.62/(t*a)));
-    const tg=this.ctl.target,dir=this.cam.position.clone().sub(tg).normalize();tg.set(0,0.9,0);this.cam.position.copy(tg).addScaledVector(dir,d);this.ctl.update()}
+  fitStand(){const W=this.el.clientWidth||600,H=this.el.clientHeight||600,a=W/H,t=Math.tan(this.cam.fov*Math.PI/360),d=Math.min(this.ctl.maxDistance,Math.max(1.1/t,0.62/(t*a)));
+    const tg=this.ctl.target,dir=this.cam.position.clone().sub(tg).normalize();tg.set(0,0.86,0);this.cam.position.copy(tg).addScaledVector(dir,d);this.ctl.update()}
   offset(f){this.offT=f;if(this.reduced||this.o.capture){this.offX=f;this.applyOff();this.render()}}
   applyOff(){if(!this.renderer)return;const W=this.el.clientWidth,H=this.el.clientHeight;if(this.offX)this.cam.setViewOffset(W,H,W*this.offX,0,W,H);else this.cam.clearViewOffset()}
-  mount(el){if(this.el===el)return;this.el=el;el.appendChild(this.renderer.domElement);this.resize()}
+  mount(el){if(this.el===el)return;this.el=el;el.appendChild(this.renderer.domElement);(this.ro||(this.ro=new ResizeObserver(()=>this.resize()))).observe(el);this.resize()}
   /* muscle state: levels = {key:{lvl,col}}, sel = key */
   setMuscles(levels,sel){this.levels=levels||{};this.sel=sel===undefined?this.sel:sel;this.apply()}
   select(key){this.sel=key;this.apply()}
@@ -124,7 +131,9 @@ export class Holo{
   boxProp(w,h,d,x,y,z){const g=new THREE.BoxGeometry(w,h,d),o=new THREE.Group();o.add(new THREE.LineSegments(new THREE.EdgesGeometry(g),this.pmat.line));o.add(new THREE.Mesh(g,this.pmat.fill));o.position.set(x,y,z);return o}
   mpt(n,out=new THREE.Vector3()){const L=PT[n];out.set(0,0,0);const v=new THREE.Vector3();for(const b of L){this.md.M[b].getWorldPosition(v);out.add(v)}return out.multiplyScalar(1/L.length)}
   placeProps(id){const G=this.propG;while(G.children.length)G.remove(G.children[0]);this.handProps.forEach(o=>o.parent&&o.parent.remove(o));this.handProps=[];
-    this.handPack=null;const F=id&&FIT[id];if(!F||!this.md)return;this.setPose(id,0.5);const v=new THREE.Vector3(),ex=this.ex||{};
+    this.handPack=null;const F=id&&FIT[id];
+    /* floor ring under the hands when they are the floor contact (push-ups, pike), so the contact reads clearly */
+    if(this.ring)this.ring.position.z=F&&F.anchor&&F.anchor.pt==='hands'&&F.anchor.y<0.3&&F.anchor.z!=null?F.anchor.z:0;if(!F||!this.md)return;this.setPose(id,0.5);const v=new THREE.Vector3(),ex=this.ex||{};
     if(ex.handBooks)for(const b of ['hand_l','hand_r']){this.md.M[b].getWorldPosition(v);G.add(this.boxProp(0.17,0.05,0.24,v.x,0.025,v.z))}
     if(ex.pack==='back'){const pk=this.boxProp(0.3,0.4,0.15,0,0,0);pk.position.copy(this.md.packPos);pk.quaternion.copy(this.md.packQ);this.md.M.spine_03.add(pk);this.handProps.push(pk)}
     if(ex.pack==='hands'){this.handPack=this.boxProp(0.3,0.36,0.15,0,0,0);G.add(this.handPack);this.movePack()}
