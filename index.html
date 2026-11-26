@@ -1370,6 +1370,7 @@ html.shadow #awQ{--aw-acc:#7dffa8}html.shadow #awQ .aw-c{background:#121413;colo
           <div class="navw"><button class="ibtn" id="cPrev" aria-label="Previous week"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button><button class="ibtn" id="cNext" aria-label="Next week"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button></div>
           <h2 id="cTitle">November 2026</h2>
           <span class="crange" id="cRange"></span>
+          <button class="tbtn sx2-only" id="earlyBtn" type="button" aria-haspopup="dialog">Already did a class</button>
           <button class="ibtn cfs" id="cFs" aria-label="Full screen calendar" aria-pressed="false" title="Full screen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
         </div>
         <div class="cscroll" id="cScroll">
@@ -2255,7 +2256,7 @@ const cBody=$('#cBody'),cHead=$('#cHead'),pop=$('#calPop'),ut=$('#calToast');
 const WMIN=monOf(START),WMAX=monOf(EXAM),MMIN=new Date(2026,10,1),MMAX=new Date(2027,7,1);
 
 function evHtml(k){
-  const list=(CS.days[k]||[]).filter(e=>filt[e.subj]!==false&&e.s<D1).sort((a,b)=>a.s-b.s||b.e-a.e);
+  const list=(CS.days[k]||[]).filter(e=>filt[e.subj]!==false&&e.s<D1&&!(e.early&&e.e<=e.s))/* a class done early has no time on the grid; the day sheet lists it */.sort((a,b)=>a.s-b.s||b.e-a.e);
   let cl=[],clEnd=-1;const L=new Map();
   const flush=()=>{const lanes=[];cl.forEach(e=>{let l=lanes.findIndex(end=>end<=e.s);if(l<0){l=lanes.length;lanes.push(0)}lanes[l]=e.e;L.set(e,[l,0])});cl.forEach(e=>L.get(e)[1]=lanes.length);cl=[];clEnd=-1};
   for(const e of list){if(cl.length&&e.s>=clEnd)flush();cl.push(e);clEnd=Math.max(clEnd,e.e)}
@@ -3682,6 +3683,83 @@ $('#fin').addEventListener('click',e=>{
   setMood('cheeky',3000);say('Ahead of schedule 😜',3000)
   finEv=null;
 });
+
+/* ---------- Already did a class (26 Nov 2026, his request): he watched a class before its slot. It counts as done today,
+   its slot goes to the next class of that subject (same length only, the finish-early rule of 17 Nov), never before a
+   prerequisite, and its consolidation moves to tomorrow 06:15 and its recall to 3, 7 and 21 days from today.
+   Study blocks that named a moved class follow it, so consolidation, recall and practice keep pointing at the class
+   that now sits in that slot. Undo (snapAct) restores the plan exactly. ---------- */
+const eaBase=i=>String(i||'').replace(/[ab]$/,'');
+const eaT=(k,m)=>k+String(m).padStart(5,'0');
+const eaNm=t=>String(t||'').replace(/ · Part [12]$/,'').replace(/ \(after lunch\)$/,'').replace(/^ගණිත පසු පන්තිය: /,'');
+function eaBlocks(b){const o=[];for(const k in CS.days)for(const e of CS.days[k])if(e.kind==='class'&&e.iid&&eaBase(e.iid)===b)o.push(e);return o.sort((x,y)=>eaT(x.date,x.s)<eaT(y.date,y.s)?-1:1)}
+/* upcoming classes he could have done early: nothing of it ticked yet; not the fixed live Maths classes, his own blocks or catch-up */
+function earlyList(){const tk=dkey(new Date()),seen={},out=[];
+  for(const k of Object.keys(CS.days).sort()){if(k<tk)continue;for(const e of CS.days[k].slice().sort((a,b)=>a.s-b.s)){
+    if(e.kind!=='class'||!e.iid||e.done||e.fixed||e.user||e.free||e.cu||e.early)continue;const b=eaBase(e.iid);if(seen[b])continue;seen[b]=1;
+    const L=eaBlocks(b);if(L.some(x=>x.done||x.cu))continue;const u=UNIT_BY[e.unit]||null;
+    out.push({b,subj:e.subj,unit:e.unit||'',usi:u?u.si:(e.subj==='maths'?'ගණිත පසු පන්ති':''),uen:u?u.en:(e.subj==='maths'?'Maths catch-up recordings':''),title:eaNm(e.title),k:e.date,s:e.s,parts:L.length})}}
+  return out}
+/* earlier classes of the same unit and direct prerequisites that are not done yet (a warning, never a block) */
+function earlyWarn(b){const L=eaBlocks(b);if(!L.length)return [];const e=L[0],out=[],seen=new Set([b]);
+  const add=d=>{const db=eaBase(d);if(seen.has(db))return;seen.add(db);const B=eaBlocks(db);if(B.length&&!B.every(x=>x.done))out.push(eaNm(B[0].title))};
+  const n=parseInt(String(b).split(':')[1],10);if(/^mcu:/.test(b))for(let i=1;i<n;i++)add('mcu:'+i);else if(e.unit)for(let i=1;i<n;i++)add(e.unit+':'+i)
+  for(const d of (e.deps||[]))add(d);return out}
+function doneEarly(b){
+  const now=new Date(),tk=dkey(now),nm=now.getHours()*60+now.getMinutes(),L=eaBlocks(b);if(!L.length||L.some(e=>e.done))return null;
+  const X=L[0],subj=X.subj,xn=eaNm(X.title),after=e=>e.date>tk||(e.date===tk&&e.s>nm);
+  snapAct('early',tk);
+  /* 1. the class itself: one done block today, zero length at 22:30 (no time on the grid changes), counted like a tick today */
+  const day=CS.days[tk]||(CS.days[tk]=[]),at=day.find(e=>e.s===1350)||day.find(e=>e.kind==='review'),ts=at?at.s:1350;
+  const rec={id:tk+'-early-'+b,date:tk,s:ts,e:ts,subj,kind:'class',title:xn,sub:`Done early · was planned for ${fmtD(X.date)} ${hm(X.s)}`,tag:X.tag||'',rec:X.rec||'',unit:X.unit||'',iid:b,deps:(X.deps||[]).filter(d=>eaBase(d)!==b),done:true,early:true};
+  day.splice(at?day.indexOf(at):day.length,0,rec);
+  /* 2. later classes of the subject move up: same length only, never before a prerequisite, one class per unit a day.
+     Split recordings and one-day seminars keep their own slots (they are not moved and nothing moves into them). */
+  const pool=[];for(const k of Object.keys(CS.days).sort())if(k>=tk)for(const e of CS.days[k])
+    if(e!==rec&&e.subj===subj&&e.kind==='class'&&e.iid&&!e.free&&!e.fixed&&!e.done&&!e.user&&!e.cu&&!e.part&&!e.cont&&after(e)&&!(UNIT_BY[e.unit]||{}).day)pool.push(e);
+  pool.sort((x,y)=>eaT(x.date,x.s)<eaT(y.date,y.s)?-1:1);
+  const bk=x=>Math.round((x.e-x.s)/30),own=e=>({title:e.title,sub:e.sub,tag:e.tag,kind:e.kind,rec:e.rec||'',unit:e.unit||'',bp:e.bp,iid:e.iid,deps:e.deps});
+  const Qg={};for(const e of pool)if(eaBase(e.iid)!==b)(Qg[bk(e)]||(Qg[bk(e)]=[])).push(own(e));
+  const inPool=new Set(pool.map(e=>eaBase(e.iid))),placed={},assign=new Map();
+  const endOf=d=>{const db=eaBase(d);if(db===b)return '';if(placed[db])return placed[db];if(inPool.has(db))return null;const B=eaBlocks(db);if(!B.length||B.every(x=>x.done))return '';const l=B[B.length-1];return eaT(l.date,l.e)};
+  const okAt=(c,sl)=>{/* Maths catch-up recordings keep their order */const mc=/^mcu:(\d+)$/.exec(c.iid||''),dl=[...(c.deps||[])];if(mc&&+mc[1]>1)dl.push('mcu:'+(mc[1]-1));for(const d of dl){const t=endOf(d);if(t===null||t>eaT(sl.date,sl.s))return false}
+    if((CS.days[sl.date]||[]).some(x=>x!==sl&&x.kind==='class'&&x.unit&&x.unit===c.unit&&!pool.includes(x)))return false;
+    for(const [s2,c2] of assign)if(c2&&s2.date===sl.date&&c2.unit&&c2.unit===c.unit)return false;return true};
+  for(const sl of pool){const q=Qg[bk(sl)]||[];const i=q.findIndex(c=>okAt(c,sl));const c=i>=0?q.splice(i,1)[0]:null;assign.set(sl,c);if(c)placed[eaBase(c.iid)]=eaT(sl.date,sl.e)}
+  let lost=false;for(const g in Qg)if(Qg[g].length)lost=true;
+  if(lost){/* every class could not keep its order: nothing else moves, only this class's own slot is freed */
+    for(const sl of pool)if(eaBase(sl.iid)!==b)assign.delete(sl);else assign.set(sl,null)}
+  for(const e of L)if(!assign.has(e))assign.set(e,null);
+  const map={},prevT={};let moved=0,freed=0;
+  for(const [sl,c] of assign){const ob=eaBase(sl.iid),nb=c?eaBase(c.iid):null;if(ob===nb)continue;
+    prevT[ob]=prevT[ob]||eaNm(sl.title);map[ob]=nb?{b:nb,t:eaNm(c.title),unit:c.unit}:(map[ob]||null);
+    if(c){Object.assign(sl,c);moved++}
+    else{Object.assign(sl,{title:'Free revision slot',sub:'Time you won back by doing a class early. Use it for weak spots or past-paper questions.',tag:'',kind:'class',rec:'',unit:'',bp:undefined,iid:undefined,deps:undefined,part:undefined,full:undefined,cont:undefined,free:true});if(sl.subj===subj)freed++}}
+  /* 3. study blocks from now on follow the classes they named (consolidation, recall, practice, papers) */
+  const touched=new Set();
+  for(const k of Object.keys(CS.days).sort())if(k>=tk)for(const e of CS.days[k]){
+    if(e.kind==='class'||e.done||!after(e)||!e.refs||!e.refs.some(r=>r in map))continue;
+    touched.add(e);
+    let t=e.title;const tok=[];
+    for(const r of e.refs)if(r in map&&prevT[r]){const i=t.indexOf(prevT[r]);if(i>=0){t=t.slice(0,i)+'\u0001'+tok.length+'\u0001'+t.slice(i+prevT[r].length);tok.push(map[r])}}
+    t=t.replace(/\u0001(\d+)\u0001/g,(m,i)=>tok[i]?tok[i].t:'\u0002').replace(/ (\+|·) \u0002|\u0002 (\+|·) |\u0002/g,'');
+    const refs=[...new Set(e.refs.map(r=>r in map?(map[r]?map[r].b:null):r).filter(Boolean))];
+    if(!refs.length)Object.assign(e,{title:'Free revision: weak spots · '+hm(e.s),sub:'The class this block was for was done early. Use it for your weakest topic or past-paper questions.',tag:'Revision',refs:['learned:'+subj],cons:false,recall:false});
+    else{const f=Object.values(map).find(m=>m&&m.b===refs[0]);Object.assign(e,{title:t,refs});if(f&&f.unit)e.unit=f.unit}}
+  /* a renamed block must not repeat another study block of the same day */
+  const fr=e=>Object.assign(e,{title:'Free revision: weak spots · '+hm(e.s),sub:'The class this block was for moved or was done early. Use it for your weakest topic or past-paper questions.',tag:'Revision',refs:['learned:'+subj],cons:false,recall:false});
+  for(const k of new Set([...touched].map(e=>e.date))){const seen=new Set();for(const e of (CS.days[k]||[]).slice().sort((a,c)=>a.s-c.s)){if(e.user||!(e.kind==='study'||e.kind==='paper'))continue;if(seen.has(e.title)&&touched.has(e))fr(e);seen.add(e.title)}}
+  /* 4. consolidation tomorrow 06:15 and recall 3, 7 and 21 days from today, like a class ticked today */
+  const tm=dkey(addDays(new Date(tk+'T00:00'),1)),mo=(CS.days[tm]||[]).find(e=>e.s===375&&e.kind==='study');let consK='';const rk=[];
+  if(mo&&mo.cons){if(!(mo.refs||[]).includes(b)){mo.refs=[...(mo.refs||[]),b];mo.title+=' + '+xn}consK=tm}
+  else if(mo&&!mo.recall){Object.assign(mo,{subj,title:`ඒකාබද්ධ කිරීම: ${xn}`,sub:`Consolidate (1-day review): ${CONS_HOW}`,tag:'Consolidate',unit:X.unit||'',rec:X.rec||'',cons:true,refs:[b]});consK=tm}
+  for(const [n,lim] of [[3,2],[7,3],[21,5]]){let got='';for(let j=0;j<=lim&&!got;j++){const k=dkey(addDays(new Date(tk+'T00:00'),n+j));
+      const r=(CS.days[k]||[]).filter(e=>e.recall&&!e.done&&(e.e-e.s)/((e.refs||[]).length+1)>=7).sort((a,c)=>a.s-c.s)[0];
+      if(r){if(!r.refs.includes(b)){r.refs.push(b);r.title+=' · '+xn}got=k}}rk.push(got)}
+  saveCS();
+  try{renderRoutine();renderWeek();renderMini()}catch(e){}if($('#daySheet').classList.contains('show'))showDaySheet($('#daySheet').dataset.k);
+  undoToast(lost?`Done today. Its slot is free revision time (later classes could not move up without breaking their order).`:moved?`Done today. Later ${SUBJ[subj]} classes moved up${freed?', the last slot is free revision time':''}.`:'Done today. Its slot is free revision time.');
+  return {moved,freed,lost,consK,recall:rk,map}}
 
 /* =================== WORKOUT (ported from the approved workout-demo.html) =================== */
 const renderWorkout=(()=>{

@@ -290,6 +290,34 @@ function openDue(k,kind,id){k=k||todayK();const D=dueOf(k);let p=kind?D.find(d=>
 function finHtml(){let f=null;try{f=typeof classesFinish==='function'?classesFinish():null}catch(e){}if(!f)return '';
   return `<div class="sx-fin"><span>Classes finish</span><b class="num${f.late?' late':''}">${dShort(f.k)}</b><small>${typeof CLASSES_BY!=='undefined'?'target '+dShort(dk(CLASSES_BY)):''}</small></div>`}
 
+/* ---------- Calendar: "Already did a class" (26 Nov 2026). Lists every upcoming class that is not done (not the fixed live
+   Maths classes), grouped by subject and unit in plan order, with search. The work is index.html's doneEarly(). ---------- */
+const EA_SJ={phy:'Physics',chem:'Chemistry',maths:'Maths'};
+function earlyOpen(){if(typeof earlyList!=='function')return;const L=earlyList(),tk=todayK();let sel=null,q='';
+  const D=dueDlg('Already did a class','',(e,close)=>{
+    const it=e.target.closest('[data-eab]');if(it){sel=it.dataset.eab;draw();return}
+    if(e.target.closest('[data-eago]')){const w=earlyWarn(sel);if(w.length&&!e.target.closest('[data-eaforce]')){warn(w);return}apply(close);return}
+    if(e.target.closest('[data-eaback]')){draw();return}
+    if(e.target.closest('[data-eax]'))close()});
+  const card=D.o.querySelector('.card2');card.classList.add('sx-ea');
+  card.insertAdjacentHTML('beforeend',`<p class="sx-cap">Pick the class you already watched. It counts as done today, the next class of that subject moves into its slot, and its review moves to tomorrow 06:15.</p>
+    <input type="search" class="ea-q" placeholder="Search by unit, class or date" aria-label="Search classes"><div class="ea-l" role="listbox" aria-label="Upcoming classes"></div><div class="ea-f"></div>`);
+  const box=card.querySelector('.ea-l'),foot=card.querySelector('.ea-f'),inp=card.querySelector('.ea-q');
+  const when=x=>(x.k===tk?'Today':dShort(x.k))+' · '+hm(x.s)+(x.parts>1?' · '+x.parts+' parts':'');
+  function list(){const f=q.trim().toLowerCase(),M=L.filter(x=>!f||(x.title+' '+x.usi+' '+x.uen+' '+EA_SJ[x.subj]+' '+when(x)).toLowerCase().includes(f));
+    if(!M.length)return `<p class="ea-n">${L.length?'No class matches that search.':'No upcoming classes left to mark.'}</p>`;let h='',sj='',un=null;
+    for(const s of ['phy','chem','maths']){const S=M.filter(x=>x.subj===s);if(!S.length)continue;h+=`<div class="ea-s"><i class="sx2-dot" style="--sj:${SJC[s]||'#8b928d'}"></i>${EA_SJ[s]}<span>${S.length}</span></div>`;
+      const U=[];for(const x of S)if(!U.includes(x.unit))U.push(x.unit);
+      for(const u of U){const I=S.filter(x=>x.unit===u),a=I[0];h+=`<div class="ea-u"><span class="si">${esc2(a.usi)}</span><small>${esc2(a.uen)}</small></div>`+
+        I.map(x=>`<button type="button" class="ea-i${sel===x.b?' on':''}" role="option" aria-selected="${sel===x.b}" data-eab="${esc2(x.b)}"><span class="si" title="${esc2(x.title)}">${esc2(x.title)}</span><span class="num">${when(x)}</span></button>`).join('')}}
+    return h}
+  function draw(){box.innerHTML=list();const x=L.find(y=>y.b===sel);
+    foot.innerHTML=`<span class="ea-sel${x?' si':''}">${x?esc2(x.title):'Nothing picked yet'}</span><button type="button" class="ea-b" data-eax>Cancel</button><button type="button" class="ea-b pri" data-eago${x?'':' disabled'}>Mark done today</button>`}
+  function warn(w){foot.innerHTML=`<div class="ea-w"><b>${w.length===1?'This class comes first and is not done yet:':'These come first and are not done yet:'}</b><span class="si">${w.slice(0,4).map(esc2).join(' · ')}${w.length>4?' · +'+(w.length-4)+' more':''}</span><em>Mark this one anyway?</em></div><button type="button" class="ea-b" data-eaback>Back</button><button type="button" class="ea-b pri" data-eago data-eaforce>Mark anyway</button>`}
+  function apply(close){const x=L.find(y=>y.b===sel);if(!x)return;const r=doneEarly(sel);logI('early',{b:sel,ok:!!r});close();try{renderWeek()}catch(e){}}
+  inp.addEventListener('input',()=>{q=inp.value;box.innerHTML=list()});draw();setTimeout(()=>inp.focus(),30)}
+document.addEventListener('click',e=>{if(e.target.closest('#earlyBtn'))earlyOpen()});
+
 /* ---------- render ---------- */
 const onHome=()=>isShadow()&&!/\bpage-/.test(document.body.className);
 function render(force){if(!box||!isShadow()||!onHome())return;if(force||!box.querySelector('.sx-grid'))shell();

@@ -503,3 +503,27 @@ html.shadow #woPage #tdName{text-shadow:none!important}
 .sx-dlg .rate button{width:44px;height:44px;background:#1a1d1b;border:1px solid rgba(255,255,255,.12);color:#eceeec;font:500 15px 'Geist Mono',monospace}
 .sx-dlg .rate button:hover,.sx-dlg .rate button.on{background:#eceeec;color:#0a0b0a}
 .sx-dlg .rate small{color:#6b736d}
+/* ---- Calendar: Already did a class (26 Nov 2026) ---- */
+.sx-dlg .card2.sx-ea{width:min(640px,94vw);display:flex;flex-direction:column;max-height:88vh;overflow:hidden}
+.sx-ea .sx-cap{margin:0 0 12px;line-height:1.5}
+.sx-ea .ea-q{margin:0 0 10px}
+.sx-ea .ea-l{flex:1;min-height:180px;overflow:auto;margin:0 -6px;padding:0 6px;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}
+.sx-ea .ea-s{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:8px;padding:12px 4px 8px;background:#121413;font:500 11px 'Geist Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#a6ada8}
+.sx-ea .ea-s span{margin-left:auto;color:#6b736d;letter-spacing:.04em}
+.sx-ea .ea-u{display:flex;align-items:baseline;gap:10px;padding:10px 4px 4px;color:#cfd4d0;font-size:13px}
+.sx-ea .ea-u small{color:#6b736d;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-ea .ea-i{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:none;color:#eceeec;padding:8px 10px;border-radius:10px;cursor:pointer;font:400 13.5px 'Geist',system-ui,sans-serif}
+.sx-ea .ea-i .si{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-ea .ea-i .num{flex:none;color:#8b928d;font:400 12px 'Geist Mono',monospace}
+.sx-ea .ea-i:hover{background:rgba(255,255,255,.05)}
+.sx-ea .ea-i.on{background:rgba(255,255,255,.09);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+.sx-ea .ea-n{color:#8b928d;font-size:13px;padding:16px 4px}
+.sx-ea .ea-f{display:flex;align-items:center;gap:10px;padding-top:14px;flex-wrap:wrap}
+.sx-ea .ea-sel{flex:1;min-width:0;color:#a6ada8;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-ea .ea-b{border:1px solid rgba(255,255,255,.12);background:#1a1d1b;color:#eceeec;border-radius:999px;padding:9px 18px;font:500 13.5px 'Geist',system-ui,sans-serif;cursor:pointer}
+.sx-ea .ea-b:hover{background:#222624}
+.sx-ea .ea-b.pri{background:#eceeec;color:#0a0b0a;border-color:#eceeec}
+.sx-ea .ea-b:disabled{opacity:.4;cursor:default}
+.sx-ea .ea-w{flex-basis:100%;display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:12px;background:rgba(255,138,122,.07);box-shadow:inset 0 0 0 1px rgba(255,138,122,.35);font-size:13px;color:#cfd4d0}
+.sx-ea .ea-w b{font-weight:500;color:#ff8a7a}.sx-ea .ea-w em{font-style:normal;color:#eceeec}
+.sx-ea .ea-w+.ea-b{margin-left:auto}
