@@ -56,8 +56,8 @@ export class Holo{
     r.setPixelRatio(Math.min(devicePixelRatio||1,1.5));r.setSize(W,H);r.setClearColor(0x000000,0);el.appendChild(r.domElement);r.domElement.className='holo-cv';
     this.scene=new THREE.Scene();this.cam=new THREE.PerspectiveCamera(30,W/H,0.05,20);this.cam.position.set(0,1.15,3.55);
     const c=this.ctl=new OrbitControls(this.cam,r.domElement);c.target.set(0,1.0,0);c.enableDamping=true;c.dampingFactor=0.08;c.enablePan=false;
-    c.minDistance=1.6;c.maxDistance=5.2;c.minPolarAngle=0.55;c.maxPolarAngle=2.35;c.rotateSpeed=0.7;c.autoRotate=!this.reduced;c.autoRotateSpeed=0.55;c.update();
-    c.addEventListener('start',()=>{c.autoRotate=false;clearTimeout(this.arT)});c.addEventListener('end',()=>{if(!this.reduced)this.arT=setTimeout(()=>c.autoRotate=!this.poseId,6000)});
+    c.minDistance=1.6;c.maxDistance=6;c.minPolarAngle=0.55;c.maxPolarAngle=2.35;c.rotateSpeed=0.7;c.autoRotate=!this.reduced;c.autoRotateSpeed=0.55;c.update();
+    this.fitStand();c.addEventListener('start',()=>{c.autoRotate=false;clearTimeout(this.arT)});c.addEventListener('end',()=>{if(!this.reduced)this.arT=setTimeout(()=>c.autoRotate=!this.poseId,6000)});
     if(this.reduced)c.addEventListener('change',()=>this.render());
     /* driver skeleton: poses.js turns these joints; the visible body follows them */
     const bones=BONES.map(([n])=>{const b=new THREE.Bone();b.name=n;return b});
@@ -95,7 +95,10 @@ export class Holo{
     r.domElement.addEventListener('pointerup',e=>{if(!down)return;const moved=Math.hypot(e.clientX-down[0],e.clientY-down[1]);if(moved<5&&performance.now()-down[2]<500)this.pick(e);down=null});
     new ResizeObserver(()=>this.resize()).observe(el);this.ready=true;this.t0=performance.now();this.last=this.t0;this.apply();
     if(this.reduced){this.render()}else this.loop();return this}
-  resize(){if(!this.renderer)return;const W=this.el.clientWidth,H=this.el.clientHeight;if(!W||!H)return;this.cam.aspect=W/H;this.cam.updateProjectionMatrix();this.renderer.setSize(W,H);this.comp.setSize(W,H);this.bloom.resolution.set(W/2,H/2);this.applyOff();this.render()}
+  resize(){if(!this.renderer)return;const W=this.el.clientWidth,H=this.el.clientHeight;if(!W||!H)return;this.cam.aspect=W/H;this.cam.updateProjectionMatrix();if(!this.inSession)this.fitStand();this.renderer.setSize(W,H);this.comp.setSize(W,H);this.bloom.resolution.set(W/2,H/2);this.applyOff();this.render()}
+  /* body map framing: the whole standing body, head to feet and the floor ring, fits the stage at any size (25 Nov fix: feet were cut at 1366) */
+  fitStand(){const W=this.el.clientWidth||600,H=this.el.clientHeight||600,a=W/H,t=Math.tan(this.cam.fov*Math.PI/360),d=Math.min(this.ctl.maxDistance,Math.max(1.02/t,0.62/(t*a)));
+    const tg=this.ctl.target,dir=this.cam.position.clone().sub(tg).normalize();tg.set(0,0.9,0);this.cam.position.copy(tg).addScaledVector(dir,d);this.ctl.update()}
   offset(f){this.offT=f;if(this.reduced||this.o.capture){this.offX=f;this.applyOff();this.render()}}
   applyOff(){if(!this.renderer)return;const W=this.el.clientWidth,H=this.el.clientHeight;if(this.offX)this.cam.setViewOffset(W,H,W*this.offX,0,W,H);else this.cam.clearViewOffset()}
   mount(el){if(this.el===el)return;this.el=el;el.appendChild(this.renderer.domElement);this.resize()}

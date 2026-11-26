@@ -181,3 +181,34 @@ html:not(.shadow) #woPage .pl{background:linear-gradient(180deg,rgba(255,255,255
 .wo3 .wbb{display:flex;gap:6px;flex:none}.wo3 .hd .btn.wsm{white-space:nowrap}
 .wo3 .sp{flex:1}.wo3 .hd>div:first-child{min-width:0}
 .wo3 .today .ring{margin-bottom:18px}.wo3 .today .title{margin-bottom:0}
+/* ===== review fixes (26 Nov 2026) ===== */
+/* week strip: two plain lines ("Upper" / "B") instead of codes */
+.wo3 .wd b{font:500 11.5px/1.15 var(--sans);letter-spacing:-.01em;color:var(--i2);white-space:nowrap}
+.wo3 .wd em{font:400 10.5px/1.1 var(--sans);font-style:normal;color:var(--i3);white-space:nowrap;margin-top:-2px}
+.wo3 .wd.today em,.wo3 .wd.done em{color:var(--i2)}
+/* strength rows: chart and numbers keep their own columns; no data = one empty-state line */
+.wo3 .lift .spk{display:block;width:84px;height:26px}
+.wo3 .lift .v.none{grid-column:2/-1;font:400 12px var(--sans);color:var(--i3)}
+/* monthly challenge: the baseline under the change */
+.wo3 .chal small{display:block;font:400 10.5px/1.25 var(--sans);color:var(--i3)}
+/* body card: title and buttons on one row, the subtitle under them at full width */
+#woBody>.hd{align-items:center}.wo3 .pl .sub.bsub{margin:4px 0 0}
+/* session side column: the cards never squeeze the session list; if the screen is too short the column scrolls */
+.wo3 .s-side{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.wo3 .s-side>.s-card{flex:none}.wo3 .s-side>.splan{flex:1 0 auto;overflow:visible}
+.wo3 .sp-det{display:none}
+.wo3 .sp-h{font-size:12px;color:var(--i3);margin-bottom:2px}
+.wo3 .sp-x{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;align-items:baseline;padding:5px 0 0}
+.wo3 .sp-xn{font-size:14px;color:var(--i2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wo3 .sp-xt{font-size:12px;color:var(--i3)}
+.wo3 .sp-x .sp-d{grid-column:1/-1;margin-top:5px}.wo3 .sp-x .sp-g{margin-left:6px}
+.wo3 .sp-row.now .sp-xn{color:var(--ink)}.wo3 .sp-row.fin .sp-xn{color:var(--i3)}
+@media (max-height:820px){.wo3 .s-card{padding:14px 16px}.wo3 .fd{width:62px;height:82px;font-size:54px;line-height:82px}.wo3 .fd .h,.wo3 .fd .fl{height:41px}.wo3 .fd .h span,.wo3 .fd .fl span{height:82px}.wo3 .fd .b span{transform:translateY(-41px)}.wo3 .fd::after{top:40.5px}.wo3 .colon{font-size:46px;line-height:82px}.wo3 .step{margin:8px 0 2px}.wo3 .ctl .done{height:46px}.wo3 .shadow{margin-top:8px;padding-top:8px}}
+/* tall screens (1080p): the session list shows every exercise with its target, set marks and results */
+@media (min-height:900px){.wo3 .sp-sum{display:none}.wo3 .sp-det{display:block}.wo3 .splan .sp-row{padding:12px 0}.wo3 .sp-l{font-size:13px;line-height:18px}
+  .wo3 .fd{width:84px;height:112px;font-size:76px;line-height:112px}.wo3 .fd .h,.wo3 .fd .fl{height:56px}.wo3 .fd .h span,.wo3 .fd .fl span{height:112px}.wo3 .fd .b span{transform:translateY(-56px)}.wo3 .fd::after{top:55.5px}.wo3 .colon{font-size:64px;line-height:112px}
+  .wo3 .step output{font-size:56px}.wo3 .step button{width:54px;height:54px}}
+/* very short windows: tighter cards; if the list still runs past the bottom, the column fades out at the edge to show it scrolls */
+@media (max-height:700px){.wo3 .s-side{gap:8px}.wo3 .s-card{padding:10px 14px}.wo3 .step{margin:4px 0 0}.wo3 .step button{width:38px;height:38px}.wo3 .step output{font-size:36px}.wo3 .shadow{margin-top:6px;padding-top:6px}
+  .wo3 .ctl{gap:6px}.wo3 .ctl .btn{height:34px}.wo3 .ctl .done{height:40px}.wo3 .upnext b{font-size:13px}.wo3 .splan{padding:10px 14px}.wo3 .splan .sp-row{padding:4px 0}}
+.wo3 .s-side.ovf{-webkit-mask-image:linear-gradient(#000 calc(100% - 36px),transparent);mask-image:linear-gradient(#000 calc(100% - 36px),transparent)}
+.wo3 .s-side.ovf.end{-webkit-mask-image:none;mask-image:none}

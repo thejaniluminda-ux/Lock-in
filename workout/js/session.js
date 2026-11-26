@@ -30,7 +30,7 @@ export function start(o){const {S,T,TK,SID,H}=o,el=document.getElementById('woSe
     <div class="s-main"><div class="s-stage" id="sStage"><div class="tag" id="sTag"></div><div class="cue" id="sCue"></div><div class="restov" id="sRest"><span class="k" id="sRestK">Rest</span><div class="big num" id="sRestN">0:00</div><span id="sRestNx" style="color:var(--i2)"></span><button class="btn" id="sRestSkip" style="margin-top:10px">${ICON.skip} <span id="sRestSk">Skip rest</span></button></div></div>
       <div class="s-side"><div class="s-card" id="sMain"></div><div class="s-card"><div class="ctl"><button class="btn pri done" id="sDone">${ICON.ok} Done set</button><button class="btn" id="sBack">${ICON.back} Back</button><button class="btn" id="sRedo">${ICON.redo} Restart</button><button class="btn" id="sPause">${ICON.pause} Pause</button><button class="btn" id="sNext">${ICON.next} Next</button></div></div>
         <div class="s-card upnext" id="sUp"></div><div class="s-card splan" id="sPlan"></div></div></div>`;
-  el.classList.add('on');document.body.style.overflow='hidden';
+  el.classList.add('on');document.body.style.overflow='hidden';el.querySelector('.s-side').addEventListener('scroll',()=>ovf(),{passive:true});const onRs=()=>ovf();addEventListener('resize',onRs);
   if(H){H.inSession=true;H.mount(el.querySelector('#sStage'));H.ctl.autoRotate=false;H.setMuscles({},null)}else el.querySelector('#sStage').insertAdjacentHTML('afterbegin','<div class="nogl"><p>3D is off on this device. Follow the cue below.</p></div>');
   const $=s=>el.querySelector(s);
   /* ---- narrator moments (all speech goes through narrator.js voice()) ----
@@ -65,8 +65,9 @@ export function start(o){const {S,T,TK,SID,H}=o,el=document.getElementById('woSe
     $('#sTime').textContent=`${mmss(elapsed())} / ${mmss(plan)}`;
     if(q.k==='warm'||q.k==='cool'){$('#sName').textContent=q.k==='warm'?'Warm-up':'Cool-down';$('#sWhere').textContent=q.k==='warm'?'60 s rope · arm and hip circles · 1 easy ramp set':'Stretch the muscles you trained · slow breathing';
       $('#sTag').innerHTML='';$('#sCue').textContent=q.k==='warm'?'Easy pace. You should feel warm, not tired.':'In through the nose, long breath out.';
+      if(!run&&left<=0)left=q.secs;/* before Start the clock shows the full length (02:30), not 00:00 */
       $('#sMain').innerHTML=`<span class="k">${q.k==='warm'?'Warm-up':'Cool-down'}</span>${flipHTML(left)}<div class="flab">${run?'counting down':'press Start'}</div>`;
-      $('#sDone').innerHTML=`${ICON.ok} ${run?'Finish now':'Start'}`;H&&(H.pose(null),H.setMuscles({},null));upNext();return}
+      $('#sDone').innerHTML=`${run?ICON.ok:ICON.play} ${run?'Finish now':'Start'}`;H&&(H.pose(null),H.setMuscles({},null));upNext();return}
     const x=EX[q.e],sh=shadowOf(q),best=x.kind==='test'?testBest(x):pb(S,q.e),lv=S.lvl[q.e]??x.start??0;
     $('#sName').textContent=x.n;$('#sWhere').innerHTML=`${S0.test?'Test':q.pair.length>1?'Superset '+'ABCDEFG'[q.block]+' with '+esc(EX[q.pair.find(e=>e!==q.e)].n):'Block '+'ABCDEFG'[q.block]} · <b class="num" style="color:var(--ink)">set ${q.set} of ${q.of}</b>`;
     $('#sCue').textContent=x.cue;$('#sTag').innerHTML=x.lad?`<span class="chip">${esc(x.lad[lv])}</span>`:'';
@@ -100,11 +101,17 @@ export function start(o){const {S,T,TK,SID,H}=o,el=document.getElementById('woSe
     if(q.k!=='set'&&left<=0){run=false;advance();return}
     if(q.k==='set'&&left<=0){run=false;pend=COACH()?[['moment','hold.end']]:[];logHold(q,EX[q.e].kind==='test'?EX[q.e].secs:Math.round((EX[q.e].rng[0]+EX[q.e].rng[1])/2));afterSet(q)}}
   function timer(){clearInterval(iv);iv=setInterval(tick,250)}
-  function planCard(){const L='ABCDEFG';let h='<div class="k">This session</div>';
+  function planCard(){requestAnimationFrame(()=>ovf());const L='ABCDEFG';let h='<div class="k">This session</div>';
     B.forEach(([ex],bi)=>{const its=Q.map((x,i)=>[x,i]).filter(([x])=>x.k==='set'&&x.block===bi);const now=its.some(([,i])=>i===at),fin=its.every(([,i])=>i<at);
       const got=ex.map(e=>logs.filter(l=>l.e===e).map(l=>l.reps!=null?l.reps:l.secs+'s'));
-      h+=`<div class="sp-row${now?' now':''}${fin?' fin':''}"><span class="sp-l">${L[bi]}</span><div class="sp-b"><div class="sp-n">${ex.map(e=>esc(EX[e].n)).join(' + ')}</div><div class="sp-d">${its.map(([,i])=>`<i class="${i<at?'f':i===at?'n':''}"></i>`).join('')}${got.some(g=>g.length)?`<span class="sp-g">${got.map(g=>g.join(' ')).filter(Boolean).join(' / ')}</span>`:''}</div></div></div>`});
+      /* short screens: one line per block. Tall screens (CSS, min-height 900px): a line per exercise with its target and results */
+      const r=B[bi][1],rest=B[bi][2],tg=e=>{const x=EX[e];return x.kind==='test'?(x.mode==='hold'?'max hold':'max'):x.kind==='hold'?`${x.rng[0]===x.rng[1]?x.rng[0]:x.rng[0]+'–'+x.rng[1]} s`:`${x.rng[0]}–${x.rng[1]}`+(x.uni?' / side':'')};
+      const det=ex.map((e,j)=>`<div class="sp-x"><div class="sp-xn">${esc(EX[e].n)}</div><span class="sp-xt num">${tg(e)}</span><div class="sp-d">${its.filter(([x])=>x.e===e).map(([,i])=>`<i class="${i<at?'f':i===at?'n':''}"></i>`).join('')}<span class="sp-g">${got[j].join(' ')}</span></div></div>`).join('');
+      h+=`<div class="sp-row${now?' now':''}${fin?' fin':''}"><span class="sp-l">${L[bi]}</span><div class="sp-b"><div class="sp-sum"><div class="sp-n">${ex.map(e=>esc(EX[e].n)).join(' + ')}</div><div class="sp-d">${its.map(([,i])=>`<i class="${i<at?'f':i===at?'n':''}"></i>`).join('')}${got.some(g=>g.length)?`<span class="sp-g">${got.map(g=>g.join(' ')).filter(Boolean).join(' / ')}</span>`:''}</div></div>
+        <div class="sp-det"><div class="sp-h">${S0.test?'One max set':(ex.length>1?'Superset · '+r+(r===1?' round':' rounds'):r+(r===1?' set':' sets'))+' · '+rest+' s rest'}</div>${det}</div></div></div>`});
     $('#sPlan').innerHTML=h}
+  /* the side column scrolls on short windows: fade its bottom edge while more is below */
+  function ovf(){const s=el.querySelector('.s-side');if(!s)return;const o=s.scrollHeight>s.clientHeight+2;s.classList.toggle('ovf',o);s.classList.toggle('end',o&&s.scrollTop+s.clientHeight>=s.scrollHeight-4)}
   function logSet(q,v){const x=EX[q.e];const b=pb(S,q.e);clearCues();verdict(q,x,v,b);const l={d:TK,e:q.e,set:q.set,reps:x.kind==='reps'||x.mode==='count'?v:null,secs:x.kind==='reps'||x.mode==='count'?null:v,t:Date.now()};S.logs.push(l);logs.push(l);if(b&&v>b.v)pbs.push(x.n);o.save(S)}
   function logHold(q,v){logSet(q,v)}
   function afterSet(q){burst();if(q.rest){phase='rest';left=q.rest;run=true;const n=nextSet(at);$('#sRest').classList.add('on');restLabel(q.rest);$('#sRestNx').textContent=n?'Next: '+EX[n.e].n+' · set '+n.set:'';$('#sRestN').textContent=mmss(left);
@@ -124,7 +131,7 @@ export function start(o){const {S,T,TK,SID,H}=o,el=document.getElementById('woSe
   $('#sRestSkip').addEventListener('click',()=>{run=false;restEnd()});
   $('#sClose').addEventListener('click',()=>close());
   const onKey=e=>{if(e.key==='Escape')close();if(e.key===' '&&e.target===document.body){e.preventDefault();$('#sDone').click()}};document.addEventListener('keydown',onKey);
-  function close(){clearInterval(iv);clearCues();if(H){H.inSession=false;H.pose(null);H.frame(null)}hush();el.classList.remove('on');document.body.style.overflow='';document.removeEventListener('keydown',onKey);o.onExit&&o.onExit()}
+  function close(){clearInterval(iv);clearCues();if(H){H.inSession=false;H.pose(null);H.frame(null)}hush();el.classList.remove('on');document.body.style.overflow='';document.removeEventListener('keydown',onKey);removeEventListener('resize',onRs);o.onExit&&o.onExit()}
   function burst(){const st=$('#sStage');const b=document.createElement('div');b.className='burst';b.innerHTML=Array.from({length:14},(_,i)=>{const a=i/14*6.283;return `<i style="position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:var(--acc);opacity:.9;transform:translate(-50%,-50%);animation:bp 600ms var(--ease) forwards;--x:${Math.cos(a)*120}px;--y:${Math.sin(a)*120}px"></i>`}).join('');st.appendChild(b);setTimeout(()=>b.remove(),700)}
   if(!document.getElementById('bpKF')){const st=document.createElement('style');st.id='bpKF';st.textContent='@keyframes bp{to{transform:translate(calc(-50% + var(--x)),calc(-50% + var(--y))) scale(.4);opacity:0}}';document.head.appendChild(st)}
   function finish(){clearInterval(iv);const min=Math.max(1,Math.round(elapsed()/60));S.extra[TK]=Object.assign(S.extra[TK]||{},{done:min});
@@ -132,7 +139,7 @@ export function start(o){const {S,T,TK,SID,H}=o,el=document.getElementById('woSe
     const tot=logs.reduce((a,l)=>a+(l.reps||0),0),beat=logs.filter(l=>{const p=lastSession(S,l.e,TK).find(x=>x.set===l.set);return p&&(l.reps??l.secs)>(p.reps??p.secs)}).length;
     clearCues();voice(COACH()?[...pend,['moment','session.done',{min}]]:[...pend,['moment','workout.done']]);pend=[];showDone({min,sets:logs.length||sets,tot,beat,pbs,ticked})}
   function showDone(r){const d=document.getElementById('woDone');d.innerHTML=`<div class="done-c"><span class="k">Workout complete</span><h2>${esc(S0.n)} done</h2><p style="color:var(--i2);margin:0">Saved. ${r.ticked?'The Workout block in today’s routine is ticked.':'There is no Workout block in today’s routine to tick.'}</p>
-      <div class="done-g"><div><b>${r.min}</b><span>${r.min===1?'minute':'minutes'}</span></div><div><b>${r.sets}</b><span>sets</span></div><div><b>${r.tot}</b><span>reps</span></div><div><b>${r.beat}</b><span>sets better than last time</span></div></div>
+      <div class="done-g"><div><b>${r.min}</b><span>${r.min===1?'minute':'minutes'}</span></div><div><b>${r.sets}</b><span>${S0.test?(r.sets===1?'test':'tests'):(r.sets===1?'set':'sets')}</span></div><div><b>${r.tot}</b><span>reps</span></div><div><b>${r.beat}</b><span>sets better than last time</span></div></div>
       ${r.pbs.length?`<div class="pbl">${[...new Set(r.pbs)].map(n=>`<span class="chip now"><span class="pb">New best</span> ${esc(n)}</span>`).join('')}</div>`:''}<button class="btn pri" id="dOk" style="min-width:200px">Back to Workout</button></div>`;
     d.classList.add('on');d.querySelector('#dOk').addEventListener('click',()=>{d.classList.remove('on');close()});d.querySelector('#dOk').focus()}
   render()}

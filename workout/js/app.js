@@ -38,21 +38,31 @@ function ladderState(e){const x=EX[e];if(!x||!x.lad||x.kind==='test')return null
   const ds=Object.keys(by).filter(k=>k<=TK).sort().slice(-2);if(ds.length<2)return null;const step=lv(e);
   if(ds.every(k=>by[k].length>=2&&by[k].every(v=>v>=x.rng[1]))&&step<x.lad.length-1)return 'up';
   if(ds.every(k=>by[k].some(v=>v<x.rng[0]))&&step>0)return 'down';return null}
-function renderToday(){const el=$('#woToday');const yest=addD(T,-1),yk=ymd(yest),yid=sessionFor(yest);
-  const nudge=yid&&!dayDone(S,yk)&&yest>=START?`<div class="nudge"><span>${ICON.miss.replace('<svg','<svg width="16" height="16" fill="none" stroke="#ffb36b" stroke-width="2" stroke-linecap="round"')}</span><div><b>Missed ${DOW[yest.getDay()]}: ${esc(SESS[yid].n)}.</b> One miss changes nothing. Do today's session in full; never miss twice.</div></div>`:'';
+/* planned sessions missed in a row, most recent last: walks back from yesterday over planned days (rest days are skipped),
+   stops at the first finished one and never goes before Day 1 (START) */
+function missRun(){const out=[];for(let i=1;i<=400;i++){const d=addD(T,-i);if(d<START)break;const id=sessionFor(d);if(!id)continue;if(dayDone(S,ymd(d)))break;out.unshift({d,id})}return out}
+function missNudge(){const M=dayDone(S,TK)?[]:missRun();if(!M.length)return'';const ic=`<span>${ICON.miss.replace('<svg','<svg width="16" height="16" fill="none" stroke="#ffb36b" stroke-width="2" stroke-linecap="round"')}</span>`;
+  const msg=M.length===1?`<b>Missed ${DOW[M[0].d.getDay()]}: ${esc(SESS[M[0].id].n)}.</b> One miss changes nothing. Do today's session in full; never miss twice.`
+    :`<b>${M.length} sessions missed in a row${M.length<=4?' ('+M.map(x=>DOW[x.d.getDay()]).join(', ')+')':' since '+fmtD(M[0].d).replace(/ /g,'&nbsp;')}.</b> Missed sessions are not made up. ${SID?'Restart today: do this session in full.':'Restart on the next planned day.'}`;
+  return `<div class="nudge" role="status">${ic}<div>${msg}</div></div>`}
+function renderToday(){const el=$('#woToday');
+  const nudge=missNudge();
   const head=`<div class="date"><span class="k">${fmtD(T)} · training week ${trainingWeek(T)}</span></div>`;
   if(!SID){const nx=[1,2,3,4,5,6,7].map(i=>addD(T,i)).find(d=>sessionFor(d));const fresh=Object.keys(MUSCLES).filter(m=>REC[m].lvl>0.05);
     el.innerHTML=`${head}<div class="title"><h1>Rest day</h1></div><p class="focus">${T<START?'Day 1 is '+fmtD(START)+'. Training starts then.':'Muscles grow while you rest. No training today; sleep by 23:00 and hit 110 g protein.'}</p>
       <div class="chips"><span class="chip">Still recovering <b>${fresh.length}</b></span>${nx?`<span class="chip">Next <b>${DOW[nx.getDay()]}</b> ${esc(SESS[sessionFor(nx)].n)}</span>`:''}<span class="chip">${esc(PH.n)}</span></div>
       ${weekStrip()}${nudge}${nx?preview(nx):''}`;return}
-  const S0=SESS[SID],B=blocksFor(SID,T),tm=timing(SID,T,trainingWeek(T)),done=todaySets(),tot=B.reduce((a,[ex,r])=>a+ex.length*r,0),dn=Math.min(tot,B.reduce((a,[ex,r])=>a+ex.reduce((b,e)=>b+Math.min(r,done[e]||0),0),0));
+  const S0=SESS[SID],B=blocksFor(SID,T),tm=timing(SID,T,trainingWeek(T)),done=todaySets(),tot=B.reduce((a,[ex,r])=>a+ex.length*r,0);
+  /* a test day counts tests, not sets: a test is done when it was logged today or this month's challenge recorded it today */
+  const chT=S0.test&&S.chal[TK.slice(0,7)]&&S.chal[TK.slice(0,7)].d===TK?S.chal[TK.slice(0,7)]:null;
+  const dn=Math.min(tot,B.reduce((a,[ex,r])=>a+ex.reduce((b,e)=>b+Math.min(r,Math.max(done[e]||0,chT&&EX[e].key&&chT[EX[e].key]!=null?1:0)),0),0)),unit=S0.test?'tests':'sets';
   const C=2*Math.PI*31,off=C*(1-Math.min(1,dn/tot)),fin=dayDone(S,TK),firstTest=S0.test&&!Object.values(S.chal).some(c=>c&&c.d&&c.d<TK);
   const rows=B.map(([ex,r,rest],bi)=>`<div class="blk"><div class="blk-h"><span class="k">${S0.test?'Test':ex.length>1?'Superset '+'ABCDEFG'[bi]:'Block '+'ABCDEFG'[bi]}</span><span class="k">× ${r}</span><span>${S0.test?'one max set':r===1?'one round':ex.length>1?`rest ${rest} s after each round`:`rest ${rest} s`}</span></div>${ex.map((e,i)=>{const x=EX[e],sh=lastSession(S,e,TK),ls=ladderState(e);
       const tg=e==='neck'&&x.iso&&trainingWeek(T)<=x.iso.weeks?'4 × 15 s holds':x.kind==='test'?(e==='t_plank'?'max hold':'max'):x.kind==='hold'?`${x.rng[0]}–${x.rng[1]} s${x.uni?' / side':''}`:`${x.rng[0]}–${x.rng[1]}${x.uni?' / side':''}`;
       return `<div class="ex" data-ex="${e}"><span class="ab">${ex.length>1?'ABCDEFG'[bi]+(i+1):'ABCDEFG'[bi]}</span><div style="min-width:0"><div class="nm">${esc(x.n)}</div><div class="vr">${esc(x.lad?x.lad[lv(e)]:x.cue)}</div>${S0.test?'':`<div class="dots">${Array.from({length:r},(_,k)=>`<i class="${k<(done[e]||0)?'f':''}"></i>`).join('')}</div>`}
         ${ls==='up'?`<button class="lvup" data-lv="${e}|1">${ICON.up} Top of the range twice: move up a rung</button>`:ls==='down'?`<button class="lvup dn" data-lv="${e}|-1">${ICON.down} Under the range twice: step back a rung</button>`:''}</div>
         <div class="tg">${tg}${x.kind==='test'?`<small>${esc(testLast(e))}</small>`:sh.length?`<small>last ${sh.map(l=>l.reps??l.secs).join(' · ')}</small>`:''}</div></div>`}).join('')}</div>`).join('');
-  el.innerHTML=`${head}<div class="title"><h1${S0.n.length>14||firstTest?' class="long"':''}>${esc(firstTest?'First monthly challenge':S0.n)}${DL&&!S0.test?' <span class="dl">Deload</span>':''}</h1><div class="ring" role="img" aria-label="${dn} of ${tot} sets done"><svg viewBox="0 0 70 70"><circle class="b" cx="35" cy="35" r="31"/><circle class="f" cx="35" cy="35" r="31" stroke-dasharray="${C}" stroke-dashoffset="${off}"/></svg><b>${dn}/${tot}</b><small>sets</small></div></div>
+  el.innerHTML=`${head}<div class="title"><h1${S0.n.length>14||firstTest?' class="long"':''}>${esc(firstTest?'First monthly challenge':S0.n)}${DL&&!S0.test?' <span class="dl">Deload</span>':''}</h1><div class="ring" role="img" aria-label="${dn} of ${tot} ${unit} done"><svg viewBox="0 0 70 70"><circle class="b" cx="35" cy="35" r="31"/><circle class="f" cx="35" cy="35" r="31" stroke-dasharray="${C}" stroke-dashoffset="${off}"/></svg><b>${dn}/${tot}</b><small>${unit}</small></div></div>
     <div class="focus">${esc(firstTest?'Max push-ups, pull-ups, plank and squats against your 18 Nov test':S0.focus)}</div>
     <div class="chips"><span class="chip${!dn&&slotPassed()?'':' now'}">${slotOf(T)}${!dn&&slotPassed()&&!fin?' · slot passed, train when you can':''}</span><span class="chip"><b>${Math.round(tm.total/60)} min</b> planned</span>${S0.test?'<span class="chip">Max effort</span>':`<span class="chip">RIR <b>${DL?'3':PH.rir}</b></span>`}<span class="chip">${esc(PH.n)}</span></div>
     <button class="btn ${fin||dn>=tot?'':'pri '}start" id="woGo"${fin?' disabled aria-disabled="true"':''}>${fin?ICON.ok:ICON.play} ${fin?'Done for today':dn?'Continue session':S0.test?'Start the challenge':'Start session'}</button>${weekStrip()}${nudge}${rows}`;
@@ -64,8 +74,9 @@ function preview(d){const id=sessionFor(d);return `<div class="blk"><div class="
 function slotPassed(){const n=today(),end=slotOf(T).split('–')[1];if(!end)return false;const [h,m]=end.split(':').map(Number);return n.getHours()*60+n.getMinutes()>h*60+m}
 function testLast(e){const k={t_push:'push',t_pull:'pull',t_plank:'plank',t_squat:'squat'}[e];const ms=Object.keys(S.chal).sort().filter(m=>m<TK.slice(0,7)&&S.chal[m].d);const m=ms.at(-1);const v=m?S.chal[m][k]:BASE[k];return `${m?'last':'18 Nov'} ${v}${e==='t_plank'?' s':''}`}
 function weekStrip(){return `<div class="week" role="list" aria-label="This week">${weekDays(T).map(({d,k,id})=>{const pre=d<START;const st=k===TK?'today':pre?'pre':!id?'rest':dayDone(S,k)?'done':k<TK?'miss':'';
-    const code=id?{UA:'U·A',UB:'U·B',UC:'U·C',LA:'L·A',LB:'L·B',LC:'L·C',TEST:'Test',MAINT:'Keep'}[id]:pre?'–':'Rest';
-    return `<div class="wd ${st}" role="listitem" aria-label="${DOW[d.getDay()]} ${id?SESS[id].n:pre?'before day 1':'rest'} ${st}"><span>${DOW[d.getDay()].slice(0,1)}</span><b>${code}</b><span class="st">${st==='done'?ICON.ok:st==='miss'?ICON.miss:st==='today'?ICON.dot:''}</span></div>`}).join('')}</div>`}
+    /* two plain lines: "Upper" / "B", "Test" / "max", "Rest"; days before Day 1 show a dash */
+    const [l1,l2]=id?({TEST:['Test','max'],MAINT:['Keep','fit']}[id]||[SESS[id].n.split(' ')[0],SESS[id].n.split(' ')[1]||'']):pre?['–','']:['Rest',''];
+    return `<div class="wd ${st}" role="listitem" aria-label="${DOW[d.getDay()]} ${id?SESS[id].n:pre?'before day 1':'rest'} ${st}"><span>${DOW[d.getDay()].slice(0,1)}</span><b>${l1}</b><em>${l2||'&nbsp;'}</em><span class="st">${st==='done'?ICON.ok:st==='miss'?ICON.miss:st==='today'?ICON.dot:''}</span></div>`}).join('')}</div>`}
 
 /* ---------- body map (hologram: plain blue; a clicked muscle is brighter blue) ---------- */
 let H=null,SEL=null,holoP=null;
@@ -103,10 +114,15 @@ function spark(vals){if(vals.length<2)return'';const lo=Math.min(...vals),hi=Mat
 function renderStrength(){const lifts=['pullup','dpush','bss','lat'];
   const row=e=>{const x=EX[e],ses={};for(const l of S.logs)if(l.e===e)ses[l.d]=Math.max(ses[l.d]||0,l.reps??l.secs??0);const ks=Object.keys(ses).sort(),vals=ks.slice(-12).map(k=>ses[k]),best=pb(S,e),last=vals.at(-1);
     const isPB=best&&ks.length>1&&best.d===ks.at(-1)&&best.d!==ks[0];
-    return `<div class="lift"><div style="min-width:0"><div class="nm">${esc(x.n)}${isPB?'<span class="pb">New best</span>':''}</div><div class="vr">${esc(x.lad[lv(e)])}</div></div>${spark(vals)}<div class="v">${last??'–'}<small>best ${best?best.v:'–'}</small></div></div>`};
+    const info=`<div style="min-width:0"><div class="nm">${esc(x.n)}${isPB?'<span class="pb">New best</span>':''}</div><div class="vr">${esc(x.lad[lv(e)])}</div></div>`;
+    /* no sets logged yet: one plain empty state in place of the chart and the numbers */
+    if(last==null)return `<div class="lift">${info}<div class="v none">No sets yet</div></div>`;
+    return `<div class="lift">${info}<span class="spk">${spark(vals)}</span><div class="v">${last}<small>best ${best?best.v:last}</small></div></div>`};
   const ms=Object.keys(S.chal).filter(m=>S.chal[m]&&S.chal[m].d).sort(),cur=ms.at(-1),prev=ms.at(-2),C=cur?S.chal[cur]:null,P=prev?S.chal[prev]:BASE;
   const nextTest=[...Array(40).keys()].map(i=>addD(T,i)).find(d=>sessionFor(d)==='TEST');
-  const cell=(k,lab,u='')=>{const v=C?C[k]:null,p=P?parseInt(String(P[k])):null;const dlt=v!=null&&p!=null&&!isNaN(p)?v-p:null;return `<div><b>${v??'–'}${u}</b><span>${lab}</span>${dlt!=null?` <em${dlt===0?' style="color:var(--i3)"':dlt<0?' style="color:var(--warn)"':''}>${dlt>0?'+':''}${dlt===0?'same':dlt}</em>`:''}</div>`};
+  /* the change is counted from the top of a range baseline (7 against "5-6" is +1), and the baseline is printed under it */
+  const cell=(k,lab,u='')=>{const v=C?C[k]:null,pv=P?P[k]:null,ns=pv==null?[]:String(pv).split('-').map(Number).filter(n=>!isNaN(n)),top=ns.length?Math.max(...ns):null,dlt=v!=null&&top!=null?v-top:null;
+    return `<div><b>${v??'–'}${u}</b><span>${lab}</span>${dlt!=null?`<em${dlt===0?' style="color:var(--i3)"':dlt<0?' style="color:var(--warn)"':''}>${dlt>0?'+':''}${dlt===0?'same':dlt}</em><small>vs ${esc(pv)}${u}</small>`:''}</div>`};
   const when=sessionFor(T)==='TEST'?(C&&C.d===TK?' · done today':' · today'):nextTest?' · next '+fmtD(nextTest):' · challenges pause for the exam months';
   $('#woStr').innerHTML=`<div class="hd"><div><h2>Strength</h2><p class="sub">Best working-set reps in each session</p></div></div>${lifts.map(row).join('')}
     <div class="hd" style="margin-top:14px"><div><h2>Monthly challenge</h2><p class="sub">${C?`${MON[+cur.slice(5)-1]} vs ${prev?MON[+prev.slice(5)-1]:'start (18 Nov)'}`:'Starting test, 18 Nov'}${when}</p></div></div>
@@ -126,7 +142,7 @@ function renderBody(){const W=S.weights.slice().sort((a,b)=>a.d<b.d?-1:1),last=W
   const tile=v=>{const src=pm&&PHOTOS[photoKey(pm,v)];return `<button class="ph${src?' has':''}" data-ph="${v}" aria-label="${v} photo${src?', '+MON[+pm.slice(5)-1]+'. Tap to replace this month':'. Tap to add'}"><img src="${src||silhouette(v)}" alt="" draggable="false"><span>${v[0].toUpperCase()+v.slice(1)} · ${src?MON[+pm.slice(5)-1]:'add'}</span></button>`};
   const fronts=ms.filter(m=>PHOTOS[m]);if(cmpOn&&fronts.length<2)cmpOn=false;if(!fronts.includes(cmpA))cmpA=fronts[0];if(!fronts.includes(cmpB))cmpB=fronts.at(-1);
   const opt=s=>fronts.map(m=>`<option value="${m}"${m===s?' selected':''}>${MON[+m.slice(5)-1]} ${m.slice(0,4)}</option>`).join('');
-  $('#woBody').innerHTML=`<div class="hd"><div><h2>Body</h2><p class="sub">Weekly weigh-in · 183 cm</p></div><span class="sp"></span><div class="wbb"><button class="btn ghost wsm" data-bf="w" aria-expanded="${bodyForm==='w'}">Log weight</button><button class="btn ghost wsm" data-bf="t" aria-expanded="${bodyForm==='t'}">Tape</button></div></div>
+  $('#woBody').innerHTML=`<div class="hd"><div><h2>Body</h2></div><span class="sp"></span><div class="wbb"><button class="btn ghost wsm" data-bf="w" aria-expanded="${bodyForm==='w'}">Log weight</button><button class="btn ghost wsm" data-bf="t" aria-expanded="${bodyForm==='t'}">Tape</button></div></div><p class="sub bsub">Weekly weigh-in · height 183&nbsp;cm</p>
     ${bodyForm==='w'?`<form class="bform" data-f="w"><label>Weight today (kg)<input name="w" type="number" step="0.1" min="30" max="150" inputmode="decimal" required value="${(S.weights.find(x=>x.d===TK)||{}).w??''}"></label><button class="btn pri wsm" type="submit">Save</button><button class="btn ghost wsm" type="button" data-bf="">Cancel</button></form>`:''}
     ${bodyForm==='t'?`<form class="bform" data-f="t">${['waist','arm','chest','neck'].map(k=>`<label>${k[0].toUpperCase()+k.slice(1)} (cm)<input name="${k}" type="number" step="0.5" min="10" max="200" inputmode="decimal" value="${tl&&tl.d===TK&&tl[k]!=null?tl[k]:''}"></label>`).join('')}<button class="btn pri wsm" type="submit">Save</button><button class="btn ghost wsm" type="button" data-bf="">Cancel</button></form>`:''}
     <div class="bstats"><div><b>${last?last.w:'–'}</b><span>kg now</span></div><div><b>${last&&first&&W.length>1?((last.w-first.w>=0?'+':'')+(last.w-first.w).toFixed(1)):'–'}</b><span>${first&&W.length>1?'kg since '+fmtK(first.d):'kg change'}</span></div><div><b>${bmi?bmi.toFixed(1):'–'}</b><span>BMI</span></div></div>
