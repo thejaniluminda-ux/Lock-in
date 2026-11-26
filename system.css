@@ -360,10 +360,13 @@ html.shadow #libPage .lb-map,html.shadow #libPage .lm-wrap{color:var(--sx-ink)}
 @media (max-height:820px){#sxFoc .sxf-t{font-size:19px}#sxFoc .sx2-pl{padding:13px 16px}#sxFoc #sxfRing{width:min(360px,46vh);height:min(360px,46vh)}#sxFoc .sxf-ch .c{padding:3px 0 3px 22px}#sxFoc .sxf-ch .c::before{top:9px}}
 @media (prefers-reduced-motion:reduce){.sxl-main,.sx2-btn,#sxFoc #sxfRing .t{transition:none}.sxl-main:hover{transform:none}}
 /* the old Home header: only the bell stays, top right, like Shadow Home */
-html.shadow body.page-foc main>.top,html.shadow body.page-cal main>.top,html.shadow body.page-lib main>.top{position:absolute;right:30px;top:12px;z-index:6;margin:0;padding:0;display:block!important;min-height:0}
-html.shadow body.page-foc main>.top>:not(.corner),html.shadow body.page-cal main>.top>:not(.corner),html.shadow body.page-lib main>.top>:not(.corner),
+html.shadow body.page-foc main>.top,html.shadow body.page-cal main>.top,html.shadow body.page-lib main>.top,html.shadow body.page-pap main>.top,html.shadow body.page-rep main>.top{position:absolute;right:30px;top:12px;z-index:6;margin:0;padding:0;display:block!important;min-height:0}
+html.shadow body.page-foc main>.top>:not(.corner),html.shadow body.page-cal main>.top>:not(.corner),html.shadow body.page-lib main>.top>:not(.corner),html.shadow body.page-pap main>.top>:not(.corner),html.shadow body.page-rep main>.top>:not(.corner),
+html.shadow body.page-pap main>.top .corner>:not(.bwrap),html.shadow body.page-rep main>.top .corner>:not(.bwrap),
 html.shadow body.page-foc main>.top .corner>:not(.bwrap),html.shadow body.page-cal main>.top .corner>:not(.bwrap),html.shadow body.page-lib main>.top .corner>:not(.bwrap){display:none!important}
-html.shadow body.page-foc main,html.shadow body.page-cal main,html.shadow body.page-lib main{position:relative}
+html.shadow body.page-foc main,html.shadow body.page-cal main,html.shadow body.page-lib main,html.shadow body.page-pap main,html.shadow body.page-rep main{position:relative}
+/* Papers and Report get the shared top bar (26 Nov 2026); the big page title gives way to it, the subtitle and subject switch stay */
+html.shadow #papPage .pp-top .rp-h,html.shadow #repPage .rp-top .rp-h{display:none}
 html.shadow body.page-foc #baku,html.shadow body.page-cal #baku,html.shadow body.page-lib #baku{display:none}
 html.shadow .tbtn2{color:var(--sx-i2);background:var(--sx-p2);box-shadow:inset 0 0 0 1px var(--sx-ln)}html.shadow .tbtn2:hover{color:var(--sx-ink)}
 .sxl-main{display:flex;flex-direction:column;justify-content:flex-start}
@@ -520,3 +523,33 @@ html.shadow #cBody .ev.sx-short .tg{display:none}
 .sx-ea .ea-w{flex-basis:100%;display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:12px;background:rgba(255,138,122,.07);box-shadow:inset 0 0 0 1px rgba(255,138,122,.35);font-size:13px;color:#cfd4d0}
 .sx-ea .ea-w b{font-weight:500;color:#ff8a7a}.sx-ea .ea-w em{font-style:normal;color:#eceeec}
 .sx-ea .ea-w+.ea-b{margin-left:auto}
+/* ---- 26 Nov 2026 review fixes ---- */
+/* Home: the missions column scrolls instead of clipping; its subtitle shows; weak-unit names wrap; node titles get 3 lines */
+html.shadow #shx .sx-mis{overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent;padding-right:4px;min-height:0}
+html.shadow #shx .sx-mis .sx-ph p{display:block!important;margin:2px 0 0}
+html.shadow #shx .sx-weak div span:first-child{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
+html.shadow #shx .sx-nd b{-webkit-line-clamp:3}
+html.shadow #shx .sx-fin b.late{color:#ffbf5f}
+.sx-dlg .nr-f small{display:block;color:#6b736d;font-size:11.5px;margin-top:2px}
+/* Calendar: narrow dimmed columns before Day 1, side column scrolls instead of clipping */
+html.shadow #cBody .col.sx-prec{opacity:.55}
+html.shadow #cBody .col.sx-prec .sx-pre{white-space:normal;line-height:1.5;padding:0 4px;letter-spacing:.06em}
+html.shadow #cHead .dh.sx-prec{opacity:.5}
+html.shadow #calPage .cside{overflow-y:auto;overflow-x:hidden;min-height:0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent;padding-right:4px}
+html.shadow #cBody .ev.sx-mid .et{-webkit-line-clamp:1!important;line-clamp:1;white-space:nowrap!important;display:block!important;overflow:hidden;text-overflow:ellipsis}
+/* Already did a class: roomier search field, denser list so more classes show at 1366 */
+.sx-dlg .card2.sx-ea{max-height:94vh;padding:16px 20px}
+.sx-ea .sx-cap{font-size:12px;margin:0 0 10px}
+.sx-ea .ea-q{padding:10px 14px 10px 16px!important;font-size:14px!important;text-indent:2px}
+.sx-ea .ea-i{padding:6px 10px}
+.sx-ea .ea-u{padding:8px 4px 2px}
+.sx-ea .ea-s{padding:10px 4px 6px}
+.sx-dlg .card2:focus{outline:none}
+/* Library cards: one-line titles so long names (Mechanical Properties of Matter) keep every card aligned */
+html.shadow .sxl-card .t>div{min-width:0}
+html.shadow .sxl-card .t h4,html.shadow .sxl-card .t .en{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.shadow .sxl-card .t .state{flex:none}
+/* segmented switches change state at once (a fading background left the old choice lit) */
+html.shadow .seg button{transition:color .15s}
+html.shadow #papPage>.sx2-barw,html.shadow #repPage>.sx2-barw{margin-top:-16px}
+#mqBody .mq-none span{font-size:14px;color:var(--sx-i2,#a6ada8);line-height:1.5}

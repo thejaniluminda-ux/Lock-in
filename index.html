@@ -259,7 +259,7 @@ body.page-rep #repPage{display:block}
 .rp-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:18px}
 .rp-h{font-size:clamp(44px,6vw,80px);font-weight:200;letter-spacing:-.04em;margin:0;line-height:.9}
 .rp-top .sub{margin:8px 0 0;font-size:13px;color:var(--ink-3)}
-.rp-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);grid-template-areas:"ck ck" "wk wk" "radar fix" "radar log";gap:16px}
+.rp-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);grid-template-areas:"wk wk" "ck ck" "radar fix" "radar log";gap:16px}
 .rp-wk{grid-area:wk}
 .wr-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}
 @media(max-width:900px){.wr-g{grid-template-columns:1fr 1fr}}
@@ -317,7 +317,7 @@ body.page-rep #repPage{display:block}
 .lg select,.lg input{background:rgba(255,255,255,.06);border:1px solid var(--edge);border-radius:10px;color:var(--ink);padding:8px 10px;font:inherit;font-size:13px;color-scheme:dark;min-width:0}
 .lg .pri-btn{margin-top:0}
 @media (max-width:900px){
-  .rp-grid{grid-template-columns:1fr;grid-template-areas:"ck" "wk" "radar" "fix" "log"}
+  .rp-grid{grid-template-columns:1fr;grid-template-areas:"wk" "ck" "radar" "fix" "log"}
   .rp-top{flex-direction:column;align-items:flex-start}
 }
 @media (max-width:760px){
@@ -1751,11 +1751,13 @@ function updateProg(){
   return evs.length>0&&n===evs.length;
 }
 function nrHtml(){
-  const study=dayEvents().filter(isStudy),hrs=study.filter(e=>e.done).reduce((a,e)=>a+(e.e-e.s)/60,0),skipped=study.filter(e=>!e.done);
+  const study=dayEvents().filter(isStudy),skipped=study.filter(e=>!e.done);
+  /* hours: what the app can prove (26 Nov 2026): minutes focused in Focus + ticked class time, rounded to a quarter hour */
+  const foM=((typeof FO!=='undefined'&&FO.log&&FO.log[viewKey])||{min:0}).min||0,clM=study.filter(e=>e.done&&e.kind==='class').reduce((a,e)=>a+(e.e-e.s),0),hrs=(foM+clM)/60;
   return `<div class="nr" id="nr"><div class="nr-h"><b>Night review</b><span>about a minute</span></div>`+
-    `<label class="nr-f">Hours studied today<input type="number" id="nrH" min="0" max="16" step="0.25" value="${Math.round(hrs*4)/4}"></label>`+
-    `<div class="nr-f"><span>What got skipped? Ticked classes and papers go to catch-up within 14 days. Ticked practice blocks are dropped.</span>`+
-    (skipped.length?skipped.map(e=>`<label class="nr-c"><input type="checkbox" ${e.missed?'disabled':'checked'} data-id="${e.id}"><i style="background:var(--${e.subj})"></i>${esc(e.title)}${e.fixed?(e.missed?' (recording already queued)':' (live class: watch the recording)'):e.cu?' (catch-up, due '+fmtD(e.cu.due)+')':cuQueueable(e)?'':' (practice, dropped)'}</label>`).join(''):'<em>Nothing. Every study block is ticked. 🔥</em>')+`</div>`+
+    `<label class="nr-f">Hours studied today <small>Focus ${(Math.round(foM/15)/4)} h + ticked classes ${(Math.round(clM/15)/4)} h, change it if needed</small><input type="number" id="nrH" min="0" max="16" step="0.25" value="${Math.round(hrs*4)/4}"></label>`+
+    `<div class="nr-f">${skipped.length?`<span>Not done today. Keep a block ticked if you skipped it: classes and papers move to catch-up (within 14 days), practice is dropped. Untick one you will still do tonight.</span>`:''}`+
+    (skipped.length?skipped.map(e=>`<label class="nr-c"><input type="checkbox" ${e.missed?'disabled':'checked'} data-id="${e.id}"><i style="background:var(--${e.subj})"></i>${esc(e.title)}${e.fixed?(e.missed?' (recording already queued)':' (live class: watch the recording)'):e.cu?' (catch-up, due '+fmtD(e.cu.due)+')':cuQueueable(e)?'':' (practice, dropped)'}</label>`).join(''):'<em>Nothing left: every study block today is ticked.</em>')+`</div>`+
     `<label class="nr-f">One thing I learned today<input type="text" id="nrL" placeholder="For example: range is greatest at 45°"></label>`+
     `<div class="nr-b"><button class="pri" id="nrSave">Done for today</button><button id="nrLater">Later</button></div></div>`;
 }
@@ -2559,7 +2561,10 @@ setTimeout(()=>{try{v13Report();v13Report('lockin-v14-check',14);v15Report()}cat
 function dayDone(k){const L=(CS.days[k]||[]).filter(e=>e.kind==='class'||e.kind==='study'||e.kind==='paper');if(!L.length||L.some(e=>e.free))return null;const m=L.reduce((a,e)=>a+e.e-e.s,0),d=L.filter(e=>e.done).reduce((a,e)=>a+e.e-e.s,0);return m?d/m:null}
 function lightCheck(){const LT=lsGet('lockin-light-v1',{used:[],asked:''}),t0=new Date(today0),tk=dkey(t0);
   if(LT.asked&&(t0-new Date(LT.asked+'T00:00'))/864e5<7)return;
-  const ks=[1,2,3].map(i=>dkey(addDays(t0,-i)));if(ks.some(k=>k<dkey(START)))return;
+  const ks=[1,2,3].map(i=>dkey(addDays(t0,-i)));
+  /* 26 Nov 2026: only days from Day 1 on, never 25-26 Nov (the v15 loader bug wiped those ticks), and only days he really used the app (a tick or a Focus session) */
+  if(ks.some(k=>k<dkey(START)||k<'2026-11-27'))return;
+  const used=k=>(CS.days[k]||[]).some(e=>e.done)||(((typeof FO!=='undefined'&&FO.log&&FO.log[k])||{}).n>0);if(!ks.every(used))return;
   const r=ks.map(dayDone);if(r.some(x=>x==null||x>=.7))return;
   const tm=dkey(addDays(t0,1)),cut=(CS.days[tm]||[]).filter(e=>e.kind==='study'&&!e.cons&&!e.recall&&!e.keep&&e.s>=1140&&!e.done);
   const d=document.createElement('div');d.id='lightQ';d.setAttribute('role','dialog');d.setAttribute('aria-label','Lighter day');
@@ -2573,7 +2578,9 @@ function fiftyCheck(){const S0=lsGet('lockin-fstart-v1',{}),ks=Object.keys(S0).f
   const st=ks.reduce((a,k)=>a+S0[k],0),dn=ks.reduce((a,k)=>a+((FO.log[k]||{}).n||0),0);if(!st||dn/st<.9)return;
   const seen=lsGet('lockin-5010-seen','');if(seen&&(new Date(today0)-new Date(seen+'T00:00'))/864e5<7)return;lsSet('lockin-5010-seen',dkey(new Date(today0)));
   toast(`Last 7 days: ${Math.round(dn/st*100)}% of your Focus sessions finished (${dn} of ${st}). You can move to 50/10 now (Focus page, top).`)}
-setTimeout(()=>{try{lightCheck()}catch(e){}try{fiftyCheck()}catch(e){}},5200);/* shown once, after the intro */
+/* the lighter-day question only opens on Home with nothing else on screen, never over another page's first render */
+function lightTry(){if(/\bpage-/.test(document.body.className)||document.querySelector('.sh-ov,.sx-pop,#v13chk,#awQ,#lightQ,#partQ.show'))return false;try{lightCheck()}catch(e){}return true}
+setTimeout(()=>{if(!lightTry()){let n=0;const iv=setInterval(()=>{if(lightTry()||++n>200)clearInterval(iv)},3000)}try{fiftyCheck()}catch(e){}},5200);/* shown once, after the intro */
 /* ---------- Past-paper question bank (qbank.js): which Paper I questions test each unit ---------- */
 function qbFor(u){const Q=window.QBANK||{},out=[];for(const sj of ['chem','phy','maths'])for(const y of Object.keys(Q[sj]||{}).sort().reverse()){const qs=Object.entries(Q[sj][y]).filter(([,k])=>k===u).map(([n])=>+n).sort((a,b)=>a-b);if(qs.length)out.push({sj,y,qs})}return out}
 function qbLink(sj,y){const P=(((typeof LIB!=='undefined'&&LIB[sj])||{})[y]||{}).p||[];const f=P.find(x=>/Paper I\b|MCQ|Full/.test(x[0]))||P[0];return f?(/^https?:/.test(f[1])?f[1]:'https://drive.google.com/file/d/'+f[1]+'/view'):''}
@@ -3037,14 +3044,16 @@ function renderMQ(){const box=$('#mqBody');if(!box)return;const sj=ppS;
   const tip={concept:'<b>Didn’t know</b> → go back to the class notes and the unit summary before doing more questions.',careless:'<b>Careless</b> → you knew it. Underline the question word (NOT, incorrect, increasing) and check units before you choose.',time:'<b>Ran out of time</b> → do 10-question sets against a 15-minute timer; skip any question after 2 minutes and come back.'};
   const big=Object.keys(MQE).sort((a,b)=>cnt(b)-cnt(a))[0];
   box.innerHTML=`<div class="mq-g"><div>
-    <div class="mq-next"><div class="u">${MQN[top.k]||top.k}</div><div class="w">Asked about ${top.per.toFixed(1)} times per Paper I · your accuracy ${top.n?Math.round(top.m*100)+'%':'unknown (0 tried)'} · fixing it is worth about <b>${top.gain.toFixed(1)}</b> more correct answers.<br>${wrong.length?'Redo the wrong ones first, then the new ones. ':''}Time each one: about 1.5 minutes.</div></div>
+    <div class="mq-next"><div class="u">${MQN[top.k]||top.k}</div><div class="w">Asked ${nPer(top.per)} per Paper I · your accuracy ${top.n?Math.round(top.m*100)+'%':'unknown (0 tried)'} · fixing it is worth about <b>${Math.max(1,Math.round(top.gain))}</b> more correct answer${Math.round(top.gain)>1?'s':''}.<br>${wrong.length?'Redo the wrong ones first, then the new ones. ':''}Time each one: about 1.5 minutes.</div></div>
     ${rows||'<p class="sub">Every question for this unit is right. The next unit moves up.</p>'}</div>
-   <div><div class="mq-big"><b>${Math.round(exp)}</b><span>of 50 predicted on Paper I today · likely ${Math.max(0,Math.round(exp-1.6*sd))}–${Math.min(50,Math.round(exp+1.6*sd))}</span></div>
-    <p class="sub" style="margin:4px 0 0">${tried} questions logged. ${tried<40?'Below about 40 this is mostly a guess; it sharpens as you log.':'Test it: sit a full timed Paper I and compare.'}${sj==='phy'?' Physics weights come from one paper (2026).':''}</p>
+   <div>${tried<10?`<div class="mq-big mq-none"><span>No prediction yet. Log at least 10 Paper I questions with the buttons on the left, then a score out of 50 appears here.</span></div>`:`<div class="mq-big"><b>${Math.round(exp)}</b><span>of 50 predicted on Paper I today · likely ${Math.max(0,Math.round(exp-1.6*sd))}–${Math.min(50,Math.round(exp+1.6*sd))}</span></div>`}
+    <p class="sub" style="margin:4px 0 0">${tried<10?`${tried} of 10 logged so far.`:`${tried} questions logged. `}${tried<10?'':tried<40?'Below about 40 this is mostly a guess; it sharpens as you log.':'Test it: sit a full timed Paper I and compare.'}${sj==='phy'?' Physics weights come from one paper (2026).':''}</p>
     <div class="mq-h">Mastery by unit (grey = fewer than 3 tries)</div>
-    ${[...G].sort((a,b)=>b.per-a.per).map(g=>{const c=g.n<3?'rgba(255,255,255,.18)':g.m>=.75?'#5fe08a':g.m>=.5?'#ffcf6b':'#ff8a7a';return `<div class="mq-r"><span>${MQN[g.k]||g.k}</span><span class="mq-bar"><i style="width:${g.n?(g.m*100).toFixed(0):0}%;background:${c}"></i></span><span class="m">${g.n?Math.round(g.m*100)+'%':'–'}</span><span class="p">${g.per.toFixed(1)}/paper</span></div>`}).join('')}
+    ${[...G].sort((a,b)=>b.per-a.per).map(g=>{const c=g.n<3?'rgba(255,255,255,.18)':g.m>=.75?'#5fe08a':g.m>=.5?'#ffcf6b':'#ff8a7a';return `<div class="mq-r"><span>${MQN[g.k]||g.k}</span><span class="mq-bar"><i style="width:${g.n?(g.m*100).toFixed(0):0}%;background:${c}"></i></span><span class="m">${g.n?Math.round(g.m*100)+'%':'–'}</span><span class="p">${nPer(g.per,1)}</span></div>`}).join('')}
     <div class="mq-h">Why you lose marks</div>
     <div class="mq-fix">${wr.length?Object.keys(MQE).map(t=>`${MQE[t]}<span class="tg">${cnt(t)}</span>`).join('')+'<br>Biggest leak: '+tip[big]:'Log some wrong answers to see the pattern.'}</div></div></div>`}
+/* how often a unit is asked per Paper I, in plain words (26 Nov 2026: no decimals) */
+function nPer(p,short){const n=Math.round(p);if(short)return (n<1?'<1':n)+'/paper';return n<1?'less than once':n===1?'about once':'about '+n+' times'}
 $('#mqBody').addEventListener('click',e=>{const b=e.target.closest('[data-mq]');if(!b)return;const id=b.dataset.mq,r=b.dataset.r,[sj,y,n]=id.split('-');
   qlGet().push({id,r,u:b.dataset.u,t:Date.now()});lsSet(QLKEY,qlGet());
   if(r!=='ok'&&!MB.some(m=>m.qid===id&&!m.ok)){MB.push({id:'m'+Date.now(),qid:id,s:sj,y,q:n,t:MQN[b.dataset.u]||b.dataset.u,w:MQE[r],ok:false,at:dkey(new Date()),st:0,due:mbAdd(dkey(new Date()),MB_GAP[0])});saveMB();toast('Added to your mistake bank. It comes back in 3 days.')}
@@ -3116,7 +3125,7 @@ function renderPX(){const box=$('#px');if(!box)return;const sj=rpS;box.classList
     ${pts.length>1?`<path class="ln" stroke="var(--${sj})" d="M${pts.map((p,i)=>X(i)+' '+Y(p.v)).join(' L')}"/>`:''}
     ${pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p.v)}" r="${p.now?6:4}" fill="${p.now?'var(--ink)':`var(--${sj})`}" style="animation-delay:${.6+i*.08}s"/><text x="${X(i)-12}" y="224">${p.lab}</text>`).join('')}</svg>`;
   const cur=P&&P.tried?P.exp/50*100:null,col=cur==null?'var(--ink-3x)':cur>=need?'var(--ok)':cur>=need-10?'var(--warn)':'var(--bad)';
-  box.innerHTML=`<section class="hx-card hx-in" style="--i:1"><h3>Predicted Paper I · ${sj==='phy'?'Physics':'Chemistry'}</h3>${pts.length?ch:`<p class="hx-mut" style="font-size:13px;margin-top:14px">No mini-mocks yet. Your first one is on the Sunday timed block from December, or any time from Papers → 🎯 Mini-mock. Each one adds a dot here.</p>`}<p class="hx-mut">Dots are mini-mocks (score out of 50). The white dot is today’s prediction from everything you have logged. The dashed line is the A-track pace for the next checkpoint.</p></section>
+  box.innerHTML=`<section class="hx-card hx-in" style="--i:1"><h3>Predicted Paper I · ${sj==='phy'?'Physics':'Chemistry'}</h3>${pts.length?ch+`<p class="hx-mut">Dots are mini-mocks (score out of 50). The white dot is today’s prediction from everything you have logged. The dashed line is the A-track pace for the next checkpoint.</p>`:`<p class="hx-mut" style="font-size:13px;margin-top:14px">No mini-mocks yet, so there is no chart. Your first one is the Sunday timed block from December, or Papers → Mini-mock any time. Each mini-mock adds a point here.</p>`}</section>
     <section class="hx-card hx-in" style="--i:2"><h3>Mock pace</h3><div class="hx-big" style="margin-top:12px;color:${col}">${cur==null?'–':`<span data-hxn="${Math.round(cur)}">${Math.round(cur)}</span><small>%</small>`}</div><p class="hx-mut" style="font-size:13px">${cur==null?'Log past questions or take a mini-mock to see this.':`Needed by ${ck[0]}: ${need}%. ${cur>=need?'On pace. Keep the mocks weekly.':`Gap of ${Math.round(need-cur)} points. Biggest fix: ${MQN[P.top.k]||P.top.k}.`}`}</p></section>`;
   box.querySelectorAll('[data-hxn]').forEach(el=>hxCount(el,+el.dataset.hxn))}
 
