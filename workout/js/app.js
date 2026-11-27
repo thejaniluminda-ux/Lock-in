@@ -59,18 +59,22 @@ function renderToday(){const el=$('#woToday');
   const C=2*Math.PI*31,off=C*(1-Math.min(1,dn/tot)),fin=dayDone(S,TK),firstTest=S0.test&&!Object.values(S.chal).some(c=>c&&c.d&&c.d<TK);
   const rows=B.map(([ex,r,rest],bi)=>`<div class="blk"><div class="blk-h"><span class="k">${S0.test?'Test':ex.length>1?'Superset '+'ABCDEFG'[bi]:'Block '+'ABCDEFG'[bi]}</span><span class="k">× ${r}</span><span>${S0.test?'one max set':r===1?'one round':ex.length>1?`rest ${rest} s after each round`:`rest ${rest} s`}</span></div>${ex.map((e,i)=>{const x=EX[e],sh=lastSession(S,e,TK),ls=ladderState(e);
       const tg=e==='neck'&&x.iso&&trainingWeek(T)<=x.iso.weeks?'4 × 15 s holds':x.kind==='test'?(e==='t_plank'?'max hold':'max'):x.kind==='hold'?`${x.rng[0]}–${x.rng[1]} s${x.uni?' / side':''}`:`${x.rng[0]}–${x.rng[1]}${x.uni?' / side':''}`;
-      return `<div class="ex" data-ex="${e}"><span class="ab">${ex.length>1?'ABCDEFG'[bi]+(i+1):'ABCDEFG'[bi]}</span><div style="min-width:0"><div class="nm">${esc(x.n)}</div><div class="vr">${esc(x.lad?x.lad[lv(e)]:x.cue)}</div>${S0.test?'':`<div class="dots">${Array.from({length:r},(_,k)=>`<i class="${k<(done[e]||0)?'f':''}"></i>`).join('')}</div>`}
+      return `<div class="ex" data-ex="${e}"><span class="ab">${ex.length>1?'ABCDEFG'[bi]+(i+1):'ABCDEFG'[bi]}</span><div style="min-width:0"><div class="nm">${esc(x.n)}</div><div class="vr">${esc(x.lad?(varOnly(e)||'Standard'):x.cue)}</div>${S0.test?'':`<div class="dots">${Array.from({length:r},(_,k)=>`<i class="${k<(done[e]||0)?'f':''}"></i>`).join('')}</div>`}
         ${ls==='up'?`<button class="lvup" data-lv="${e}|1">${ICON.up} Top of the range twice: move up a rung</button>`:ls==='down'?`<button class="lvup dn" data-lv="${e}|-1">${ICON.down} Under the range twice: step back a rung</button>`:''}</div>
         <div class="tg">${tg}${x.kind==='test'?`<small>${esc(testLast(e))}</small>`:sh.length?`<small>last ${sh.map(l=>l.reps??l.secs).join(' · ')}</small>`:''}</div></div>`}).join('')}</div>`).join('');
   el.innerHTML=`${head}<div class="title"><h1${S0.n.length>14||firstTest?' class="long"':''}>${esc(firstTest?'First monthly challenge':S0.n)}${DL&&!S0.test?' <span class="dl">Deload</span>':''}</h1><div class="ring" role="img" aria-label="${dn} of ${tot} ${unit} done"><svg viewBox="0 0 70 70"><circle class="b" cx="35" cy="35" r="31"/><circle class="f" cx="35" cy="35" r="31" stroke-dasharray="${C}" stroke-dashoffset="${off}"/></svg><b>${dn}/${tot}</b><small>${unit}</small></div></div>
     <div class="focus">${esc(firstTest?'Max push-ups, pull-ups, plank and squats against your 18 Nov test':S0.focus)}</div>
-    <div class="chips"><span class="chip${!dn&&slotPassed()?'':' now'}">${slotOf(T)}${!dn&&slotPassed()&&!fin?' · slot passed, train when you can':''}</span><span class="chip"><b>${Math.round(tm.total/60)} min</b> planned</span>${S0.test?'<span class="chip">Max effort</span>':`<span class="chip">RIR <b>${DL?'3':PH.rir}</b></span>`}<span class="chip">${esc(PH.n)}</span></div>
+    <div class="chips">${slotChip(fin)}<span class="chip"><b>${Math.round(tm.total/60)} min</b> planned</span>${S0.test?'<span class="chip">Max effort</span>':`<span class="chip">Stop <b>${(DL?'3':PH.rir).replace('-','–')}</b> reps before failure</span>`}<span class="chip">${esc(PH.n)}</span></div>
     <button class="btn ${fin||dn>=tot?'':'pri '}start" id="woGo"${fin?' disabled aria-disabled="true"':''}>${fin?ICON.ok:ICON.play} ${fin?'Done for today':dn?'Continue session':S0.test?'Start the challenge':'Start session'}</button>${weekStrip()}${nudge}${rows}`;
   $('#woGo').addEventListener('click',()=>openSession());
   el.querySelectorAll('.lvup').forEach(b=>b.addEventListener('click',ev=>{ev.stopPropagation();const [e,d]=b.dataset.lv.split('|');setLevel(e,lv(e)+(+d))}));
   el.querySelectorAll('.ex').forEach(r=>r.addEventListener('click',()=>{const m=Object.entries(EX[r.dataset.ex].m).sort((a,b)=>b[1]-a[1])[0][0];selectMuscle(m)}))}
 function setLevel(e,step){const x=EX[e];if(!x||!x.lad)return;S.lvl[e]=Math.max(0,Math.min(x.lad.length-1,step));persist();const h=HOST();h.toast&&h.toast(x.n+': '+x.lad[S.lvl[e]]);renderToday();renderStrength();if(SEL)selectMuscle(SEL)}
 function preview(d){const id=sessionFor(d);return `<div class="blk"><div class="blk-h"><span class="k">Next · ${DOW[d.getDay()]} ${esc(SESS[id].n)}</span><span>${Math.round(timing(id,d,trainingWeek(d)).total/60)} min planned</span></div>`+blocksFor(id,d).flatMap(([ex,r])=>ex.map(e=>`<div class="ex pv"><span class="ab"></span><div style="min-width:0"><div class="nm">${esc(EX[e].n)}</div><div class="vr">${esc(EX[e].lad?EX[e].lad[lv(e,d)]:EX[e].cue)}</div></div><div class="tg">× ${r}</div></div>`)).join('')+'</div>'}
+/* the routine slot chip: green only while the slot is on now; amber "slot passed" when it is over and today is not done; grey otherwise */
+function slotChip(fin){const n=today(),[a,b]=slotOf(T).split('–'),mm=s=>{const [h,m]=s.split(':').map(Number);return h*60+m},t=n.getHours()*60+n.getMinutes();
+  const st=!a||!b?'':fin?'':t>mm(b)?'late':t>=mm(a)?'now':'';
+  return `<span class="chip${st?' '+st:''}">${slotOf(T)}${st==='now'?' · now':st==='late'?' · slot passed, train when you can':fin?' · done':''}</span>`}
 function slotPassed(){const n=today(),end=slotOf(T).split('–')[1];if(!end)return false;const [h,m]=end.split(':').map(Number);return n.getHours()*60+n.getMinutes()>h*60+m}
 function testLast(e){const k={t_push:'push',t_pull:'pull',t_plank:'plank',t_squat:'squat'}[e];const ms=Object.keys(S.chal).sort().filter(m=>m<TK.slice(0,7)&&S.chal[m].d);const m=ms.at(-1);const v=m?S.chal[m][k]:BASE[k];return `${m?'last':'start'} ${v}${e==='t_plank'?' s':''}`}
 function weekStrip(){return `<div class="week" role="list" aria-label="This week">${weekDays(T).map(({d,k,id})=>{const pre=d<START;const st=k===TK?'today':pre?'pre':!id?'rest':dayDone(S,k)?'done':k<TK?'miss':'';
@@ -82,8 +86,8 @@ function weekStrip(){return `<div class="week" role="list" aria-label="This week
 let H=null,SEL=null,holoP=null;
 function levels(){return {}}
 const fmt=v=>Math.round(v*2)/2;
-function legend(){$('#woMapSub').textContent=SID?`Click a muscle to see its exercises. Green dot: today's targets. Numbers: sets this week.`:`Click a muscle to see its exercises. Blue dot: still recovering. Numbers: sets this week.`;
-  $('#woLegend').innerHTML=Object.keys(MUSCLES).map(m=>`<button class="mchip ${TGT.has(m)||TGT2.has(m)?'tgt':REC[m].lvl>0.05?'rec':''}${SEL===m?' sel':''}" data-m="${m}" aria-pressed="${SEL===m}"><i></i>${esc(MUSCLES[m].n)} <b>${fmt(WK[m])}</b></button>`).join('');
+function legend(){$('#woMapSub').textContent=SID?`Click a muscle to see its exercises. Green dot: today's targets. Numbers: sets this week (helper muscles count half a set).`:`Click a muscle to see its exercises. Blue dot: still recovering. Numbers: sets this week (helper muscles count half a set).`;
+  $('#woLegend').innerHTML=Object.keys(MUSCLES).map(m=>`<button class="mchip ${TGT.has(m)||TGT2.has(m)?'tgt':REC[m].lvl>0.05?'rec':''}${SEL===m?' sel':''}" data-m="${m}" aria-pressed="${SEL===m}" title="${fmt(WK[m])} sets this week. A set where this muscle only helps counts as half."><i></i>${esc(MUSCLES[m].n)} <b>${fmt(WK[m])}</b></button>`).join('');
   $('#woLegend').querySelectorAll('.mchip').forEach(b=>b.addEventListener('click',()=>selectMuscle(SEL===b.dataset.m?null:b.dataset.m)))}
 function selectMuscle(m){SEL=m;H&&H.select(m);legend();const p=$('#woMpanel');H&&H.offset&&H.offset(m?0.16:0);if(!m){p.classList.remove('on');return}
   const r=RANGE[m],wk=WK[m],pl=PLAN[m],max=Math.max(r[1],pl)*1.05,rec=REC[m],ex=exercisesFor(m);
@@ -113,24 +117,25 @@ function watchVisible(){const upd=()=>{if(!H)return;const on=document.body.class
 /* ---------- strength ---------- */
 function spark(vals){if(vals.length<2)return'';const lo=Math.min(...vals),hi=Math.max(...vals),r=hi-lo||1;const P=vals.map((v,i)=>[i/(vals.length-1)*80+2,22-(v-lo)/r*18]);
   return `<svg viewBox="0 0 84 26" aria-hidden="true"><path d="${P.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')}"/><circle cx="${P.at(-1)[0]}" cy="${P.at(-1)[1]}" r="2"/></svg>`}
+/* the variation only ("Bodyweight", "Backpack (4 books)"): the exercise name is already the row title */
+const varOnly=e=>{const n=EX[e].n,v=EX[e].lad[lv(e)];const r=v.startsWith(n)?v.slice(n.length).replace(/^[,+\s]+/,''):v;return r?r[0].toUpperCase()+r.slice(1):''};
 function renderStrength(){const lifts=['pullup','dpush','bss','lat'];
   const row=e=>{const x=EX[e],ses={};for(const l of S.logs)if(l.e===e)ses[l.d]=Math.max(ses[l.d]||0,l.reps??l.secs??0);const ks=Object.keys(ses).sort(),vals=ks.slice(-12).map(k=>ses[k]),best=pb(S,e),last=vals.at(-1);
     const isPB=best&&ks.length>1&&best.d===ks.at(-1)&&best.d!==ks[0];
-    const info=`<div style="min-width:0"><div class="nm">${esc(x.n)}${isPB?'<span class="pb">New best</span>':''}</div><div class="vr">${esc(x.lad[lv(e)])}</div></div>`;
-    /* no sets logged yet: one plain empty state in place of the chart and the numbers */
+    const info=`<div style="min-width:0"><div class="nm">${esc(x.n)}${isPB?'<span class="pb">New best</span>':''}</div><div class="vr">${esc(varOnly(e))}</div></div>`;
     /* no working sets yet: show the latest challenge result for the same move, marked as a test, so Strength never contradicts the challenge card */
     if(last==null){const tk={pullup:'pull',dpush:'push'}[e],cm=Object.keys(S.chal).filter(m=>S.chal[m]&&S.chal[m].d).sort().at(-1),tv=tk&&cm?parseInt(S.chal[cm][tk]):NaN;
       return isNaN(tv)?`<div class="lift">${info}<div class="v none">No working sets yet</div></div>`:`<div class="lift">${info}<div class="v tst">${tv}<small>max test · ${fmtK(S.chal[cm].d)}</small></div></div>`}
-    return `<div class="lift">${info}<span class="spk">${spark(vals)}</span><div class="v">${last}<small>best ${best?best.v:last}</small></div></div>`};
+    return `<div class="lift">${info}<span class="spk">${spark(vals)}</span><div class="v">${last}<small>${best&&best.v>last?'best '+best.v:'best'}</small></div></div>`};
   const ms=Object.keys(S.chal).filter(m=>S.chal[m]&&S.chal[m].d).sort(),cur=ms.at(-1),prev=ms.at(-2),C=cur?S.chal[cur]:null,P=prev?S.chal[prev]:BASE;
   const nextTest=[...Array(40).keys()].map(i=>addD(T,i)).find(d=>sessionFor(d)==='TEST');
   /* the change is counted from the top of a range baseline (7 against "5-6" is +1), and the baseline is printed under it */
   const cell=(k,lab,u='')=>{const v=C?C[k]:null,pv=P?P[k]:null,ns=pv==null?[]:String(pv).split('-').map(Number).filter(n=>!isNaN(n)),top=ns.length?Math.max(...ns):null,dlt=v!=null&&top!=null?v-top:null;
-    return `<div><b>${v??'–'}${u}</b><span>${lab}</span>${dlt!=null?`<em${dlt===0?' style="color:var(--i3)"':dlt<0?' style="color:var(--warn)"':''}>${dlt>0?'+':''}${dlt===0?'same':dlt}</em><small>vs ${esc(pv)}${u}</small>`:''}</div>`};
+    return `<div><b>${v??'–'}${u}</b><span>${lab}</span>${dlt!=null?`<small>${prev?MON[+prev.slice(5)-1]:'start'} ${esc(pv)}${u} · <em class="${dlt===0?'z':dlt<0?'dn':'up'}">${dlt>0?'+':''}${dlt===0?'same':dlt}</em></small>`:''}</div>`};
   const when=sessionFor(T)==='TEST'?(C&&C.d===TK?' · done today':' · today'):nextTest?' · next '+fmtD(nextTest):' · challenges pause for the exam months';
   $('#woStr').innerHTML=`<div class="hd"><div><h2>Strength</h2><p class="sub">Best working-set reps in each session</p></div></div>${lifts.map(row).join('')}
     <div class="hd" style="margin-top:14px"><div><h2>Monthly challenge</h2><p class="sub">${C?`${MON[+cur.slice(5)-1]} vs ${prev?MON[+prev.slice(5)-1]:'the starting test (18 Nov)'}`:'Starting test 18 Nov'}${when}</p></div></div>
-    <div class="chal">${C?cell('push','push-ups')+cell('pull','pull-ups')+cell('plank','plank',' s')+cell('squat','squats'):`<div><b>${BASE.push}</b><span>push-ups</span></div><div><b>${BASE.pull}</b><span>pull-ups</span></div><div><b>${BASE.plank} s</b><span>plank</span></div><div><b>${BASE.squat}</b><span>squats</span></div>`}</div>`}
+    <div class="chal${C?' chalc':''}">${C?cell('push','push-ups')+cell('pull','pull-ups')+cell('plank','plank',' s')+cell('squat','squats'):`<div><b>${BASE.push}</b><span>push-ups</span></div><div><b>${BASE.pull}</b><span>pull-ups</span></div><div><b>${BASE.plank} s</b><span>plank</span></div><div><b>${BASE.squat}</b><span>squats</span></div>`}</div>`}
 
 /* ---------- body: weight, BMI, tape, face checklist, photos ---------- */
 const FACE=[['water','Water'],['salt','Low salt'],['sleep','Sleep on time'],['skin','Skincare']];
