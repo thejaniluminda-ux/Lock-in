@@ -1023,7 +1023,7 @@ html.shadow #awQ{--aw-acc:#7dffa8}html.shadow #awQ .aw-c{background:#121413;colo
           <div class="mg" id="mGrid"></div>
         </div>
         <div class="card filt">
-          <h2>Show</h2>
+          <h2>Show <small class="sx-wkn">hours planned this week</small></h2>
           <label><input type="checkbox" data-f="phy" checked><i style="background:var(--phy)"></i>Physics</label>
           <label><input type="checkbox" data-f="chem" checked><i style="background:var(--chem)"></i>Chemistry</label>
           <label><input type="checkbox" data-f="maths" checked><i style="background:var(--maths)"></i>Maths</label>
@@ -1051,7 +1051,7 @@ html.shadow #awQ{--aw-acc:#7dffa8}html.shadow #awQ .aw-c{background:#121413;colo
     <section id="repPage" aria-label="Report">
       <div class="rp-top">
         <div><h1 class="rp-h">Report</h1><p class="sub">Weak spots from the past-paper questions you log after each unit</p></div>
-        <div class="seg" id="rpSeg" role="group" aria-label="Subject"><button data-s="phy" aria-pressed="true">Physics</button><button data-s="chem" aria-pressed="false">Chemistry</button><button data-s="maths" aria-pressed="false">Combined Maths</button></div>
+        <div class="rp-segw"><span class="rp-segl">Prediction, radar and fixes for</span><div class="seg" id="rpSeg" role="group" aria-label="Subject for the prediction, radar and fixes"><button data-s="phy" aria-pressed="true">Physics</button><button data-s="chem" aria-pressed="false">Chemistry</button><button data-s="maths" aria-pressed="false">Combined Maths</button></div></div>
       </div>
       <div id="px" aria-label="Progress"></div>
       <div class="rp-grid">
@@ -1314,7 +1314,7 @@ const CLASSES=[
  {k:'elec',subj:'phy',track:'A',h:5,en:'Electronics',si:'ඉලෙක්ට්‍රොනික විද්‍යාව',tag:'',after:'cur',days:['ඉලෙක්ට්‍රොනික විද්‍යාව ආරම්භය','ට්‍රාන්සිස්ටර ආරම්භය','කාරකාත්මක වර්ධක','තාර්කික ද්වාර, DTL, TTL සහ ෆ්ලිප්-ෆ්ලොප්']},
  {k:'light',subj:'phy',track:'A',h:5,en:'Light',si:'ආලෝකය',tag:'',days:['ආලෝකය ආරම්භය','ප්‍රිස්ම සහ කාච','කාච සහ මිනිස් ඇස සම්පූර්ණ පාඩම','ප්‍රකාශ උපකරණ']},
  {k:'matter',subj:'phy',track:'A',h:5,en:'Matter and Radiation',si:'පදාර්ථ හා විකිරණ',tag:'',days:['පදාර්ථ හා විකිරණ ආරම්භය','ප්‍රකාශ විද්‍යුත් ආචරණය සම්පූර්ණ පාඩම','විකිරණශීලීතාව සහ න්‍යෂ්ටික ශක්තිය']},
- {k:'mprop',subj:'phy',track:'A',h:5,en:'Mechanical Properties of Matter',si:'පදාර්ථයේ යාන්ත්‍රික ගුණ',tag:'',days:['ප්‍රත්‍යස්ථතාව','පෘෂ්ඨික ආතතිය','දුස්ස්‍රාවීතාව']},
+ {k:'mprop',subj:'phy',track:'A',h:5,en:'Properties of Matter',si:'පදාර්ථයේ යාන්ත්‍රික ගුණ',tag:'',days:['ප්‍රත්‍යස්ථතාව','පෘෂ්ඨික ආතතිය','දුස්ස්‍රාවීතාව']},
  {k:'grav',subj:'phy',track:'A',h:5,en:'Gravitational Fields',si:'ගුරුත්වාකර්ෂණ ක්ෂේත්‍ර',tag:'',days:['ගුරුත්වාකර්ෂණ ක්ෂේත්‍ර']},
  {k:'cur',subj:'phy',track:'B',h:3,en:'Current Electricity',si:'ධාරා විද්‍යුතය',tag:'~15% of paper',days:['ධාරා විද්‍යුතය ආරම්භය','ප්‍රතිරෝධක පද්ධති','ප්‍රතිරෝධ විශේෂ කරුණු','කෝෂ ආරම්භය','කර්චොෆ් නියම ආරම්භය සහ සම්පූර්ණ පාඩම','ධාරා විද්‍යුතය සම්බන්ධ උපකරණ භාවිතය','මීටර සේතුව හා විභවමානය සම්පූර්ණ පාඩම','ධාරා විද්‍යුතයේ තාපන ඵලය']},
  {k:'therm',subj:'phy',track:'B',need:{4:'mech:7'},h:3,en:'Thermal Physics',si:'තාපය',tag:'~14% of paper',days:['ඝන ප්‍රසාරණය','ද්‍රව ප්‍රසාරණය','උෂ්ණත්වමිතිය','වායු නියම','චාලක අණුක වාදය','තාපමිතිය ආරම්භය','තාපමිතිය විශේෂ කරුණු','තාප සන්නයනය සම්පූර්ණ පාඩම','තාප සංවහනය','තාප ගති විද්‍යාව සම්පූර්ණ පාඩම','වාෂ්ප හා ආර්ද්‍රතාමිතිය','වාෂ්ප හා ආර්ද්‍රතාමිතිය ප්‍රශ්න පුහුණුව']},
@@ -1372,6 +1372,9 @@ const unitLen=u=>typeof u.days==='number'?u.days:u.days.length;
 /* which units need this one / which this one needs (for the Library unlock view) */
 function unitNeeds(k){const u=UNIT_BY[k];return [...new Set([...(u.deps||[]),...Object.values(u.need||{}).map(x=>x.split(':')[0]),...(u.at||[]).map(x=>x.split(':')[0])])]}
 function unitUnlocks(k){return CLASSES.filter(u=>unitNeeds(u.k).includes(k)).map(u=>u.k)}
+/* round 3: one source for Needs/Unlocks on Library cards AND the map: extras count as their main unit */
+function unitNeedsMain(k){return [...new Set(unitNeeds(k).map(x=>/x$/.test(x)&&UNIT_BY[x.slice(0,-1)]?x.slice(0,-1):x))].filter(x=>x!==k&&UNIT_BY[x]&&!/x$/.test(x))}
+function unitUnlocksMain(k){return CLASSES.filter(u=>!/x$/.test(u.k)&&unitNeedsMain(u.k).includes(k)).map(u=>u.k)}
 
 /* ---------- Combined Maths revision blueprint (Vikum Harshana, 2027) ---------- */
 const BP=[
@@ -1753,9 +1756,14 @@ function updateProg(){
 function nrHtml(){
   const study=dayEvents().filter(isStudy),skipped=study.filter(e=>!e.done);
   /* hours: what the app can prove (26 Nov 2026): minutes focused in Focus + ticked class time, rounded to a quarter hour */
-  const foM=((typeof FO!=='undefined'&&FO.log&&FO.log[viewKey])||{min:0}).min||0,clM=study.filter(e=>e.done&&e.kind==='class').reduce((a,e)=>a+(e.e-e.s),0),hrs=(foM+clM)/60;
+  /* round 3: the union, never counted twice: ticked class time + Focus minutes that fall outside ticked class blocks.
+     Focus session times come from lockin-system-v1 (ses: [finish minute, minutes]); without them the larger of the two totals is used */
+  const cls=study.filter(e=>e.done&&e.kind==='class'),clM=cls.reduce((a,e)=>a+(e.e-e.s),0),foAll=((typeof FO!=='undefined'&&FO.log&&FO.log[viewKey])||{min:0}).min||0;
+  const ses=((lsGet('lockin-system-v1',{}).ses)||{})[viewKey]||[];let foM;
+  if(ses.length){foM=0;for(const [f,len] of ses){const a=f-len,b=f;let ov=0;for(const e of cls)ov+=Math.max(0,Math.min(b,e.e)-Math.max(a,e.s));foM+=Math.max(0,len-ov)}}else foM=Math.max(0,foAll-clM);
+  const hrs=(foM+clM)/60;
   return `<div class="nr" id="nr"><div class="nr-h"><b>Night review</b><span>about a minute</span></div>`+
-    `<label class="nr-f">Hours studied today <small>Focus ${(Math.round(foM/15)/4)} h + ticked classes ${(Math.round(clM/15)/4)} h, change it if needed</small><input type="number" id="nrH" min="0" max="16" step="0.25" value="${Math.round(hrs*4)/4}"></label>`+
+    `<label class="nr-f">Hours studied today <small>Ticked classes ${(Math.round(clM/15)/4)} h + Focus outside classes ${(Math.round(foM/15)/4)} h. Change it if needed</small><input type="number" id="nrH" min="0" max="16" step="0.25" value="${Math.round(hrs*4)/4}"></label>`+
     `<div class="nr-f">${skipped.length?`<span>Not done today. Keep a block ticked if you skipped it: classes and papers move to catch-up (within 14 days), practice is dropped. Untick one you will still do tonight.</span>`:''}`+
     (skipped.length?skipped.map(e=>`<label class="nr-c"><input type="checkbox" ${e.missed?'disabled':'checked'} data-id="${e.id}"><i style="background:var(--${e.subj})"></i>${esc(e.title)}${e.fixed?(e.missed?' (recording already queued)':' (live class: watch the recording)'):e.cu?' (catch-up, due '+fmtD(e.cu.due)+')':cuQueueable(e)?'':' (practice, dropped)'}</label>`).join(''):'<em>Nothing left: every study block today is ticked.</em>')+`</div>`+
     `<label class="nr-f">One thing I learned today<input type="text" id="nrL" placeholder="For example: range is greatest at 45°"></label>`+
@@ -2213,7 +2221,7 @@ function renderWeekly(){
   const h1=x=>{const m=Math.round(x*60);return `${Math.floor(m/60)}:${String(m%60).padStart(2,'0')}`};/* hours as h:mm, the same as Home, Focus and Calendar (26 Nov 2026) */
   $('#wrSub').textContent=`${fmtD(mk)} to ${fmtD(tk)}${t.getDay()===0?' · full week':' · so far'}`;
   $('#wrBox').innerHTML=`<div class="wr-g">
-    <div class="wr-t"><small>Study done vs planned</small><b>${h1(W.done)} / ${h1(W.plan)} h</b><span>${pct}% done ${diff}</span><div class="wr-bar"><i style="width:${Math.min(100,pct)}%"></i></div>
+    <div class="wr-t"><small>Study hours done / planned up to today</small><b>${h1(W.done)} / ${h1(W.plan)} h</b><span>${pct}% done ${diff}</span><div class="wr-bar"><i style="width:${Math.min(100,pct)}%"></i></div>
       <div class="wr-s">${['phy','chem','maths'].map(s=>`<div style="color:var(--${s})">${s==='maths'?'Maths':SUBJ[s]}<b>${h1(W.byS[s][1])} / ${h1(W.byS[s][0])} h</b></div>`).join('')}</div></div>
     <div class="wr-t"><small>Catch-up owed</small><b>${h1(owe)} h</b><span>${owe?`earliest due ${fmtD(od)}`:'Nothing owed. Clean week.'}</span></div>
     <div class="wr-t"><small>Focus timer</small><b>${h1(W.focus/60)} h</b><span>${L.focus?`last week ${h1(L.focus/60)} h`:'counted from the Focus page'}</span></div>
@@ -2357,6 +2365,8 @@ document.querySelectorAll('[data-t]').forEach(b=>b.addEventListener('click',()=>
 $('#ptSet').addEventListener('click',()=>{const h=Math.max(0,Math.min(9,parseInt($('#ptH').value,10)||0)),m=Math.max(0,Math.min(59,parseInt($('#ptM').value,10)||0));if(!h&&!m){toast('Enter a time first.');return}setTimer(h*60+m)});
 $('#ptGo').addEventListener('click',()=>{if(ptRun){clearInterval(ptI);ptRun=false;ptLeft=Math.max(0,(ptEnd-Date.now())/1000);ptShow();return}ptEnd=Date.now()+ptLeft*1000;ptRun=true;clearInterval(ptI);ptI=setInterval(ptTick,500);ptShow()});
 $('#ptReset').addEventListener('click',()=>{setTimer(ptTotal/60)});
+/* round 3: the clock starts at the time shown in the inputs (it said 0:00:00 next to 1 h 30 min) */
+{const h=parseInt($('#ptH').value,10)||0,m=parseInt($('#ptM').value,10)||0;if(h||m)ptTotal=ptLeft=(h*60+m)*60}
 ptShow(true);
 
 renderRoutine();renderRings();renderBars();renderStreak();renderCal();moveInd();
@@ -2702,7 +2712,7 @@ function lmUnits(s){
       return{k:'m:'+b.m,si:b.n,en:miss?'Missed: catch-up recordings':'Live classes Tue/Fri',d,bl,topics:b.t,n:b.t.length*2,tag:b.t.reduce((a,t)=>a+(t[2]||0),0)+' paper marks'}});
   }
   const L=CLASSES.filter(u=>u.subj===s);
-  const main=L.filter(u=>!lmX(u)).map(u=>({k:u.k,si:u.si,en:u.en,d:[...new Set([...(u.deps||[]),...Object.values(u.need||{}).map(x=>x.split(':')[0])])].filter(k=>UNIT_BY[k]&&UNIT_BY[k].subj===s&&!lmX(UNIT_BY[k])),bl:unitBlocks(u.k),n:unitLen(u),tag:u.tag||'',xs:[]}));
+  const main=L.filter(u=>!lmX(u)).map(u=>({k:u.k,si:u.si,en:u.en,d:unitNeedsMain(u.k).filter(k=>UNIT_BY[k].subj===s&&!lmX(UNIT_BY[k])),bl:unitBlocks(u.k),n:unitLen(u),tag:u.tag||'',xs:[]}));
   const by=Object.fromEntries(main.map(u=>[u.k,u]));
   L.filter(lmX).forEach(u=>{const p=by[u.k.slice(0,-1)];if(p)p.xs.push({k:u.k,en:u.en,bl:unitBlocks(u.k),n:unitLen(u)})});
   return main;
@@ -3046,7 +3056,7 @@ function renderMQ(){const box=$('#mqBody');if(!box)return;const sj=ppS;
   const tip={concept:'<b>Didn’t know</b> → go back to the class notes and the unit summary before doing more questions.',careless:'<b>Careless</b> → you knew it. Underline the question word (NOT, incorrect, increasing) and check units before you choose.',time:'<b>Ran out of time</b> → do 10-question sets against a 15-minute timer; skip any question after 2 minutes and come back.'};
   const big=Object.keys(MQE).sort((a,b)=>cnt(b)-cnt(a))[0];
   box.innerHTML=`<div class="mq-g"><div>
-    <div class="mq-next"><div class="u">${MQN[top.k]||top.k}</div><div class="w">Asked ${nPer(top.per)} per Paper I · your accuracy ${top.n?Math.round(top.m*100)+'%':'unknown (0 tried)'} · fixing it is worth about <b>${Math.max(1,Math.round(top.gain))}</b> more correct answer${Math.round(top.gain)>1?'s':''}.<br>${wrong.length?'Redo the wrong ones first, then the new ones. ':''}Time each one: about 1.5 minutes.</div></div>
+    <div class="mq-next"><div class="u">${MQN[top.k]||top.k}</div><div class="w">${sj==='phy'?`${Math.round(top.per)} question${Math.round(top.per)===1?'':'s'} in the 2026 Paper I`:`Asked ${nPer(top.per)} per Paper I`} · ${top.n?`your accuracy ${Math.round(top.m*100)}% from ${top.n} tried · fixing it is worth about <b>${Math.max(1,Math.round(top.gain))}</b> more correct answer${Math.round(top.gain)>1?'s':''}.`:'not tried yet. Log a few questions below to see what fixing it is worth.'}<br>${wrong.length?'Redo the wrong ones first, then the new ones. ':''}Time each one: about 1.5 minutes.</div></div>
     ${rows||'<p class="sub">Every question for this unit is right. The next unit moves up.</p>'}</div>
    <div>${tried<10?`<div class="mq-big mq-none"><span>No prediction yet. Log at least 10 Paper I questions with the buttons on the left, then a score out of 50 appears here.</span></div>`:`<div class="mq-big"><b>${Math.round(exp)}</b><span>of 50 predicted on Paper I today · likely ${Math.max(0,Math.round(exp-1.6*sd))}–${Math.min(50,Math.round(exp+1.6*sd))}</span></div>`}
     <p class="sub" style="margin:4px 0 0">${tried<10?`${tried} of 10 logged so far.`:`${tried} questions logged. `}${tried<10?'':tried<40?'Below about 40 this is mostly a guess; it sharpens as you log.':'Test it: sit a full timed Paper I and compare.'}${sj==='phy'?' Physics weights come from one paper (2026).':''}</p>

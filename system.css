@@ -583,3 +583,23 @@ html.shadow #sxCalSide .sx2-cu.zero p{margin-top:2px}
 @media (max-height:820px){html.shadow #calPage .cside .mg .md,html.shadow #calPage .cside .mg .mw{height:20px;line-height:20px}html.shadow #calPage .filt label{padding:1px 0;line-height:1.35}}
 /* Home 1920: the Mastery card takes the spare height (bigger radar), Baku keeps only the room it needs */
 @media (min-height:950px){html.shadow #shx .sx-col>#sxMast{flex:1;display:flex;flex-direction:column}html.shadow #shx #sxMast .sx-rad{flex:1;grid-template-columns:1fr;justify-items:center;align-content:center;gap:22px}html.shadow #shx #sxMast .sx-rad svg{width:200px;height:200px}html.shadow #shx #sxMast .sx-weak{width:100%}html.shadow #shx .sx-radio{flex:0 0 auto;min-height:0}}
+/* round 3: missions fit a 768 px screen */
+@media (max-height:820px){html.shadow #shx .sx-m{padding:6px 12px 7px}html.shadow #shx .sx-m .cnt{min-height:18px;margin-bottom:2px}html.shadow #shx .sx-m .tt{line-height:1.3}html.shadow #shx .sx-mis{padding-bottom:6px}}
+@media (max-height:820px){html.shadow #shx .sx-mis .sx-ph>div{display:flex;align-items:baseline;justify-content:space-between;gap:10px}html.shadow #shx .sx-mis .sx-ph p{margin:0!important;white-space:nowrap}html.shadow #shx .sx-du{padding:5px 10px 5px 12px}html.shadow #shx .sx-due{margin-bottom:6px}html.shadow #shx .sx-m .sx-mt{line-height:1.2}}
+@media (max-height:820px){html.shadow #shx .sx-m .tt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}html.shadow #shx .sx-mis .sx-ph{margin-bottom:4px}html.shadow #shx .sx-mis .sx-ph h3{margin:0}}
+/* round 3: say what each weekly total counts */
+html.shadow #calPage .cside h2 .sx-wkn{display:block;font:400 11.5px var(--font);color:var(--sx-i3);margin-top:2px}
+html.shadow #repPage .rp-segw{display:flex;align-items:center;gap:10px}html.shadow #repPage .rp-segl{font-size:12.5px;color:var(--sx-i3)}
+/* round 3: card titles back to one line (the fitter shrinks long names) */
+html.shadow .sxl-card .t h4{display:block!important;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;-webkit-line-clamp:unset}
+/* round 3: map labels stay 11 px and up at 85%; the legend is readable */
+.sxm-n .r1{font-size:13px}
+.sxm-n .r3{font-size:13px}
+html.shadow .sxm-leg{font-size:13px;color:var(--sx-i2)}
+html.shadow .sxm-leg .h{color:var(--sx-i2)}
+/* round 3: subject chips show on/off; the disabled main button stays readable; bigger radar at 1920 */
+.sx-ea .ea-jb[aria-pressed="true"]{background:#eceeec;color:#0a0b0a;border-color:#eceeec}
+.sx-ea .ea-jb[aria-pressed="true"] b{color:#3a3f3c}
+.sx-ea .ea-b.pri:disabled{opacity:1;background:#2c302e;border-color:#3b403d;color:#a6ada8;cursor:not-allowed}
+@media (min-height:950px){html.shadow #shx #sxMast .sx-rad svg{width:min(270px,90%);height:auto;aspect-ratio:1}}
+html.shadow #shx .sx-sec{gap:12px;white-space:nowrap}
