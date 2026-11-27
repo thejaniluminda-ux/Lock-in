@@ -1,11 +1,11 @@
-/* Lock In · Shadow Protocol (Phase 1: engine, mode switch, Signal home).
+/* Lock In · Shadow Protocol (Phase 1: engine, Signal home). Since 25 Nov 2026 Shadow Protocol is the only UI: html.shadow is set in index.html and there is no mode switch.
    Reads the app's existing data; never writes to it. Its own state: lockin-system-v1 (sleep and phone check-ins,
    seen rank, message counts, intervention log) and lockin-profile-v1 (his own words and target, typed in the app,
-   never in this file). Mode lives in lockin-mode-v1. All three are lockin-* keys, so backup/restore includes them.
+   never in this file). The old lockin-mode-v1 key may still sit in storage but nothing reads it. All are lockin-* keys, so backup/restore includes them.
    XP is recalculated from the data every time (nothing is stored), so ticking then unticking gives exactly zero. */
 (()=>{
 'use strict';
-const SK='lockin-system-v1',PK='lockin-profile-v1',MK='lockin-mode-v1';
+const SK='lockin-system-v1',PK='lockin-profile-v1';
 const rd=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k)||'null');return v??d}catch(e){return d}};
 const wr=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let SYS=Object.assign({v:1,sleep:{},phone:{},seenRank:null,seenL:null,started:null,msg:{},log:[],off:{},ses:{},radio:{},mbSnap:{},mbFix:{},misSeen:{}},rd(SK,{}));
@@ -67,9 +67,9 @@ function trajectory(sj){const tk=todayK(),from14=dk(add(now(),-14));let total=0,
 function record(){const R=[],tk=todayK();let blocks=0,classes=0;for(const d in CS.days)if(d<=tk)for(const e of CS.days[d])if(e.done&&study(e)){blocks++;if(e.kind==='class')classes++}
   const W=rd('lockin-workout-v1',{extra:{}}),wo=Object.values(W.extra||{}).filter(x=>x&&x.done!=null).length;
   const sleepOk=Object.values(SYS.sleep).filter(s=>['early','ontime'].includes(s.b)).length,phoneOk=Object.values(SYS.phone).filter(p=>p.night&&p.morning===true).length;
-  const ONE={'focus sessions':'focus session','classes':'class','study blocks':'study block','nights':'night','mistakes':'mistake','past-paper questions':'past-paper question','full papers':'full paper','workouts':'workout'};
+  const ONE={'early nights':'early night','focus sessions':'focus session','classes':'class','study blocks':'study block','nights':'night','mistakes':'mistake','past-paper questions':'past-paper question','full papers':'full paper','workouts':'workout'};
   const fx=(n,s)=>{if(n<=0)return;if(n===1)for(const k in ONE)if(s.startsWith(k)){s=ONE[k]+s.slice(k.length);break}R.push([n,s])};
-  fx(FO.sessions||0,'focus sessions finished');fx(classes,'classes completed');fx(blocks,'study blocks done');fx(sleepOk,'nights asleep by 23:30');fx(phoneOk,'nights the phone stayed out');
+  fx(FO.sessions||0,'focus sessions finished');fx(classes,'classes completed');fx(blocks,'study blocks done');fx(sleepOk,'early nights (asleep by 23:30)');fx(phoneOk,'nights the phone stayed out');
   fx(MB.filter(m=>m.ok).length,'mistakes fixed for good');fx(new Set(qlGet().map(q=>q.id)).size,'past-paper questions done');fx(Object.keys(PP.score||{}).length,'full papers marked');fx(wo,'workouts finished');
   return R}
 
@@ -201,52 +201,52 @@ function rankHtml(T,lv,rank){const [nl,nr]=nextRank(lv.L),S=shadow(),seg=14,f=Ma
     const yl=pts(Math.min(nowMin(),1380)).map((t,i)=>(i?'L':'M')+x(t)+' '+y(cumAt(todayK(),t))).join(' '),sl=pts(1380).map((t,i)=>(i?'L':'M')+x(t)+' '+y(S.at(t))).join(' ');
     race=`<div class="sx-g"><b class="num">${g>=0?'+':'−'}${fmH(Math.abs(g))}</b><span>${g>=0?'ahead of':'behind'} ${S.foe}</span></div>
       <svg viewBox="0 0 ${W} 40" preserveAspectRatio="none"><path class="sl" d="${sl}"/><path class="yl" d="${yl}"/></svg>
-      <div class="sx-who"><span>You <b>${fmH(S.you)} h</b></span><span>${S.Foe} <b>${fmH(S.at(nowMin()))} h</b></span></div>`}
+      <div class="sx-who"><span>You today <b>${fmH(S.you)} h</b></span><span>${S.Foe} by now <b>${fmH(S.at(nowMin()))} h</b></span></div>`}
   return `<div class="sx-lvl"><b id="sxLvN">${lv.L}</b><div><span>${rank}</span><small>Level ${lv.L} · next rank ${nr} at level ${nl}</small></div></div>
     <div class="sx-segs" id="sxXp">${segHtml(seg,f)}</div><div class="sx-xpr"><span><b>${lv.into}</b> / ${lv.need} XP</span><em>+${T.today} XP today</em></div>
     <div class="sx-sr"><div class="sx-t"><span>${S.plan?'Race vs the plan':'Shadow race'}</span><small>${S.plan?'days 1-7 · Focus only':'finished Focus sessions only'}</small></div>${race}
-      <div class="sx-sec"><span>Right answers <b>${S.right}</b>${S.shRight!=null?' vs '+S.shRight:''}</span><span>Mistakes fixed <b>${S.fixed}</b>${S.shFixed!=null?' vs '+S.shFixed:''}</span></div></div>`}
+      <div class="sx-sec"><span>Right answers <b>${S.right}</b>${S.shRight!=null?` · ${S.Foe.toLowerCase()} ${S.shRight}`:''}</span><span>Fixed <b>${S.fixed}</b>${S.shFixed!=null?` · ${S.Foe.toLowerCase()} ${S.shFixed}`:''}</span></div></div>`}
 function misHtml(){const M=missions(),tk=todayK(),m=nowMin(),b=mib(tk);if(!M.length)return `<div class="sx-ph"><div><h3>Today's missions</h3><p>The exam is done. Nothing left to prove here.</p></div></div>`;
   const xp=x=>x.mib?XP.mib:x.t==='Practice'?30:x.t==='Body'?XP.workout:XP.sleep;
-  return `<div class="sx-ph"><div><h3>Today's missions</h3><p>${M.length} missions · +${M.reduce((a,x)=>a+xp(x),0)} XP available</p></div></div>`+M.map((x,i)=>{let n=8,f=0,a='0',bb='1',r='';
+  return `<div class="sx-ph"><div><h3>Today's missions</h3><p>${M.length+dueOf().length} to do · +${M.reduce((a,x)=>a+xp(x),0)} XP available</p></div></div>`+dueHtml()+M.map((x,i)=>{let n=8,f=0,a='0',bb='1',r='';
     if(x.mib&&b){n=5;const tot=b.e-b.s,el=x.done?tot:Math.max(0,Math.min(tot,m-b.s));f=Math.floor(el/tot*n);a=fmH(el);bb=fmH(tot)+' h block';r=x.done?'Done':m>=b.s&&m<b.e?'Now':hm(b.s)}
     else if(x.prog){n=10;f=parseInt(x.prog);a=String(f);bb='10';r=x.done?'Done':`${10-f} to go`}
     else{f=x.done?n:0;a=x.done?'1':'0';r=x.done?'Done':x.s.match(/\d\d:\d\d/)?.[0]||''}
     const cur=x.mib&&b&&!x.done&&m>=b.s&&m<b.e;
     return `<div class="sx-m${x.done?' ok':i===0?' mib':''}"><div class="sx-mt"><span class="k">${x.t}</span><span class="x">+${xp(x)} XP</span></div><div class="tt${/[\u0D80-\u0DFF]/.test(x.s)?' si':''}">${esc2(x.s)}</div>
-      <div class="cnt"><span><b>${a}</b> of ${bb}</span><span>${cur?'<button class="sx-go" data-begin>Focus</button>':r}</span></div><div class="sx-segs sm">${segHtml(n,f)}</div></div>`}).join('')+(innerHeight>950?(()=>{const L=(CS.days[tk]||[]).filter(e=>isStudy(e)&&e.s>=m).sort((x,y)=>x.s-y.s).slice(0,5);return L.length?`<div class="sx-rest"><h4>Rest of today</h4>${L.map(e=>`<div><span class="num">${hm(e.s)}</span><i class="sx2-dot" style="--sj:${SJC[e.subj]||'#8b928d'}"></i><span class="si">${esc2(e.title)}</span></div>`).join('')}</div>`:''})():'')}
+      <div class="cnt"><span><b>${a}</b> of ${bb}</span><span>${cur?'<button class="sx-go" data-begin>Focus</button>':r}</span></div><div class="sx-segs sm">${segHtml(n,f)}</div></div>`}).join('')+((()=>{/* round 3: on short screens Rest of today gives way so every mission card fits */const L=innerHeight<=820?[]:(CS.days[tk]||[]).filter(e=>isStudy(e)&&e.s>=m).sort((x,y)=>x.s-y.s).slice(0,5);return L.length?`<div class="sx-rest"><h4>Rest of today</h4>${L.map(e=>`<div><span class="num">${hm(e.s)}</span><i class="sx2-dot" style="--sj:${SJC[e.subj]||'#8b928d'}"></i><span class="si">${esc2(e.title)}</span></div>`).join('')}</div>`:''})())}
 function mastHtml(){let G=[];try{const last=mqLast();for(const sj of ['chem','phy'])for(const g of mqGroups(sj)){const m=mqMast(sj,g,last);G.push({k:g.k,n:m.n,m:m.m,gain:g.per*(1-m.m)})}}catch(e){}
   if(!G.length)return `<div class="sx-ph"><div><h3>Mastery</h3><p>Weights file not loaded yet</p></div></div>`;
-  const tried=G.filter(g=>g.n>0).sort((a,b)=>a.m-b.m),weak=tried.slice(0,3);for(const g of G.filter(g=>!g.n).sort((a,b)=>b.gain-a.gain))if(weak.length<3)weak.push(g);
+  const tried=G.filter(g=>g.n>=5).sort((a,b)=>a.m-b.m),weak=tried.slice(0,3);for(const g of G.filter(g=>g.n<5).sort((a,b)=>b.gain-a.gain))if(weak.length<3)weak.push(g);
   const C=52,rnd=s=>{let x=Math.sin(s)*1e4;return x-Math.floor(x)};let dots='';
   G.forEach((g,i)=>{const a=rnd(i+3)*Math.PI*2,r=g.n?8+(1-g.m)*40:46,X=C+r*Math.cos(a),Y=C+r*Math.sin(a),w=weak.includes(g);dots+=w?`<circle cx="${X}" cy="${Y}" r="4.5" fill="none" stroke="#eceeec" stroke-width="1.2"/><circle cx="${X}" cy="${Y}" r="1.8" fill="#eceeec"/>`:`<circle cx="${X}" cy="${Y}" r="1.8" fill="rgba(236,238,236,${g.n?.6:.25})"/>`});
   return `<div class="sx-ph"><div><h3>Mastery</h3><p>Paper I units · closer to the centre = stronger</p></div></div>
     <div class="sx-rad"><svg viewBox="0 0 104 104"><defs><linearGradient id="sxSw" gradientUnits="userSpaceOnUse" x1="52" y1="52" x2="104" y2="52"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
       ${[50,34,18].map(r=>`<circle cx="52" cy="52" r="${r}" fill="none" stroke="rgba(255,255,255,.08)"/>`).join('')}${dots}<g class="sx-sweep"><path d="M52 52 L102 52 A50 50 0 0 0 ${52+50*Math.cos(-.7)} ${52+50*Math.sin(-.7)} Z" fill="url(#sxSw)"/></g></svg>
-      <div class="sx-weak"><div class="h">Weakest now</div>${weak.map(g=>`<div><span title="${esc2(MQN[g.k]||g.k)}">${esc2(MQN[g.k]||g.k)}</span><span>${g.n?Math.round(g.m*100)+'%':'untried'}</span></div>`).join('')}</div></div>`}
-function recHtml(){const P=['nights asleep','focus session','class','nights the phone','mistake','past-paper','workout','study block','full paper'],R=record().sort((a,b)=>P.findIndex(p=>a[1].startsWith(p))-P.findIndex(p=>b[1].startsWith(p))).slice(0,3);
-  return `<div class="sx-rh"><h3>The Record</h3><span>evidence, not promises</span></div>${R.length?`<div class="sx-rr">${R.map(([n,s])=>`<div><b class="num">${n}</b><span>${esc2(s)}</span></div>`).join('')}</div>`:'<p class="sx-cap">Empty for now. Finished sessions, early nights and fixed mistakes land here.</p>'}`}
-function radioHtml(){bakuLine();const L=(SYS.radio[todayK()]||[]).slice(-3),n=(SYS.msg[todayK()]||{n:0}).n;
+      <div class="sx-weak"><div class="h">Weakest now</div>${weak.map(g=>`<div><span title="${esc2(MQN[g.k]||g.k)}">${esc2(MQN[g.k]||g.k)}</span><span>${g.n>=5?Math.round(g.m*100)+'%':g.n?g.n+' tried':'untried'}</span></div>`).join('')}</div></div>`}
+function recHtml(){const P=['early night','focus session','class','nights the phone','mistake','past-paper','workout','study block','full paper'],R=record().sort((a,b)=>P.findIndex(p=>a[1].startsWith(p))-P.findIndex(p=>b[1].startsWith(p))).slice(0,innerHeight>950?6:3);
+  return `<div class="sx-rh"><h3>The Record</h3><span>since Day 1</span></div>${R.length?`<div class="sx-rr">${R.map(([n,s])=>`<div><b class="num">${n}</b><span>${esc2(s)}</span></div>`).join('')}</div>`:'<p class="sx-cap">Empty for now. Finished sessions, early nights and fixed mistakes land here.</p>'}`+finHtml()}
+function radioHtml(){bakuLine();const L=(SYS.radio[todayK()]||[]).slice(innerHeight>950?-8:-3),n=(SYS.msg[todayK()]||{n:0}).n;
   return `<div class="sx-who2"><div class="av">${typeof bkSvg==='function'?bkSvg('sleepy'):''}</div><div><b>Baku · race engineer</b><small>${n} of 4 messages today</small></div></div>
     <canvas class="sx-wave" id="sxWave"></canvas><div class="sx-tx">${L.length?L.map(l=>`<div><span>${l.t}</span>${esc2(l.text)}</div>`).join(''):'<div class="q">Radio quiet. Nothing to report yet.</div>'}</div>
     <div class="sx-ask">${checks()}</div>`}
 /* ---------- home graph drawing ---------- */
 let HG=null,flowRaf=0;
-function drawGraph(force){const g=box&&box.querySelector('#sxGraph');if(!g||!g.clientWidth)return;const H0=homeGraph(Math.max(3,Math.min(5,Math.floor(g.clientWidth/135))));
+function drawGraph(force){const g=box&&box.querySelector('#sxGraph');if(!g||!g.clientWidth)return;const H0=homeGraph(Math.max(3,Math.min(5,Math.floor(g.clientWidth/185))));
   const sig=g.clientWidth+'x'+g.clientHeight+'|'+H0.nodes.map(n=>n.i+':'+nodeState(n,H0.X)).join(',');if(!force&&HG&&HG.sig===sig)return;HG={sig,...H0};
   const unit=H0.X?(H0.X.unit?(String(H0.X.sub||'').split(',')[0]||H0.X.unit):''):'';box.querySelector('#sxUnit').textContent=H0.X?`${SUBJ[H0.X.subj]||''}${H0.X.unit?' · '+unit:''}`:'Nothing scheduled';
-  const W=g.clientWidth,H=g.clientHeight,nc=Math.max(1,H0.cols.length),cw=W/nc,rows=HG.rows||1,rh=Math.min(H>700?200:130,(H-60)/Math.max(rows,1)),off=Math.max(34,(H-rh*(rows-1)-80)/2);
+  const W=g.clientWidth,H=g.clientHeight,nc=Math.max(1,H0.cols.length),cw=W/nc,rows=HG.rows||1,rh=H>700?Math.min(230,(H-150)/Math.max(rows-1,1)):Math.min(135,(H-60)/Math.max(rows,1)),off=Math.max(34,Math.min(H>700?110:80,(H-rh*(rows-1)-80-(H>700?Math.round(rh*.25):0))/2));
   box.querySelector('#sxCols').style.gridTemplateColumns=`repeat(${nc},1fr)`;box.querySelector('#sxCols').innerHTML=H0.cols.map(c=>`<span class="${c==='Today'?'today':''}">${c}</span>`).join('');
   g.querySelectorAll('.sx-nd').forEach(n=>n.remove());const pos={};
   for(const n of H0.nodes){const st=nodeState(n,H0.X),el=document.createElement('div');el.className='sx-nd '+st;el.dataset.i=n.i;const x=n._c*cw+8,y=off+n._r*rh;pos[n.i]=el;
-    el.style.left=x+'px';el.style.top=y+'px';el.style.width=(cw-14)+'px';el.title=n.title;el.tabIndex=0;
+    el.style.left=x+'px';el.style.top=y+'px';el.style.width=(cw-14)+'px';if(H>700)el.style.minHeight=Math.round(rh*.5)+'px';/* round 3: taller nodes on tall screens so the graph fills its panel */el.title=n.title;el.tabIndex=0;
     el.innerHTML=`<span class="sxp sxl"></span><span class="sxp sxr"></span><small><span>${nodeMeta(n,st)}</span>${st==='done'?'<i>✓</i>':''}</small><b class="si">${esc2(n.title)}</b>${st==='act'?`<div class="pb"><i style="width:${Math.round(Math.max(0,Math.min(1,(nowMin()-n.s)/(n.e-n.s)))*100)}%"></i></div>`:''}`;g.appendChild(el)}
   const gr=g.getBoundingClientRect();let h='',flowI=-1,k=0;const boxes=Object.values(pos).map(el=>{const b=el.getBoundingClientRect();return[b.left-gr.left,b.top-gr.top,b.width,b.height]});
   for(const n of H0.nodes)for(const pi of n.par){if(!pos[pi])continue;const A=pos[pi].getBoundingClientRect(),B=pos[n.i].getBoundingClientRect();let d,x1,y1,x2,y2;
     if(B.left<A.right+10){x1=A.left+A.width/2-gr.left;y1=A.bottom-gr.top;x2=B.left+B.width/2-gr.left;y2=B.top-gr.top;if(y2<y1){y1=A.top-gr.top;y2=B.bottom-gr.top}d=`M${x1} ${y1} C${x1} ${(y1+y2)/2} ${x2} ${(y1+y2)/2} ${x2} ${y2}`}
     else{x1=A.right-gr.left;y1=A.top+A.height/2-gr.top;x2=B.left-gr.left;y2=B.top+B.height/2-gr.top;const dx=Math.max(30,(x2-x1)/2);d=`M${x1} ${y1} C${x1+dx} ${y1} ${x2-dx} ${y2} ${x2} ${y2}`}
     const P=graphAll()[pi],cls=H0.X&&pi===H0.X.i?'now':liveDone(P)&&(liveDone(n)||n.i===H0.X?.i)?'dn':'fut';if(cls==='now'&&flowI<0)flowI=k;
-    h+=`<path id="sxE${k}" class="sx-edge ${cls}" d="${d}"/>`;const lab=n.lab[pi];if(lab){const [mx,my]=midOf(d),w=lab.length*6.4+12;if(!hitsAny(mx-w/2-4,my-13,w+8,26,boxes))h+=`<rect class="sx-elb" x="${mx-w/2}" y="${my-9}" width="${w}" height="18" rx="5"/><text class="sx-elt" x="${mx}" y="${my+4}" text-anchor="middle">${lab}</text>`}k++}
+    h+=`<path id="sxE${k}" class="sx-edge ${cls}" d="${d}"/>`;const lab=n.lab[pi];if(lab){const [mx,my]=midOf(d),w=lab.length*6.4+12;if(!hitsAny(mx-w/2-4,my-13,w+8,26,boxes)&&boxes.push([mx-w/2-4,my-13,w+8,26]))h+=`<rect class="sx-elb" x="${mx-w/2}" y="${my-9}" width="${w}" height="18" rx="5"/><text class="sx-elt" x="${mx}" y="${my+4}" text-anchor="middle">${lab}</text>`}k++}
   box.querySelector('#sxG').innerHTML=h+'<circle id="sxFlow" class="sx-flow" r="3"/>';flow(flowI)}
 function flow(i){cancelAnimationFrame(flowRaf);const p=box.querySelector('#sxE'+i),c=box.querySelector('#sxFlow');if(!p||!c){c&&c.setAttribute('r',0);return}const L=p.getTotalLength();let t=0;
   const f=()=>{t=(t+.005)%1;const pt=p.getPointAtLength(t*L);c.setAttribute('cx',pt.x);c.setAttribute('cy',pt.y);if(!R_M()&&isShadow()&&!document.body.className.includes('page-'))flowRaf=requestAnimationFrame(f)};f()}
@@ -255,6 +255,74 @@ let wt=0,waveRaf=0;function wave(){cancelAnimationFrame(waveRaf);const c=box&&bo
   for(let i=0;i<n;i++){const a=talk?.2+.8*Math.abs(Math.sin(wt*1.6+i*.55)*Math.cos(wt*.6+i*.21)):.08+.05*Math.sin(wt*.5+i*.4);g.fillStyle=`rgba(236,238,236,${.25+a*.55})`;const h=a*52;g.fillRect(i*w+1,30-h/2,w-3,h)}
   if(!R_M()&&isShadow()&&!document.body.className.includes('page-'))waveRaf=requestAnimationFrame(wave)}
 
+/* ---------- due now: night review and recall rating (restored 25 Nov 2026 when Shadow became the only UI).
+   Both reuse index.html's own code: nrHtml/saveReview (lockin-review-*) and rateHtml/saveRate (lockin-recall-v1).
+   The recall tick goes through the routine row's own tick button, so ticking works exactly as on the old Home. ---------- */
+const DUE_TAGS=['Consolidate','Recap'],DW3=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const dShort=k=>{const d=new Date(k+'T00:00');return `${DW3[d.getDay()]} ${d.getDate()} ${M3[d.getMonth()]}`};
+function dueOf(k){k=k||todayK();const tk=todayK(),m=nowMin(),today=k===tk,past=k<tk,out=[];
+  if((!today&&!past)||(typeof START!=='undefined'&&new Date(k+'T00:00')<START)||new Date(k+'T00:00')>EXAM_END)return out;
+  const L=(CS.days[k]||[]).slice().sort((a,b)=>a.s-b.s),rev=L.find(e=>e.kind==='review');
+  for(const e of L)if(DUE_TAGS.includes(e.tag)&&e.unit&&!e.conf&&(past||m>=e.s))out.push({kind:'recall',ev:e,now:today&&m>=e.s&&m<e.e});
+  if(rev&&!rev.done&&(past||m>=rev.s-30))out.push({kind:'review',ev:rev,now:today&&m>=rev.s-30});
+  return out}
+function dueHtml(){const D=dueOf();if(!D.length)return '';
+  return `<div class="sx-due">${D.slice(-2).reverse().map(d=>{const r=d.kind==='review';
+    return `<div class="sx-du${d.now?' now':''}"><div class="w"><span class="k">${r?'Night review':'Recall'} · ${hm(d.ev.s)}</span><b class="${r?'':'si'}" title="${esc2(r?'':d.ev.title)}">${r?'About a minute':esc2(d.ev.title)}</b></div><button type="button" class="${d.now?'sx-go':'sx-du-b'}" data-sxdue="${d.kind}|${esc2(d.ev.id)}">${r?'Open':d.ev.done?'Rate':'Done · rate'}</button></div>`}).join('')}</div>`}
+function dueView(k){if(typeof viewKey==='undefined')return false;if(viewKey!==k||nrOpen||rateFor){viewKey=k;nrOpen=false;rateFor=null;renderRoutine()}return true}
+function dueDlg(head,body,onClick){q1('.sx-dlg')?.remove();const o=document.createElement('div');o.className='sx-pop sx-dlg';o.setAttribute('role','dialog');o.setAttribute('aria-modal','true');o.setAttribute('aria-label',head);
+  o.innerHTML=`<div class="card2"><div class="sx-dh"><span>${esc2(head)}</span><button type="button" data-dlgx aria-label="Close">×</button></div>${body}</div>`;document.body.appendChild(o);
+  let done=false;const key=e=>{if(e.key==='Escape')close()};
+  const close=()=>{if(done)return;done=true;o.remove();document.removeEventListener('keydown',key);const tk=typeof todayKey!=='undefined'?todayKey:todayK();if(viewKey!==tk){viewKey=tk;nrOpen=false;rateFor=null;renderRoutine()}render()};
+  document.addEventListener('keydown',key);o.addEventListener('click',e=>{if(e.target===o||e.target.closest('[data-dlgx]')){close();return}onClick(e,close)});return {o,close}}
+function openReview(k){const rev=(CS.days[k]||[]).find(e=>e.kind==='review');if(!rev||rev.done||!dueView(k))return false;
+  const D=dueDlg(k===todayK()?'Tonight · '+hm(rev.s):dShort(k),nrHtml(),(e,close)=>{if(e.target.closest('#nrLater')){close();return}if(e.target.closest('#nrSave')){saveReview();close()}});
+  D.o.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='nrL'){e.preventDefault();saveReview();D.close()}});/* round 3: focus the empty "learned" line, not the prefilled hours (the caret sat on the first digit) */setTimeout(()=>D.o.querySelector('#nrL')?.focus(),30);logI('open:review',{k});return true}
+function openRecall(k,id){if(!dueView(k))return false;const ev=(CS.days[k]||[]).find(x=>x.id===id);if(!ev)return false;
+  if(!ev.done){const t=document.querySelector(`#rows .r[data-id="${CSS.escape(String(id))}"] .tick`);if(t&&!t.disabled)t.click()}
+  if(!ev.done)return false;
+  dueDlg('Recall check · '+(k===todayK()?hm(ev.s):dShort(k)),`<h3 class="si">${esc2(ev.title)}</h3>${rateHtml(ev)}`,(e,close)=>{const b=e.target.closest('[data-rate]');if(b){saveRate(b.dataset.id,+b.dataset.rate);close()}});logI('open:recall',{k});return true}
+/* used by the Calendar day sheet button: open what is due for that day */
+function openDue(k,kind,id){k=k||todayK();const D=dueOf(k);let p=kind?D.find(d=>d.kind===kind&&(!id||d.ev.id===id)):null;
+  if(!p){const r=D.find(d=>d.kind==='review'),c=D.find(d=>d.kind==='recall');p=k<todayK()||nowMin()>=720?(r||c):(c||r)}
+  if(!p)return false;return p.kind==='review'?openReview(k):openRecall(k,p.ev.id)}
+/* projected end of Physics and Chemistry classes (the old Home rings card line), red when past CLASSES_BY */
+function finHtml(){let f=null;try{f=typeof classesFinish==='function'?classesFinish():null}catch(e){}if(!f)return '';
+  return `<div class="sx-fin"><span>Classes finish</span><b class="num${f.late?' late':''}">${dShort(f.k)}</b><small>${typeof CLASSES_BY!=='undefined'?'target '+dShort(dk(CLASSES_BY)):''}</small></div>`}
+
+/* ---------- Calendar: "Already did a class" (26 Nov 2026). Lists every upcoming class that is not done (not the fixed live
+   Maths classes), grouped by subject and unit in plan order, with search. The work is index.html's doneEarly(). ---------- */
+const EA_SJ={phy:'Physics',chem:'Chemistry',maths:'Maths'};
+function earlyOpen(){if(typeof earlyList!=='function')return;const L=earlyList(),tk=todayK();let sel=null,q='',only=null;
+  const D=dueDlg('Already did a class','',(e,close)=>{
+    const it=e.target.closest('[data-eab]');if(it){sel=it.dataset.eab;draw();return}
+    if(e.target.closest('[data-eago]')){const w=earlyWarn(sel);if(w.length&&!e.target.closest('[data-eaforce]')){warn(w);return}apply(close);return}
+    if(e.target.closest('[data-eaback]')){draw();return}
+    const jb=e.target.closest('[data-eaj]');if(jb){/* round 3: a subject chip is a filter that switches on and off */only=only===jb.dataset.eaj?null:jb.dataset.eaj;box.innerHTML=list();jumps();box.scrollTop=0;return}
+    if(e.target.closest('[data-eax]'))close()});
+  const card=D.o.querySelector('.card2');card.classList.add('sx-ea');
+  card.insertAdjacentHTML('beforeend',`<p class="sx-cap">Pick the class you already watched. It counts as done today and later classes move up.</p>
+    <input type="search" class="ea-q" placeholder="Search by unit, class or date" aria-label="Search classes"><div class="ea-j" aria-label="Jump to a subject"></div><div class="ea-l" role="listbox" aria-label="Upcoming classes"></div><div class="ea-f"></div>`);
+  const box=card.querySelector('.ea-l'),foot=card.querySelector('.ea-f'),inp=card.querySelector('.ea-q');
+  const when=x=>(x.k===tk?'Today':dShort(x.k))+' · '+hm(x.s)+(x.parts>1?' · '+x.parts+' parts':'');
+  function list(){const f=q.trim().toLowerCase(),M=L.filter(x=>(!only||x.subj===only)&&(!f||(x.title+' '+x.usi+' '+x.uen+' '+EA_SJ[x.subj]+' '+when(x)).toLowerCase().includes(f)));
+    if(!M.length)return `<p class="ea-n">${L.length?'No class matches that search.':'No upcoming classes left to mark.'}</p>`;let h='',sj='',un=null;
+    for(const s of ['phy','chem','maths']){const S=M.filter(x=>x.subj===s);if(!S.length)continue;h+=`<div class="ea-s" data-eas="${s}"><i class="sx2-dot" style="--sj:${SJC[s]||'#8b928d'}"></i>${EA_SJ[s]}<span>${S.length}</span></div>`;
+      const U=[];for(const x of S)if(!U.includes(x.unit))U.push(x.unit);
+      for(const u of U){const I=S.filter(x=>x.unit===u),a=I[0];h+=`<div class="ea-u"><span class="si">${esc2(a.usi)}</span><small>${esc2(a.uen)}</small></div>`+
+        I.map(x=>`<button type="button" class="ea-i${sel===x.b?' on':''}" role="option" aria-selected="${sel===x.b}" data-eab="${esc2(x.b)}"><span class="si" title="${esc2(x.title)}">${esc2(x.title)}</span><span class="num">${when(x)}</span></button>`).join('')}}
+    return h}
+  function draw(){box.innerHTML=list();const x=L.find(y=>y.b===sel);
+    foot.innerHTML=`<span class="ea-sel${x?' si':''}">${x?esc2(x.title):'Nothing picked yet'}</span><button type="button" class="ea-b" data-eax>Cancel</button><button type="button" class="ea-b pri" data-eago${x?'':' disabled'}>Mark done today</button>`}
+  function warn(w){foot.innerHTML=`<div class="ea-w"><b>${w.length===1?'This class comes first and is not done yet:':'These come first and are not done yet:'}</b><span class="si">${w.slice(0,4).map(esc2).join(' · ')}${w.length>4?' · +'+(w.length-4)+' more':''}</span><em>Mark this one anyway?</em></div><button type="button" class="ea-b" data-eaback>Back</button><button type="button" class="ea-b pri" data-eago data-eaforce>Mark anyway</button>`}
+  function apply(close){const x=L.find(y=>y.b===sel);if(!x)return;const r=doneEarly(sel);logI('early',{b:sel,ok:!!r});close();try{renderWeek()}catch(e){}}
+  /* review round 2: subject chips with counts show that Chemistry and Maths follow below */
+  const jumps=()=>{const f=q.trim().toLowerCase(),M=L.filter(x=>!f||(x.title+' '+x.usi+' '+x.uen+' '+EA_SJ[x.subj]+' '+when(x)).toLowerCase().includes(f));card.querySelector('.ea-j').innerHTML=['phy','chem','maths'].map(s=>{const n=M.filter(x=>x.subj===s).length;return n?`<button type="button" class="ea-jb" data-eaj="${s}" aria-pressed="${only===s}"><i class="sx2-dot" style="--sj:${SJC[s]||'#8b928d'}"></i>${EA_SJ[s]} <b class="num">${n}</b></button>`:''}).join('')};
+  inp.addEventListener('input',()=>{q=inp.value;box.innerHTML=list();jumps();box.scrollTop=0});jumps();draw();setTimeout(()=>{card.setAttribute('tabindex','-1');card.focus({preventScroll:true})},30)}
+document.addEventListener('click',e=>{if(e.target.closest('#earlyBtn'))earlyOpen()});
+
+/* missions column: a fade and "more below" cue while there is more to scroll (26 Nov 2026) */
+function misMore(){const m=box&&box.querySelector('#sxMis');if(!m)return;const f=()=>m.classList.toggle('sx-more',m.scrollHeight>m.clientHeight+4&&m.scrollTop+m.clientHeight<m.scrollHeight-4);requestAnimationFrame(f);if(!m.__mm){m.__mm=1;m.addEventListener('scroll',f,{passive:true});addEventListener('resize',f)}}
 /* ---------- render ---------- */
 const onHome=()=>isShadow()&&!/\bpage-/.test(document.body.className);
 function render(force){if(!box||!isShadow()||!onHome())return;if(force||!box.querySelector('.sx-grid'))shell();
@@ -262,7 +330,7 @@ function render(force){if(!box||!isShadow()||!onHome())return;if(force||!box.que
   box.querySelector('#sxDay').innerHTML=new Date(todayK()+'T00:00')>EXAM_END?'Exam over':now()>=EXAM?`Exam day <b>${Math.round((new Date(todayK()+'T00:00')-EXAM)/864e5)+1}</b> / 26`:dayNo()<1?`Day 1 starts tomorrow`:`Day <b>${dayNo()}</b> / ${daysTotal()}`;
   box.querySelector('#sxExam').innerHTML=now()<EXAM?`A/L in <b>${Math.ceil((EXAM-now())/864e5)}</b> days`:'A/L';box.querySelector('#sxClk').textContent=hm(nowMin());
   box.querySelector('.sx-tgt').innerHTML=P.course?`Target <b>${esc2(P.course)}</b>${P.z?' · Z '+esc2(P.z):''}`:'Set your target';
-  setPanel('sxRank',rankHtml(T,lv,rank));setPanel('sxMis',misHtml());setPanel('sxMast',mastHtml());setPanel('sxRec',recHtml());if(setPanel('sxRadio',radioHtml()))wave();
+  setPanel('sxRank',rankHtml(T,lv,rank));setPanel('sxMis',misHtml());misMore();setPanel('sxMast',mastHtml());setPanel('sxRec',recHtml());if(setPanel('sxRadio',radioHtml()))wave();
   requestAnimationFrame(()=>{drawGraph(force);if(!waveRaf)wave()});events(T,lv,rank)}
 /* ---------- moments: mission complete, level-up, rank-up, first launch ---------- */
 let queued=[];
@@ -303,7 +371,7 @@ function lvSeq(rankUp,from,lv,rank,done){done=done||(()=>{});const o=document.cr
     else{const ts=(t-hit)/700;sh[0].style.opacity=RM||ts<0||ts>1?0:.6*(1-ts);sh[0].style.transform=`scale(${1+1.6*eo(cl(ts))})`;nx.style.opacity=cl((t-hit-250)/400)}
     if(RM){setTimeout(end,T);return}if(t>=T-250){end();return}requestAnimationFrame(frame)};requestAnimationFrame(frame)}
 function firstLaunch(L,rank,xp,done){const days=Math.max(1,Math.round((new Date(todayK()+'T00:00')-START)/864e5)+1);logI('first');
-  overlay(`<div class="sh-first"><div class="sh-k">Shadow Protocol</div><p>Starting level from ${days} day${days>1?'s':''} of your real history: ${xp} XP.</p><h2>${rank} · Level ${L}</h2><p class="sh-note">Normal mode is still there. The eye icon switches back.</p></div>`,0,done)}
+  overlay(`<div class="sh-first"><div class="sh-k">Shadow Protocol</div><p>Starting level from ${days} day${days>1?'s':''} of your real history: ${xp} XP.</p><h2>${rank} · Level ${L}</h2></div>`,0,done)}
 function overlay(html,ms,done){const o=document.createElement('div');o.className='sh-ov';o.innerHTML=html;document.body.appendChild(o);requestAnimationFrame(()=>o.classList.add('on'));
   let c=false;const close=()=>{if(c)return;c=true;o.classList.remove('on');setTimeout(()=>{o.remove();done&&done()},300)};o.addEventListener('click',close);if(ms)setTimeout(close,ms);return o}
 
@@ -378,15 +446,12 @@ function targetPop(){if(document.querySelector('.sx-pop'))return;const P=prof(),
 function sleepGuard(){const m=nowMin();if(!isShadow()||!(m>=1380||m<270))return;const night=m<270?dk(add(now(),-1)):todayK();if(SYS.guard===night)return;SYS.guard=night;saveSys();
   logI('say:sleep');overlay(`<div class="sh-first"><div class="sh-k">${hm(m)}</div><h2>Sleep is part of the plan.</h2><p>Close it.</p></div>`,0)}
 
-/* ---------- mode switch ---------- */
+/* ---------- Shadow fonts ---------- */
 function fonts(){if(document.getElementById('sxFonts'))return;const l=document.createElement('link');l.id='sxFonts';l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@300;400;500&display=swap';document.head.appendChild(l)}
-function setMode(on,animate){const h=document.documentElement;if(on===isShadow())return;if(on)fonts();
-  const go2=()=>{h.classList.toggle('shadow',on);wr(MK,on?'shadow':'normal');const b=document.getElementById('modeBtn');if(b)b.setAttribute('aria-pressed',on);logI(on?'mode:shadow':'mode:normal');if(!on&&bpEl){bpEl.remove();bpEl=null}render(true);if(on)sleepGuard()};
-  if(animate&&!R_M()){const s=document.createElement('div');s.className='sh-scan';document.body.appendChild(s);setTimeout(go2,260);setTimeout(()=>s.remove(),700)}else go2()}
 
 /* ---------- events ---------- */
 document.addEventListener('click',e=>{
-  const mb=e.target.closest('#modeBtn');if(mb){setMode(!isShadow(),true);return}
+  const du=e.target.closest('[data-sxdue]');if(du){const[kd,id]=du.dataset.sxdue.split('|');openDue(todayK(),kd,id);return}
   if(e.target.closest('[data-target]')){targetPop();return}
   if(!box||!box.contains(e.target))return;
   if(e.target.closest('[data-bpopen]')){openFull();return}
@@ -405,12 +470,12 @@ const q1=s=>document.querySelector(s);
 const P2={msel:{},tab:{},A:{n:0,sec:0},awayAt:0,prevPh:'',prevLeft:0,quitT:0,links:false,sel:null,sig:''};
 const pageOf=()=>{const c=document.body.className;return /\bpage-foc\b/.test(c)?'foc':/\bpage-cal\b/.test(c)?'cal':/\bpage-lib\b/.test(c)?'lib':''};
 const goP=n=>{try{(typeof vgo==='function'?vgo:go)(n)}catch(e){}};
-const PGN={foc:'Focus',cal:'Calendar',lib:'Library',wo:'Workout'};
+const PGN={foc:'Focus',cal:'Calendar',lib:'Library',wo:'Workout',pap:'Papers',rep:'Report'};
 const ssm=s=>{s=Math.max(0,Math.round(s));return `${Math.floor(s/60)}:${p2(s%60)}`};
 const dayW=k=>{const x=new Date(k+'T00:00');return k===todayK()?'Today':DOW3[x.getDay()]+(Math.abs((x-new Date(todayK()+'T00:00'))/864e5)>6?' '+x.getDate():'')};
 
 /* ---------- shared bar: crumb, page switcher, day / exam / clock ---------- */
-function bars(){for(const[id,pg]of[['focPage','foc'],['calPage','cal'],['libPage','lib'],['woPage','wo']]){const P=document.getElementById(id);if(!P||P.querySelector(':scope>.sx2-barw'))continue;
+function bars(){for(const[id,pg]of[['focPage','foc'],['calPage','cal'],['libPage','lib'],['woPage','wo'],['papPage','pap'],['repPage','rep']]){const P=document.getElementById(id);if(!P||P.querySelector(':scope>.sx2-barw'))continue;
   const b=document.createElement('div');b.className='sx2-barw';b.innerHTML=`<div class="sx2-crumb">Shadow Protocol / <b>${PGN[pg]}</b></div><span class="sx2-sp"></span><div class="sx2-pill" data-sxday></div><div class="sx2-pill" data-sxexam></div><div class="sx2-pill"><b class="num" data-sxclk></b></div>`;P.prepend(b)}
   barTick()}
 function barTick(){const n=now(),t0=new Date(todayK()+'T00:00');/* exam period and after: same wording as the Home counter (fix 24 Nov 2026: it said Day 254 / 252) */document.querySelectorAll('[data-sxday]').forEach(e=>e.innerHTML=t0>EXAM_END?'Exam over':n>=EXAM?`Exam day <b class="num">${Math.round((t0-EXAM)/864e5)+1}</b> / 26`:dayNo()<1?`Day 1 starts tomorrow`:`Day <b class="num">${dayNo()}</b> / ${daysTotal()}`);
@@ -444,7 +509,7 @@ function focBuild(){const P=document.getElementById('focPage');if(!P||P.querySel
 function blockNow(){const tk=todayK(),m=nowMin(),L=(CS.days[tk]||[]).filter(isStudy).sort((a,b)=>a.s-b.s);const c=curBlock();if(c)return{b:c,cur:true};const n=L.find(e=>e.s>m);return n?{b:n,cur:false}:{b:null}}
 function nodeOf(b){if(!b)return null;const tk=todayK();return graphAll().find(n=>n.date===tk&&n.s===b.s&&n.title===b.title)||null}
 function chainOf(X){if(!X)return[];const G=graphAll(),out=[];const pre=X.par.map(i=>G[i]).filter(Boolean).slice(-2);pre.forEach(n=>out.push([n,'pre']));out.push([X,'now']);
-  const same=G.filter(n=>n.i>X.i&&n.kind==='class'&&(X.unit?n.unit===X.unit:n.subj===X.subj&&!n.unit)).slice(0,2);same.forEach(n=>out.push([n,'']));
+  const same=G.filter(n=>n.i>X.i&&n.kind==='class'&&(X.unit?n.unit===X.unit:n.subj===X.subj&&!n.unit)).slice(0,innerHeight>950?5:2);same.forEach(n=>out.push([n,'']));
   const ids=new Set(out.map(([n])=>n.i));const un=G.find(n=>n.i>X.i&&n.kind==='class'&&X.unit&&n.unit&&n.unit!==X.unit&&!/x$/.test(n.unit)&&n.par.some(p=>ids.has(p)));if(un)out.push([un,'unl']);return out}
 function focBlk(){const{b,cur}=blockNow(),el=q1('#sxfBlk');if(!el)return;
   if(!b){const m=nowMin(),L=(CS.days[todayK()]||[]).find(e=>m>=e.s&&m<e.e),t=L?L.title:'Free time',off=/off duty|free/i.test(t);el.innerHTML=`<div class="lbl">No study block now${L?' · '+hm(L.s)+'–'+hm(L.e):''}</div><h2 class="sxf-t">${esc2(t)}</h2><p class="sx2-cap">${off?'Rest is part of the plan. If you study anyway, pick a subject under the timer and it still counts.':'Pick a subject under the timer if you study anyway. It still counts.'}</p>`;return}
@@ -452,7 +517,7 @@ function focBlk(){const{b,cur}=blockNow(),el=q1('#sxfBlk');if(!el)return;
   const ch=chainOf(nodeOf(b)),tk=todayK();
   el.innerHTML=`<div class="lbl">${cur?'Current block':'Next block · starts '+hm(b.s)}</div><h2 class="sxf-t si">${esc2(b.title)}</h2><div class="sxf-tm num${cur?' on':''}">${hm(b.s)} – ${hm(b.e)}</div><div class="sx2-cap"><i class="sx2-dot" style="--sj:${SJC[b.subj]||'#8b928d'}"></i>${SUBJ[b.subj]||'Paper'} · ${kind}</div>
     ${ch.length>1?`<div class="lbl" style="margin-top:14px">Blueprint chain</div><div class="sxf-ch">${ch.map(([n,r])=>{const dn=liveDone(n),miss=!dn&&(n.date<tk||(n.date===tk&&n.e<=nowMin()))&&r!=='now';
-      return `<div class="c ${r==='now'?'now':dn?'ok':miss?'miss':r==='unl'?'lock':''}"><span class="si">${esc2(n.title)}</span><small>${r==='now'?(cur?'now':hm(n.s)):r==='pre'?(dn?'done':miss?'missed':dayW(n.date)):r==='unl'?dayW(n.date)+' · unlocks':dayW(n.date)}</small></div>`}).join('')}</div>`:''}
+      return `<div class="c ${r==='now'?'now':dn?'ok':miss?'miss':r==='unl'?'lock':''}"><span class="si">${esc2(n.title).replace(/ (\d+)$/,' $1')}</span><small>${r==='now'?(cur?'now':hm(n.s)):r==='pre'?(dn?'done':miss?'missed':dShort(n.date)):r==='unl'?dShort(n.date)+' · unlocks':dShort(n.date)}</small></div>`}).join('')}</div>`:''}
     ${(()=>{const L=(CS.days[tk]||[]).filter(e=>isStudy(e)&&e.s>=b.e&&e!==b).sort((x,y)=>x.s-y.s).slice(0,innerHeight>1000?8:innerHeight>900?6:3);return L.length?`<div class="lbl" style="margin-top:14px">Later today</div><div class="sxf-later">${L.map(e=>`<div><span class="num">${hm(e.s)}</span><i class="sx2-dot" style="--sj:${SJC[e.subj]||'#8b928d'}"></i><span class="si">${esc2(e.title)}</span></div>`).join('')}</div>`:''})()}`}
 function cfListF(){const el=q1('#sxfCfL');if(!el)return;const tk=todayK(),L=(typeof CF!=='undefined'?CF:[]).filter(x=>x.d===tk).slice(-3).reverse();
   el.innerHTML=L.map(x=>`<div class="q"><span class="num">${x.ok?'✓':'?'}</span><span>${esc2(x.q)}</span></div>`).join('');
@@ -477,9 +542,8 @@ function focSide(){const el=q1('#sxfSide');if(!el)return;const tk=todayK(),m=now
   const left=fRun?(fEnd-Date.now())/1000:fLeft,A=P2.A,line=(SYS.radio[tk]||[]).slice(-1)[0],day=(FO.log[tk]||{min:0}).min;
   el.innerHTML=`<div class="sx2-ph"><h3>This session</h3><p>What the system is watching</p></div>
     <div class="sx2-row"><span>Left the tab</span><b class="num${A.n?' warn':''}">${A.n?`${A.n} time${A.n>1?'s':''} · ${ssm(A.sec)}`:'0 times'}</b></div>
-    <div class="sx2-row"><span>${fRun?'Break at':'Break after'}</span><b class="num">${fRun?hm(m+Math.ceil(left/60)):FMODES[fMode].f+' min'}</b></div>
-    <div class="sx2-row"><span>Focused today</span><b class="num">${fmH(day)} h</b></div>
-    ${line?`<div class="sxf-radio"><span class="num">${line.t}</span>${esc2(line.text)}</div>`:''}`}
+    ${fRun?`<div class="sx2-row"><span>Break at</span><b class="num">${hm(m+Math.ceil(left/60))}</b></div>`:''}
+    ${(()=>{/* round 3: a Focus line of its own (Home already shows today's radio line); focused time is in the race card */const I=sesInfo(),{b}=blockNow();const t=b?(I.tot?`Session ${I.n} of ${I.tot} in this block. One thing at a time; questions go in the box on the left.`:'One session at a time. Questions go in the box on the left.'):'No block now. If you study anyway, pick a subject under the timer and it still counts.';return `<div class="sxf-radio"><span class="num">${hm(nowMin())}</span>${esc2(t)}</div>`})()}`}
 function sesInfo(){const tk=todayK(),{b,cur}=blockNow(),done=(FO.log[tk]||{n:0}).n,per=FMODES[fMode].f+FMODES[fMode].b;
   if(b&&cur){const inB=(SYS.ses[tk]||[]).filter(x=>x[0]>b.s&&x[0]<=b.e).length,tot=Math.max(inB+1,Math.round((b.e-b.s)/per));return{n:inB+1,tot,done}}return{n:done+1,tot:0,done}}
 function focFull(){const D=q1('#sxFoc');if(!D)return;const brk=fPhase==='break',I=sesInfo(),full=!fRun&&fLeft>=fTotal-.5;
@@ -508,7 +572,7 @@ document.addEventListener('visibilitychange',()=>{if(typeof fRun==='undefined')r
 
 /* ================= CALENDAR ================= */
 const CAL_SJ=['phy','chem','maths'];
-function calPost(){if(!isShadow()||typeof curKeys==='undefined'||!curKeys.length)return;const tk=todayK(),m=nowMin(),X=focusNode();document.querySelectorAll('#cBody .col').forEach(c=>{c.querySelector('.sx-pre')?.remove();if(c.dataset.k&&c.dataset.k<dk(START)){const p=document.createElement('div');p.className='sx-pre';p.textContent='Before Day 1';c.appendChild(p)}});document.querySelectorAll('#cBody .ev').forEach(e=>e.classList.toggle('sx-short',e.offsetHeight<56));
+function calPost(){if(!isShadow()||typeof curKeys==='undefined'||!curKeys.length)return;const tk=todayK(),m=nowMin(),X=focusNode();document.querySelectorAll('#cBody .col').forEach(c=>{c.querySelector('.sx-pre')?.remove();if(c.dataset.k&&c.dataset.k<dk(START)){const p=document.createElement('div');p.className='sx-pre';p.textContent='Before Day 1';c.appendChild(p)}});/* days before Day 1 get narrow, dimmed columns so the real days have room (26 Nov 2026) */{const pre=curKeys.filter(k=>k<dk(START)).length,t=pre&&pre<7?`58px repeat(${pre},minmax(0,.4fr)) repeat(${7-pre},minmax(0,1fr))`:'';const h=q1('#cHead'),b=q1('#cBody');if(h)h.style.gridTemplateColumns=t;if(b)b.style.gridTemplateColumns=t;document.querySelectorAll('#cBody .col').forEach(c=>c.classList.toggle('sx-prec',!!(t&&c.dataset.k<dk(START))));document.querySelectorAll('#cHead .dh').forEach(c=>c.classList.toggle('sx-prec',!!(t&&c.dataset.k<dk(START))))}/* blocks under about 55 px tall: one title line, so the time never runs into the next block */document.querySelectorAll('#cBody .ev').forEach(v=>v.classList.toggle('sx-mid',v.offsetHeight>0&&v.offsetHeight<58&&!v.classList.contains('short')&&!v.classList.contains('sx-tiny')));document.querySelectorAll('#cBody .ev').forEach(e=>e.classList.toggle('sx-short',e.offsetHeight<56));
   document.querySelectorAll('#cBody .col').forEach(col=>{const k=col.dataset.k,L=CS.days[k]||[],by=new Map(L.map(e=>[String(e.id),e]));
     const evs=[...col.querySelectorAll('.ev')].map(el=>({el,e:by.get(el.dataset.id)})).filter(x=>x.e).sort((a,b)=>a.e.s-b.e.s);
     let run=[];const flush=()=>{if(run.length>1){const f=run[0],l=run[run.length-1];f.el.style.height=Math.max(12,(l.e.e-f.e.s)/60*HH-2)+'px';f.el.classList.add('sx-merge');
@@ -524,11 +588,11 @@ function calSide(){const side=q1('#calPage .cside');if(!side)return;let box=side
   const keys=curKeys,tk=todayK(),hrs={phy:0,chem:0,maths:0};let st=0,sd=0,ch=0,cd=0,foc=0;
   for(const k of keys){for(const e of CS.days[k]||[]){if(!isStudy(e))continue;if(hrs[e.subj]!=null)hrs[e.subj]+=(e.e-e.s)/60;st++;if(e.done)sd++;if(e.kind==='class'){ch+=(e.e-e.s)/60;if(e.done)cd+=(e.e-e.s)/60}}foc+=((FO.log||{})[k]||{min:0}).min}
   const nf=x=>+x.toFixed(1);
-  document.querySelectorAll('#calPage .filt label').forEach(l=>{const f=l.querySelector('input')?.dataset.f;let b=l.querySelector('.sx-h');if(!b){b=document.createElement('b');b.className='sx-h num';l.appendChild(b)}b.textContent=hrs[f]!=null?nf(hrs[f])+' h':''});
+  document.querySelectorAll('#calPage .filt label').forEach(l=>{const f=l.querySelector('input')?.dataset.f;let b=l.querySelector('.sx-h');if(!b){b=document.createElement('b');b.className='sx-h num';l.appendChild(b)}b.textContent=hrs[f]!=null?fmH(hrs[f]*60)+' h':''});
   const owe=[];for(const k in CS.days)for(const e of CS.days[k])if(e.cu&&!e.done)owe.push(e);const oh=owe.reduce((a,e)=>a+(e.e-e.s),0),due=owe.map(e=>e.cu.due).sort()[0],late=owe.filter(e=>e.date<tk).length;
   const wkLab=keys[0]<=tk&&tk<=keys[6]?'This week':'That week';
-  box.innerHTML=`<section class="card sx2-cu"><h2>Catch-up owed</h2><div class="big num">${fmH(oh)}</div><p>${owe.length?`${owe.length} block${owe.length>1?'s':''} · due by ${fmtD(due)}${late?` · <b class="warn">${late} overdue</b>`:''}`:'Nothing owed. Keep it that way.'}</p></section>
-    <section class="card sx2-wk"><h2>${wkLab}</h2><div class="sx2-row"><span>Blocks done</span><b class="num">${sd} / ${st}</b></div><div class="sx2-row"><span>Class hours</span><b class="num">${nf(cd)} / ${nf(ch)}</b></div><div class="sx2-row"><span>Focus, verified</span><b class="num">${fmH(foc)} h</b></div></section>`;
+  box.innerHTML=`<section class="card sx2-cu${owe.length?'':' zero'}"><h2>Catch-up owed${owe.length?'':' <b class="num">0:00</b>'}</h2>${owe.length?`<div class="big num">${fmH(oh)}</div>`:''}<p>${owe.length?`${owe.length} block${owe.length>1?'s':''} · due by ${fmtD(due)}${late?` · <b class="warn">${late} overdue</b>`:''}`:'Nothing owed. Keep it that way.'}</p></section>
+    <section class="card sx2-wk"><h2>${wkLab} <small class="sx-wkn">done / planned, Mon to Sun</small></h2><div class="sx2-row"><span>Study blocks</span><b class="num">${sd} / ${st}</b></div><div class="sx2-row"><span>Class hours</span><b class="num">${fmH(cd*60)} / ${fmH(ch*60)}</b></div><div class="sx2-row"><span>Focus, verified so far</span><b class="num">${fmH(foc)} h</b></div></section>`;
   const bar=q1('#calPage .cbar');if(bar&&!bar.querySelector('#sxLinks')){const b=document.createElement('button');b.id='sxLinks';b.type='button';b.className='tbtn sx2-only';bar.querySelector('#cFs')?.before(b);b.addEventListener('click',()=>{P2.links=!P2.links;P2.lkScrolled=0;calLinks()})}
   /* the block he clicks becomes the selected block for the links view (24 Nov 2026, his request); none selected = the current block */
   const cbd=q1('#cBody');if(cbd&&!cbd.dataset.sxSel){cbd.dataset.sxSel='1';cbd.addEventListener('click',ev=>{if(!isShadow())return;const el=ev.target.closest('.ev'),col=el&&el.closest('.col');if(!el||!col)return;P2.sel={k:col.dataset.k,id:String(el.dataset.id)};P2.lkScrolled=1;if(P2.links)calLinks()})}
@@ -554,17 +618,19 @@ function libUnit(u,tk,X){const bl=unitBlocks(u.k),d=bl.filter(e=>e.done).length,
   if(X&&X.date===tk&&X.unit===u.k)st='now';else if(bl.some(e=>e.date===tk&&!e.done))st='today';else if(bl.length&&d===bl.length)st='done';else if(!nx&&bl.length)st='late';else if(d||(bl[0]&&bl[0].date<tk))st='prog';
   return{u,bl,d,xs,xd,nx,st}}
 const stLab=(I)=>({now:'NOW',today:'CLASS TODAY',prog:'IN PROGRESS',late:'OVERDUE',done:'DONE'})[I.st]||(I.nx?'NEXT '+fmtD(I.nx.date).toUpperCase():'NOT IN PLAN');
-function libCard(I){const{u,bl,d,xs,xd}=I,nd=unitNeeds(u.k).filter(k=>UNIT_BY[k]),ul=unitUnlocks(u.k).filter(k=>!isX(UNIT_BY[k])),ok=k=>{const b=unitBlocks(k);return b.length&&b.every(e=>e.done)};
+function libCard(I){const{u,bl,d,xs,xd}=I,nd=unitNeedsMain(u.k),ul=unitUnlocksMain(u.k),ok=k=>{const b=unitBlocks(k);return b.length&&b.every(e=>e.done)};
   return `<article class="sxl-card st-${I.st}" style="--sj:${SJC[u.subj]}"><button type="button" class="lb-main sxl-main" data-u="${u.k}" aria-expanded="false">
     <div class="t"><div><h4 class="si">${esc2(u.si)}</h4><div class="en"><i class="sx2-dot"></i>${esc2(u.en)}</div></div><span class="state num">${stLab(I)}</span></div>
     <div class="segs">${segHtml(Math.min(bl.length,30)||1,bl.length?Math.round(d/bl.length*Math.min(bl.length,30)):0)}</div>
-    <div class="m"><span><b class="num">${d}</b> / ${bl.length} days</span>${xs.length?`<span>+ extras <b class="num">${xd}/${xs.length}</b></span>`:''}${u.tag?`<span>${esc2(u.tag)}</span>`:''}${cfOpen(u.k)?`<span class="cfq">? ${cfOpen(u.k)} open</span>`:''}</div>
-    ${nd.length||ul.length?`<div class="dep">${nd.map(k=>`<span class="chip${ok(k)?' ok':''}">${ok(k)?'✓ ':''}needs ${esc2(UNIT_BY[k].en.replace(/ extras$/,''))}</span>`).join('')}${ul.slice(0,2).map(k=>`<span class="chip">unlocks ${esc2(UNIT_BY[k].en)}</span>`).join('')}</div>`:''}</button></article>`}
+    <div class="m"><span><b class="num">${d}</b> / ${bl.length} ${bl.length===1?'day':'days'}</span>${xs.length?`<span>+ extras <b class="num">${xd}/${xs.length}</b></span>`:''}${(()=>{/* exam share from the same source as the map (WEIGHTS), on every Physics and Chemistry card */const sh=u.subj==='maths'?null:shareOf(u,u.subj);return sh?`<span>${sh.ap?'≈':''}${sh.v}% of Paper I</span>`:u.subj==='maths'?'':`<span>share not measured</span>`})()}${cfOpen(u.k)?`<span class="cfq">? ${cfOpen(u.k)} open</span>`:''}</div>
+    ${nd.length||ul.length?`<div class="dep">${nd.map(k=>`<span class="chip${ok(k)?' ok':''}">${ok(k)?'✓ ':''}needs ${esc2(UNIT_BY[k].en.replace(/ extras$/,''))}</span>`).join('')}${ul.slice(0,ul.length>3?2:3).map(k=>`<span class="chip">unlocks ${esc2(UNIT_BY[k].en)}</span>`).join('')}${ul.length>3?`<span class="chip" title="${esc2(ul.slice(2).map(k=>UNIT_BY[k].en).join(', '))}">+${ul.length-2} more unlocks</span>`:''}</div>`:''}</button></article>`}
 function libShadow(){const box=q1('#lbList');if(!box)return;const tk=todayK(),X=focusNode();let ok=lbOpen&&UNIT_BY[lbOpen];if(ok&&isX(UNIT_BY[lbOpen]))lbOpen=lbOpen.slice(0,-1);
   const I=CLASSES.filter(u=>u.subj===lbS&&!isX(u)).map(u=>libUnit(u,tk,X));
   if(lbOpen&&UNIT_BY[lbOpen]){box.innerHTML=libOpen(I.find(x=>x.u.k===lbOpen)||libUnit(UNIT_BY[lbOpen],tk,X),tk,X);return}
   const prog=I.filter(x=>['now','late','today','prog'].includes(x.st)).sort((a,b)=>['now','late','today','prog'].indexOf(a.st)-['now','late','today','prog'].indexOf(b.st)),nx=I.filter(x=>x.st==='next').sort((a,b)=>(a.nx?.date||'9')<(b.nx?.date||'9')?-1:1),dn=I.filter(x=>x.st==='done');
-  box.innerHTML=`<div class="sxl-grid">${prog.length?`<div class="sxl-sect">In progress</div>${prog.map(libCard).join('')}`:''}${nx.length?`<div class="sxl-sect">Coming up</div>${nx.map(libCard).join('')}`:''}${dn.length?`<div class="sxl-sect">Done</div>${dn.map(libCard).join('')}`:''}</div>`}
+  box.innerHTML=`<div class="sxl-grid">${prog.length?`<div class="sxl-sect">In progress</div>${prog.map(libCard).join('')}`:''}${nx.length?`<div class="sxl-sect">Coming up</div>${nx.map(libCard).join('')}`:''}${dn.length?`<div class="sxl-sect">Done</div>${dn.map(libCard).join('')}`:''}</div>`;
+  /* round 3: a long unit name shrinks a little to stay on one line, so every card in a row lines up */
+  requestAnimationFrame(()=>box.querySelectorAll('.sxl-card .t h4').forEach(h=>{h.style.fontSize='';let f=parseFloat(getComputedStyle(h).fontSize),n=0;while(h.scrollWidth>h.clientWidth+1&&f>14&&n++<12){f-=1;h.style.fontSize=f+'px'}}))}
 function libOpen(I,tk,X){const{u,bl,d,xs,xd,nx}=I,k=u.k,rec=REC[u.rec||k]||'',S=(window.SUMMARY||{})[k],st=typeof STORY!=='undefined'&&STORY[k];
   const tabs=[['days','Days'],S?['sum','සාරාංශය']:null,st?['story','Story']:null,['fb','Formulas'],['qb','Past questions'],['cf','Confused'+(cfOpen(k)?' · '+cfOpen(k):'')]].filter(Boolean);
   let t=P2.tab[k]||'days';if(!tabs.some(x=>x[0]===t))t='days';
@@ -599,7 +665,7 @@ function mapData(){const s=lbS,U=lmUnits(s),by=Object.fromEntries(U.map(u=>[u.k,
   let cur=X&&X.date===tk?(M?(X.subj==='maths'?'m:'+tk.slice(0,7):null):(X.unit||'').replace(/x$/,'')):null;
   const st={};U.forEach(u=>{st[u.k]=lmState(u,tk,by)[0]});if(!cur||!by[cur])cur=(U.find(u=>st[u.k]==='now')||{}).k||null;
   const dep={},D=(k,v=new Set())=>{if(dep[k]!=null)return dep[k];if(v.has(k))return 0;v.add(k);return dep[k]=Math.max(-1,...by[k].d.filter(x=>by[x]).map(x=>D(x,v)))+1};
-  const NW=250,NH=112,GX=316,GY=134,pos={};
+  const NW=222,NH=112,GX=262,GY=130,pos={};/* round 3: narrower columns so the whole width fits at 85% on a 1366 screen */
   if(M)U.forEach((u,i)=>pos[u.k]=[40+(i%5)*GX,40+Math.floor(i/5)*(GY+40)]);
   else{U.forEach(u=>D(u.k));const cols={};U.forEach(u=>(cols[dep[u.k]]=cols[dep[u.k]]||[]).push(u));
     Object.keys(cols).map(Number).sort((a,b)=>a-b).forEach(c=>{cols[c].sort((a,b)=>((a.bl[0]||{}).date||'9')<((b.bl[0]||{}).date||'9')?-1:1).forEach((u,r)=>pos[u.k]=[40+c*GX,40+r*GY])})}
@@ -627,13 +693,13 @@ function mapSide(k){const D=SM.D,u=D&&D.by[k];if(!u)return '';const sv=k===D.cur
     ${sh?`<div class="sx2-row"><span>Share of Paper I</span><b class="num">${sh.ap?'≈':''}${sh.v}%</b></div>`:''}${!D.M?`<div class="sx2-row"><span>Mastery</span><b class="num">${ms!=null?ms+'%':'not tried'}</b></div>`:''}
     <div class="lbl">Needs</div><div class="chips">${ch(u.d.filter(x=>D.by[x]).map(x=>D.by[x]))}</div><div class="lbl">Unlocks</div><div class="chips">${ch(kids)}</div>
     ${D.M?'':`<button type="button" class="sx2-btn sxm-open" data-mopen="${esc2(k)}">Open unit card</button>`}`}
-function mapApply(){const w=q1('#sxmW');if(!w)return;const V=SM.V;w.style.transform=`translate(${V.x}px,${V.y}px) scale(${V.k})`;q1('#sxmZ').textContent=Math.round(V.k*100)+'%';q1('#sxm').classList.toggle('ov',V.k<.7)}
+function mapApply(){const w=q1('#sxmW');if(!w)return;const V=SM.V;w.style.transform=`translate(${V.x}px,${V.y}px) scale(${V.k})`;q1('#sxmZ').textContent=Math.round(V.k*100)+'%';q1('#sxm').classList.toggle('ov',V.k<.62)}
 function mapClamp(){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,w=D.W*V.k,h=D.H*V.k,cw=vp.clientWidth,chh=vp.clientHeight;
   V.x=w<=cw?(cw-w)/2:Math.min(0,Math.max(cw-w,V.x));V.y=h<=chh?Math.min((chh-h)/2,20):Math.min(0,Math.max(chh-h,V.y))}
 function mapZoom(f,cx,cy){const vp=q1('#sxmVp'),V=SM.V;if(cx==null){cx=vp.clientWidth/2;cy=vp.clientHeight/2}const k=Math.min(1.6,Math.max(.4,V.k*f));V.x=cx-(cx-V.x)*k/V.k;V.y=cy-(cy-V.y)*k/V.k;V.k=k;mapClamp();mapApply()}
 function mapFit(centre){const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,f=Math.min(vp.clientWidth/D.W,vp.clientHeight/D.H);V.k=centre?1:Math.min(1,f);
   const c=D.pos[SM.sel[D.s]];V.x=0;V.y=0;if(centre&&c&&V.k>f){if((c[0]+D.NW)*V.k>vp.clientWidth*.85)V.x=vp.clientWidth/2-(c[0]+D.NW/2)*V.k;V.y=vp.clientHeight/2-(c[1]+D.NH/2)*V.k}mapClamp();mapApply()}
-function mapRender(){const box=q1('#lbList');if(!box)return;box.innerHTML=mapHtml();requestAnimationFrame(()=>mapFit(true))}
+function mapRender(){const box=q1('#lbList');if(!box)return;box.innerHTML=mapHtml();/* round 3: opens at the zoom where every unit fits, never below 85% (labels stay 11 px and up); if it still doesn't fit, centred on today's unit */requestAnimationFrame(()=>{const vp=q1('#sxmVp'),D=SM.D;if(!vp||!D)return;const V=SM.V,f=Math.min((vp.clientWidth-16)/D.W,(vp.clientHeight-16)/D.H);V.k=Math.max(.85,Math.min(1,f));V.x=0;V.y=0;const c=D.pos[SM.sel[D.s]];if(c&&(D.W*V.k>vp.clientWidth||D.H*V.k>vp.clientHeight)){V.x=vp.clientWidth/2-(c[0]+D.NW/2)*V.k;V.y=vp.clientHeight/2-(c[1]+D.NH/2)*V.k}mapClamp();mapApply()})}
 function mapWire(){document.addEventListener('click',e=>{if(!isShadow()||!q1('#sxm'))return;
     const z=e.target.closest('[data-mz]');if(z){const v=z.dataset.mz;if(v==='in')mapZoom(1.2);else if(v==='out')mapZoom(1/1.2);else if(v==='fit')mapFit(false);else{SM.fs=!SM.fs;q1('#sxm').classList.toggle('fs',SM.fs);document.body.classList.toggle('sx-mapfs',SM.fs);z.textContent=SM.fs?'Exit full screen':'Full screen';requestAnimationFrame(()=>mapFit(true))}return}
     const o=e.target.closest('[data-mopen]');if(o){SM.fs=false;document.body.classList.remove('sx-mapfs');lbV='cards';try{lsSet(LVKEY,'cards')}catch(x){}lbOpen=o.dataset.mopen;renderLibrary();return}
@@ -654,10 +720,8 @@ function p2refresh(){bars();barTick();const pg=pageOf();if(!isShadow())return;
 function p2boot(){p2wrap();mapWire();bars();focBuild();
   document.addEventListener('click',e=>{const g=e.target.closest('[data-sxgo]');if(g){goP(g.dataset.sxgo);return}
     const bk=e.target.closest('[data-sxback]');if(bk){lbOpen=null;renderLibrary();return}const t=e.target.closest('[data-sxt]');if(t){const[k,v]=t.dataset.sxt.split('|');P2.tab[k]=v;renderLibrary();if(!e.detail)q1('.sxl-tabs [aria-selected="true"]')?.focus()}});
-  const sigC=()=>pageOf()+'|'+isShadow();let last=sigC();
-  const mo=new MutationObserver(()=>{const s=sigC();if(s===last)return;const wasSh=last.endsWith('true');last=s;const pg=pageOf();
-    if(isShadow()){if(pg)p2refresh();return}
-    if(wasSh){q1('#sxLk')?.remove();q1('#cBody')?.classList.remove('sx-lk');try{renderWeek();renderLibrary()}catch(e){}}});
+  let last=pageOf();
+  const mo=new MutationObserver(()=>{const pg=pageOf();if(pg===last)return;last=pg;if(pg)p2refresh()});
   mo.observe(document.body,{attributes:true,attributeFilter:['class']});mo.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
   setInterval(()=>{if(!isShadow())return;const pg=pageOf();if(pg==='foc')focTick()},250);
   setInterval(()=>{if(!isShadow())return;barTick();const pg=pageOf();if(pg==='foc'){logSessions();focFull()}if(pg==='cal'&&P2.links)calLinks()},20000);
@@ -666,12 +730,11 @@ function p2boot(){p2wrap();mapWire();bars();focBuild();
 
 /* ---------- boot ---------- */
 function boot(){const main=document.querySelector('main');if(!main)return;if(isShadow())fonts();box=document.createElement('div');box.id='shx';box.setAttribute('aria-label','Shadow Protocol home');const top=main.querySelector(':scope>.top');top?top.after(box):main.prepend(box);
-  const b=document.getElementById('modeBtn');if(b)b.setAttribute('aria-pressed',isShadow());
   render(true);sleepGuard();p2boot();
   new MutationObserver(()=>{if(onHome()){if(!box.querySelector('.sx-grid'))render(true);else{render();drawGraph(true);wave()}}}).observe(document.body,{attributes:true,attributeFilter:['class']});
   const rows=document.getElementById('rows');if(rows)new MutationObserver(()=>render()).observe(rows,{childList:true,subtree:true,attributes:true});
   setInterval(()=>{if(logSessions()&&onHome())render()},15000);logSessions();snapMB();setInterval(()=>{snapMB();if(!document.hidden)render()},20000);
   /* tests and the demo button need a way to fire moments by hand */
-  window.ShadowProtocol={totals,levelOf,rankOf,ledger,trajectory,XP,RANKS,setMode,render:()=>render(true),openFull,closeFull,fitAll,zoomC,graphAll,homeGraph,shadow,logSessions,lvSeq:(u)=>{const T=totals(),lv=levelOf(T.tot);lvSeq(!!u,Math.max(1,lv.L-1),lv,rankOf(lv.L))}}}
+  window.ShadowProtocol={totals,levelOf,rankOf,ledger,trajectory,XP,RANKS,openDue,dueOf,render:()=>render(true),openFull,closeFull,fitAll,zoomC,graphAll,homeGraph,shadow,logSessions,lvSeq:(u)=>{const T=totals(),lv=levelOf(T.tot);lvSeq(!!u,Math.max(1,lv.L-1),lv,rankOf(lv.L))}}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();

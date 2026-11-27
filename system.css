@@ -10,11 +10,10 @@ html.shadow{--sx-bg:#0a0b0a;--sx-p1:#121413;--sx-p2:#181b19;--sx-p3:#1f2320;--sx
 html.shadow body{background:var(--sx-bg);font-weight:400}
 html.shadow body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(rgba(255,255,255,.055) 1px,transparent 1.2px) 0 0/22px 22px;-webkit-mask:radial-gradient(ellipse at 50% 40%,#000 30%,transparent 80%);mask:radial-gradient(ellipse at 50% 40%,#000 30%,transparent 80%)}
 html.shadow .card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.008)),var(--sx-p1);border-color:var(--sx-ln);border-radius:18px;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 1px rgba(255,255,255,.06),0 20px 40px -20px rgba(0,0,0,.6)}
-html.shadow #modeBtn{color:var(--sx-acc)}
 html.shadow body>.bg{background:none!important;opacity:0}
 html.shadow #toast,html.shadow #calToast,html.shadow #daySheet,html.shadow #fin,html.shadow #calPop,html.shadow #bellPanel{background:rgba(18,20,19,.97)!important;border-color:var(--sx-ln2)!important}
 html.shadow #quiz,html.shadow #fqz,html.shadow #mmock{background:rgba(6,7,6,.8)!important}
-html.shadow #ex,html.shadow #hall{background:var(--sx-bg)!important}
+html.shadow #hall{background:var(--sx-bg)!important}
 
 /* ================= HOME in Shadow mode ================= */
 html.shadow body:not(.page-cal):not(.page-rep):not(.page-pap):not(.page-foc):not(.page-lib):not(.page-wo) main>.grid{display:none}
@@ -158,9 +157,6 @@ html.shadow #shx{grid-template-rows:48px 1fr;height:calc(100vh - 26px);min-heigh
 .sx-lv .sxl-rkn::after{content:'';position:absolute;inset:-6px -40px;background:linear-gradient(100deg,transparent 40%,rgba(255,255,255,.75) 50%,transparent 60%) var(--sx,-200%) 0/200% 100% no-repeat;mix-blend-mode:overlay}
 .sx-lv .sxl-nx{margin-top:10px;font-size:14px;color:#a6ada8;opacity:0}
 .sx-lv .sxl-skip{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);font-size:12.5px;color:#6b736d}
-.sh-scan{position:fixed;inset:0;z-index:9999;pointer-events:none;background:linear-gradient(180deg,transparent 0,rgba(125,255,168,0) 40%,rgba(125,255,168,.28) 50%,rgba(125,255,168,0) 60%,transparent 100%);background-size:100% 300%;animation:shScan .7s cubic-bezier(.6,0,.3,1) forwards}
-.sh-scan::after{content:'';position:absolute;inset:0;background:#0a0b0a;animation:shDim .7s ease forwards}
-@keyframes shScan{from{background-position:0 100%}to{background-position:0 0}}@keyframes shDim{0%{opacity:0}40%{opacity:.6}100%{opacity:0}}
 .sh-ov{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;background:rgba(8,9,8,.9);backdrop-filter:blur(10px);opacity:0;transition:opacity .3s;cursor:pointer;color:#eceeec;font-family:'Geist',system-ui,sans-serif}
 .sh-ov.on{opacity:1}.sh-ov .sh-k{font:500 12px 'Geist Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#7dffa8}
 .sh-first{text-align:center;max-width:460px;padding:24px}.sh-first h2{font:300 34px/1.2 'Geist',system-ui,sans-serif;margin:12px 0}.sh-first p{font:400 14px/1.6 'Geist',system-ui,sans-serif;color:#a6ada8}
@@ -170,7 +166,7 @@ html.shadow #shx{grid-template-rows:48px 1fr;height:calc(100vh - 26px);min-heigh
 .sx-pop label{display:block;font-size:12.5px;color:#a6ada8;margin-bottom:10px}
 .sx-pop input,.sx-pop textarea{display:block;width:100%;box-sizing:border-box;margin-top:4px;font:400 14px 'Geist',system-ui,sans-serif;color:#eceeec;background:#0a0b0a;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:8px 10px;resize:vertical}
 .sx-pop .sx-go{margin-top:6px;padding:8px 18px;font-size:13.5px}
-@media (prefers-reduced-motion:reduce){html.shadow *,html.shadow *::before,html.shadow *::after,.sx-bpf,.sx-toast,.sh-ov{animation:none!important;transition:none!important}.sh-scan{display:none}}
+@media (prefers-reduced-motion:reduce){html.shadow *,html.shadow *::before,html.shadow *::after,.sx-bpf,.sx-toast,.sh-ov{animation:none!important;transition:none!important}}
 
 /* ---- pre-merge fixes: node tip, full-screen scroll bar, The Record strip ---- */
 .sx-nd{cursor:pointer}.sx-nd:focus-visible{outline:2px solid #7dffa8;outline-offset:2px}
@@ -364,10 +360,13 @@ html.shadow #libPage .lb-map,html.shadow #libPage .lm-wrap{color:var(--sx-ink)}
 @media (max-height:820px){#sxFoc .sxf-t{font-size:19px}#sxFoc .sx2-pl{padding:13px 16px}#sxFoc #sxfRing{width:min(360px,46vh);height:min(360px,46vh)}#sxFoc .sxf-ch .c{padding:3px 0 3px 22px}#sxFoc .sxf-ch .c::before{top:9px}}
 @media (prefers-reduced-motion:reduce){.sxl-main,.sx2-btn,#sxFoc #sxfRing .t{transition:none}.sxl-main:hover{transform:none}}
 /* the old Home header: only the bell stays, top right, like Shadow Home */
-html.shadow body.page-foc main>.top,html.shadow body.page-cal main>.top,html.shadow body.page-lib main>.top{position:absolute;right:30px;top:12px;z-index:6;margin:0;padding:0;display:block!important;min-height:0}
-html.shadow body.page-foc main>.top>:not(.corner),html.shadow body.page-cal main>.top>:not(.corner),html.shadow body.page-lib main>.top>:not(.corner),
+html.shadow body.page-foc main>.top,html.shadow body.page-cal main>.top,html.shadow body.page-lib main>.top,html.shadow body.page-pap main>.top,html.shadow body.page-rep main>.top{position:absolute;right:30px;top:12px;z-index:6;margin:0;padding:0;display:block!important;min-height:0}
+html.shadow body.page-foc main>.top>:not(.corner),html.shadow body.page-cal main>.top>:not(.corner),html.shadow body.page-lib main>.top>:not(.corner),html.shadow body.page-pap main>.top>:not(.corner),html.shadow body.page-rep main>.top>:not(.corner),
+html.shadow body.page-pap main>.top .corner>:not(.bwrap),html.shadow body.page-rep main>.top .corner>:not(.bwrap),
 html.shadow body.page-foc main>.top .corner>:not(.bwrap),html.shadow body.page-cal main>.top .corner>:not(.bwrap),html.shadow body.page-lib main>.top .corner>:not(.bwrap){display:none!important}
-html.shadow body.page-foc main,html.shadow body.page-cal main,html.shadow body.page-lib main{position:relative}
+html.shadow body.page-foc main,html.shadow body.page-cal main,html.shadow body.page-lib main,html.shadow body.page-pap main,html.shadow body.page-rep main{position:relative}
+/* Papers and Report get the shared top bar (26 Nov 2026); the big page title gives way to it, the subtitle and subject switch stay */
+html.shadow #papPage .pp-top .rp-h,html.shadow #repPage .rp-top .rp-h{display:none}
 html.shadow body.page-foc #baku,html.shadow body.page-cal #baku,html.shadow body.page-lib #baku{display:none}
 html.shadow .tbtn2{color:var(--sx-i2);background:var(--sx-p2);box-shadow:inset 0 0 0 1px var(--sx-ln)}html.shadow .tbtn2:hover{color:var(--sx-ink)}
 .sxl-main{display:flex;flex-direction:column;justify-content:flex-start}
@@ -443,9 +442,7 @@ html.shadow #shx #sxXp i.f{background:var(--sx-ink)}
 html.shadow #shx .sx-mt .x{color:var(--sx-i3)}
 html.shadow #shx .sx-m:not(.mib) .sx-segs i.f{background:var(--sx-i2)}
 html.shadow #sxFoc #sxfCf .in{align-items:center}html.shadow #sxFoc #sxfCf .in input,html.shadow #sxFoc #sxfCf .in .sx2-btn{height:40px;box-sizing:border-box;margin:0}
-html.shadow #woPage #pUndo{color:var(--sx-i2);background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12)}
 html.shadow #cBody .col .sx-pre{position:absolute;left:0;right:0;top:14px;text-align:center;font:500 10.5px var(--sx-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--sx-i3);pointer-events:none}
-html:not(.shadow) .sx-pre{display:none}
 html.shadow .aw-l{margin:0 0 14px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.03);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}html.shadow .aw-l h4{font-size:13px;color:var(--sx-ink)}html.shadow .aw-r b{color:var(--sx-i2);font-family:var(--sx-mono);font-weight:400}
 
 /* 18 Nov 2026 release round 3 polish */
@@ -456,9 +453,6 @@ html.shadow #sxFoc .sxf-later .si{display:-webkit-box;-webkit-line-clamp:2;-webk
 html.shadow #shx .sx-weak div span:first-child{white-space:nowrap;font-size:13.5px}html.shadow #shx .sx-weak div{gap:6px}
 html.shadow #shx .sx-weak{min-width:0}html.shadow #shx .sx-weak div span:first-child{overflow:hidden;text-overflow:ellipsis;min-width:0}html.shadow #shx .sx-weak div span:last-child{flex:none}/* fix 24 Nov 2026: long unit names pushed "untried" out of the Mastery card at 1366 px */
 html.shadow .sxl-open{align-items:start}html.shadow .sxl-open>.sxl-main2{min-height:0}
-html.shadow #woPage .si{font-family:var(--font),'Noto Sans Sinhala','Iskoola Pota',sans-serif}
-html.shadow #woPage #wkStrip{display:none}
-html.shadow #woPage .c-week .wbr{height:64px}
 html.shadow #cBody .ev .tg{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html.shadow .sxl-qb{margin-top:16px}html.shadow .sxl-qb .qb{padding:12px 0 0;border-top:1px solid rgba(255,255,255,.07)}html.shadow .sxl-qb .qb h4{font-size:13px;font-weight:500;margin:0 0 6px}html.shadow .sxl-qb .qb-r b{font-family:var(--sx-mono);font-weight:400;color:var(--sx-i2)}html.shadow .sxl-qb .qb-r span{color:var(--sx-i2)}html.shadow .sxl-qb a{color:var(--sx-ink)}
 html.shadow #shx .sx-rest{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07)}html.shadow #shx .sx-rest h4{margin:0 0 6px;font:500 12.5px var(--font);color:var(--sx-i3)}html.shadow #shx .sx-rest>div{display:grid;grid-template-columns:42px 12px minmax(0,1fr);gap:6px;align-items:baseline;padding:6px 0;font-size:13.5px;color:var(--sx-i2);border-top:1px solid rgba(255,255,255,.05)}html.shadow #shx .sx-rest .num{font:400 12px var(--sx-mono);color:var(--sx-i3)}html.shadow #shx .sx-rest .si{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}html.shadow #shx .sx-rest .sx2-dot{align-self:center}
@@ -466,9 +460,146 @@ html.shadow #shx .sx-rest{margin-top:14px;padding-top:12px;border-top:1px solid 
 html.shadow body.page-wo main>.top{position:absolute;right:30px;top:12px;z-index:6;margin:0;padding:0;display:block!important;min-height:0}
 html.shadow body.page-wo main>.top>:not(.corner),html.shadow body.page-wo main>.top .corner>:not(.bwrap){display:none!important}
 html.shadow body.page-wo main{position:relative;padding-top:12px}
-html:not(.shadow) #woPage>.sx2-barw{display:none}
 html.shadow #woPage>.sx2-barw{grid-column:1/-1}
 html.shadow #woPage .pp-top .rp-h{display:none}html.shadow #woPage .pp-top{margin:0 0 10px}html.shadow #woPage #phaseLine{margin:0;color:var(--sx-i3)}
-html.shadow #woPage .c-week .wbr{height:44px}
 html.shadow #cBody .ev.sx-short .tg{display:none}
-html.shadow #woPage #tdName{text-shadow:none!important}
+/* ---- due now (night review, recall check) and class finish line: restored 25 Nov 2026 when Shadow became the only UI ---- */
+#shx .sx-due{display:flex;flex-direction:column;gap:6px;margin:0 0 8px}
+#shx .sx-du{display:flex;align-items:center;gap:12px;padding:8px 10px 8px 12px;border-radius:12px;background:rgba(255,255,255,.03);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+#shx .sx-du.now{box-shadow:inset 0 0 0 1px rgba(125,255,168,.45)}
+#shx .sx-du .w{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
+#shx .sx-du .k{font:500 10.5px var(--sx-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--sx-i2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#shx .sx-du b{font-weight:500;font-size:13.5px;color:var(--sx-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#shx .sx-du-b{border:0;cursor:pointer;font:500 12.5px var(--font);padding:5px 12px;border-radius:999px;background:var(--sx-p2);color:var(--sx-ink);box-shadow:0 0 0 1px var(--sx-ln2);flex:none}
+#shx .sx-du-b:hover{background:var(--sx-p3)}
+#shx .sx-du .sx-go{flex:none}
+#shx .sx-fin{display:flex;align-items:baseline;gap:8px;margin-top:10px;padding-top:9px;border-top:1px solid var(--sx-ln);font-size:12px;color:var(--sx-i2)}
+#shx .sx-fin b{font-weight:500;color:var(--sx-ink)}#shx .sx-fin b.late{color:#ff8a7a}
+#shx .sx-fin small{margin-left:auto;color:var(--sx-i3);font-size:11.5px;white-space:nowrap}
+.sx-dlg .card2{width:min(480px,92vw);max-height:86vh;overflow:auto;box-sizing:border-box}
+.sx-dlg .sx-dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font:500 11px 'Geist Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#a6ada8}
+.sx-dlg [data-dlgx]{border:0;background:none;color:#a6ada8;font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;border-radius:8px}
+.sx-dlg [data-dlgx]:hover{color:#eceeec;background:rgba(255,255,255,.06)}
+.sx-dlg h3.si{font-size:16px;line-height:1.5;margin:0 0 14px}
+.sx-dlg .nr{margin:0;padding:0;border:0;background:none;gap:16px}
+.sx-dlg .nr-h b{font:600 17px 'Geist',system-ui,sans-serif;color:#eceeec}
+.sx-dlg .nr-h span{color:#6b736d}
+.sx-dlg .nr-f{color:#a6ada8;font-size:12.5px;margin:0}
+.sx-dlg .nr-f input[type=number]{width:110px}
+.sx-dlg .nr-f em{color:#cfd4d0}
+.sx-dlg label.nr-c{display:flex;align-items:center;gap:9px;margin:0;color:#cfd4d0;font-size:13px;line-height:1.45}
+.sx-dlg .nr-c input{display:inline-block;width:auto;margin:0;flex:none;accent-color:#eceeec}
+.sx-dlg .nr-b{gap:10px}
+.sx-dlg .nr-b button{color:#eceeec;background:#1a1d1b;border:1px solid rgba(255,255,255,.12);font:500 13.5px 'Geist',system-ui,sans-serif;padding:9px 18px;cursor:pointer}
+.sx-dlg .nr-b button:hover{background:#222624}
+.sx-dlg .nr-b .pri{background:#eceeec;color:#0a0b0a;border-color:#eceeec}
+.sx-dlg .nr-b .pri:hover{background:#fff}
+.sx-dlg .rate{margin:0;padding:0;border:0;background:none;color:#a6ada8;font-size:13px;gap:10px}
+.sx-dlg .rate>span{flex-basis:100%}
+.sx-dlg .rate button{width:44px;height:44px;background:#1a1d1b;border:1px solid rgba(255,255,255,.12);color:#eceeec;font:500 15px 'Geist Mono',monospace}
+.sx-dlg .rate button:hover,.sx-dlg .rate button.on{background:#eceeec;color:#0a0b0a}
+.sx-dlg .rate small{color:#6b736d}
+/* ---- Calendar: Already did a class (26 Nov 2026) ---- */
+.sx-dlg .card2.sx-ea{width:min(640px,94vw);display:flex;flex-direction:column;max-height:88vh;overflow:hidden}
+.sx-ea .sx-cap{margin:0 0 12px;line-height:1.5}
+.sx-ea .ea-q{margin:0 0 10px}
+.sx-ea .ea-l{flex:1;min-height:180px;overflow:auto;margin:0 -6px;padding:0 6px;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}
+.sx-ea .ea-s{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:8px;padding:12px 4px 8px;background:#121413;font:500 11px 'Geist Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#a6ada8}
+.sx-ea .ea-s span{margin-left:auto;color:#6b736d;letter-spacing:.04em}
+.sx-ea .ea-u{display:flex;align-items:baseline;gap:10px;padding:10px 4px 4px;color:#cfd4d0;font-size:13px}
+.sx-ea .ea-u small{color:#6b736d;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-ea .ea-i{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:none;color:#eceeec;padding:8px 10px;border-radius:10px;cursor:pointer;font:400 13.5px 'Geist',system-ui,sans-serif}
+.sx-ea .ea-i .si{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-ea .ea-i .num{flex:none;color:#8b928d;font:400 12px 'Geist Mono',monospace}
+.sx-ea .ea-i:hover{background:rgba(255,255,255,.05)}
+.sx-ea .ea-i.on{background:rgba(255,255,255,.09);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+.sx-ea .ea-n{color:#8b928d;font-size:13px;padding:16px 4px}
+.sx-ea .ea-f{display:flex;align-items:center;gap:10px;padding-top:14px;flex-wrap:wrap}
+.sx-ea .ea-sel{flex:1;min-width:0;color:#a6ada8;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sx-ea .ea-b{border:1px solid rgba(255,255,255,.12);background:#1a1d1b;color:#eceeec;border-radius:999px;padding:9px 18px;font:500 13.5px 'Geist',system-ui,sans-serif;cursor:pointer}
+.sx-ea .ea-b:hover{background:#222624}
+.sx-ea .ea-b.pri{background:#eceeec;color:#0a0b0a;border-color:#eceeec}
+.sx-ea .ea-b:disabled{opacity:.4;cursor:default}
+.sx-ea .ea-w{flex-basis:100%;display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:12px;background:rgba(255,138,122,.07);box-shadow:inset 0 0 0 1px rgba(255,138,122,.35);font-size:13px;color:#cfd4d0}
+.sx-ea .ea-w b{font-weight:500;color:#ff8a7a}.sx-ea .ea-w em{font-style:normal;color:#eceeec}
+.sx-ea .ea-w+.ea-b{margin-left:auto}
+/* ---- 26 Nov 2026 review fixes ---- */
+/* Home: the missions column scrolls instead of clipping; its subtitle shows; weak-unit names wrap; node titles get 3 lines */
+html.shadow #shx .sx-mis{overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent;padding-right:4px;min-height:0}
+html.shadow #shx .sx-mis .sx-ph p{display:block!important;margin:2px 0 0}
+html.shadow #shx .sx-weak div span:first-child{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
+html.shadow #shx .sx-nd b{-webkit-line-clamp:3}
+html.shadow #shx .sx-fin b.late{color:#ffbf5f}
+.sx-dlg .nr-f small{display:block;color:#6b736d;font-size:11.5px;margin-top:2px}
+/* Calendar: narrow dimmed columns before Day 1, side column scrolls instead of clipping */
+html.shadow #cBody .col.sx-prec{opacity:.55}
+html.shadow #cBody .col.sx-prec .sx-pre{white-space:normal;line-height:1.5;padding:0 4px;letter-spacing:.06em}
+html.shadow #cHead .dh.sx-prec{opacity:.5}
+html.shadow #calPage .cside{overflow-y:auto;overflow-x:hidden;min-height:0;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent;padding-right:4px}
+html.shadow #cBody .ev.sx-mid .et{-webkit-line-clamp:1!important;line-clamp:1;white-space:nowrap!important;display:block!important;overflow:hidden;text-overflow:ellipsis}
+/* Already did a class: roomier search field, denser list so more classes show at 1366 */
+.sx-dlg .card2.sx-ea{max-height:94vh;padding:16px 20px}
+.sx-ea .sx-cap{font-size:12px;margin:0 0 10px}
+.sx-ea .ea-q{padding:10px 14px 10px 16px!important;font-size:14px!important;text-indent:2px}
+.sx-ea .ea-i{padding:6px 10px}
+.sx-ea .ea-u{padding:8px 4px 2px}
+.sx-ea .ea-s{padding:10px 4px 6px}
+.sx-dlg .card2:focus{outline:none}
+/* Library cards: one-line titles so long names (Mechanical Properties of Matter) keep every card aligned */
+html.shadow .sxl-card .t>div{min-width:0}
+html.shadow .sxl-card .t h4,html.shadow .sxl-card .t .en{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.shadow .sxl-card .t .state{flex:none}
+/* segmented switches change state at once (a fading background left the old choice lit) */
+html.shadow .seg button{transition:color .15s}
+html.shadow #papPage>.sx2-barw,html.shadow #repPage>.sx2-barw{margin-top:-16px}
+#mqBody .mq-none span{font-size:14px;color:var(--sx-i2,#a6ada8);line-height:1.5}
+/* ---- 26 Nov 2026 review round 2 ---- */
+/* Home: compact missions on short screens, a fade + "more below" cue when the list scrolls */
+@media (max-height:820px){html.shadow #shx .sx-m{padding:7px 12px;margin-bottom:6px}html.shadow #shx .sx-m .tt{margin:0 0 3px;font-size:14px}html.shadow #shx .sx-m .cnt{margin-bottom:3px;min-height:20px}html.shadow #shx .sx-du{padding:6px 10px 6px 12px}html.shadow #shx .sx-mis .sx-ph{margin-bottom:6px}}
+html.shadow #shx .sx-mis.sx-more{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 46px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 46px),transparent)}
+/* Papers: the question log folds after 3 rows */
+#mqBody .mq-more>summary{cursor:pointer;list-style:none;padding:10px 0;font-size:13px;color:var(--sx-i2,#a6ada8)}
+#mqBody .mq-more>summary::-webkit-details-marker{display:none}
+#mqBody .mq-more>summary::before{content:"+ ";color:var(--sx-i3,#6b736d)}
+#mqBody .mq-more[open]>summary::before{content:"\2212  "}
+/* Already did a class: subject jump chips and a fade show that more subjects follow */
+.sx-ea .ea-j{display:flex;gap:6px;margin:0 0 10px;flex-wrap:wrap}
+.sx-ea .ea-jb{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.12);background:#1a1d1b;color:#cfd4d0;border-radius:999px;padding:5px 12px;font:500 12.5px "Geist",system-ui,sans-serif;cursor:pointer}
+.sx-ea .ea-jb:hover{background:#222624}
+.sx-ea .ea-jb b{color:#8b928d;font-weight:500}
+.sx-ea .ea-l{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 36px),transparent);padding-bottom:28px}
+/* Focus: chain names may use 2 lines */
+html.shadow #sxFoc .sxf-ch .c .si{white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35}
+/* Night review: the caret never touches the first digit */
+.sx-dlg .nr-f input[type=number],.sx-dlg .nr-f input[type=text]{padding:9px 14px!important}
+/* Library cards: long titles may use 2 lines */
+html.shadow .sxl-card .t h4{white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* Calendar: the side column fits a 768 px screen without clipping */
+@media (max-height:820px){html.shadow #calPage .cside{gap:8px}html.shadow #calPage .cside .create{padding:8px 14px;min-height:0}html.shadow #calPage .cside .card{padding:10px 14px}html.shadow #calPage .cside .mini .head{margin-bottom:4px}html.shadow #calPage .cside .mg .md,html.shadow #calPage .cside .mg .mw{height:22px;line-height:22px;font-size:11.5px}html.shadow #sxCalSide{gap:8px}html.shadow #sxCalSide .big{font-size:24px;margin:4px 0 2px}html.shadow #sxCalSide .sx2-row{padding:4px 0;font-size:13px}html.shadow #calPage .cside h2{font-size:14px}html.shadow #calPage .filt label{padding:2px 0;font-size:12.5px}html.shadow #calPage .filt h2{margin-bottom:4px}html.shadow #calPage #cReset{padding:6px 12px;font-size:12px}}
+/* nothing owed: the catch-up card is one line */
+html.shadow #sxCalSide .sx2-cu.zero h2{display:flex;justify-content:space-between;align-items:baseline}
+html.shadow #sxCalSide .sx2-cu.zero h2 b{font:400 15px var(--sx-mono);color:var(--sx-i2)}
+html.shadow #sxCalSide .sx2-cu.zero p{margin-top:2px}
+@media (max-height:820px){html.shadow #calPage .cside .mg .md,html.shadow #calPage .cside .mg .mw{height:20px;line-height:20px}html.shadow #calPage .filt label{padding:1px 0;line-height:1.35}}
+/* Home 1920: the Mastery card takes the spare height (bigger radar), Baku keeps only the room it needs */
+@media (min-height:950px){html.shadow #shx .sx-col>#sxMast{flex:1;display:flex;flex-direction:column}html.shadow #shx #sxMast .sx-rad{flex:1;grid-template-columns:1fr;justify-items:center;align-content:center;gap:22px}html.shadow #shx #sxMast .sx-rad svg{width:200px;height:200px}html.shadow #shx #sxMast .sx-weak{width:100%}html.shadow #shx .sx-radio{flex:0 0 auto;min-height:0}}
+/* round 3: missions fit a 768 px screen */
+@media (max-height:820px){html.shadow #shx .sx-m{padding:6px 12px 7px}html.shadow #shx .sx-m .cnt{min-height:18px;margin-bottom:2px}html.shadow #shx .sx-m .tt{line-height:1.3}html.shadow #shx .sx-mis{padding-bottom:6px}}
+@media (max-height:820px){html.shadow #shx .sx-mis .sx-ph>div{display:flex;align-items:baseline;justify-content:space-between;gap:10px}html.shadow #shx .sx-mis .sx-ph p{margin:0!important;white-space:nowrap}html.shadow #shx .sx-du{padding:5px 10px 5px 12px}html.shadow #shx .sx-due{margin-bottom:6px}html.shadow #shx .sx-m .sx-mt{line-height:1.2}}
+@media (max-height:820px){html.shadow #shx .sx-m .tt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}html.shadow #shx .sx-mis .sx-ph{margin-bottom:4px}html.shadow #shx .sx-mis .sx-ph h3{margin:0}}
+/* round 3: say what each weekly total counts */
+html.shadow #calPage .cside h2 .sx-wkn{display:block;font:400 11.5px var(--font);color:var(--sx-i3);margin-top:2px}
+html.shadow #repPage .rp-segw{display:flex;align-items:center;gap:10px}html.shadow #repPage .rp-segl{font-size:12.5px;color:var(--sx-i3)}
+/* round 3: card titles back to one line (the fitter shrinks long names) */
+html.shadow .sxl-card .t h4{display:block!important;white-space:nowrap!important;overflow:hidden;text-overflow:ellipsis;-webkit-line-clamp:unset}
+/* round 3: map labels stay 11 px and up at 85%; the legend is readable */
+.sxm-n .r1{font-size:13px}
+.sxm-n .r3{font-size:13px}
+html.shadow .sxm-leg{font-size:13px;color:var(--sx-i2)}
+html.shadow .sxm-leg .h{color:var(--sx-i2)}
+/* round 3: subject chips show on/off; the disabled main button stays readable; bigger radar at 1920 */
+.sx-ea .ea-jb[aria-pressed="true"]{background:#eceeec;color:#0a0b0a;border-color:#eceeec}
+.sx-ea .ea-jb[aria-pressed="true"] b{color:#3a3f3c}
+.sx-ea .ea-b.pri:disabled{opacity:1;background:#2c302e;border-color:#3b403d;color:#a6ada8;cursor:not-allowed}
+@media (min-height:950px){html.shadow #shx #sxMast .sx-rad svg{width:min(270px,90%);height:auto;aspect-ratio:1}}
+html.shadow #shx .sx-sec{gap:12px;white-space:nowrap}

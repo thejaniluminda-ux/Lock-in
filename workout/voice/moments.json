@@ -1,0 +1,296 @@
+{
+ "slots": {
+  "coach": {
+   "session": "sess-{v}",
+   "secs": "sec-{v}",
+   "min": "min-{v}"
+  },
+  "baku": {
+   "secs": "sec-{v}",
+   "left": "left-{v}",
+   "brk": "brk-{v}",
+   "days": "days-{v}"
+  }
+ },
+ "defaults": {
+  "brk": 5
+ },
+ "moments": {
+  "coach": {
+   "session.start": {
+    "variants": [
+     [
+      "m.session.start.1",
+      "{session?}"
+     ],
+     [
+      "m.session.start.2"
+     ]
+    ]
+   },
+   "set.mid": {
+    "variants": [
+     [
+      "m.set.mid.1"
+     ],
+     [
+      "m.set.mid.2"
+     ],
+     [
+      "m.set.mid.3"
+     ],
+     [
+      "m.set.mid.4"
+     ]
+    ]
+   },
+   "set.last": {
+    "variants": [
+     [
+      "m.set.last.1"
+     ],
+     [
+      "m.set.last.2"
+     ],
+     [
+      "m.set.last.3"
+     ]
+    ]
+   },
+   "hold.ten": {
+    "variants": [
+     [
+      "m.hold.ten.1"
+     ]
+    ]
+   },
+   "hold.end": {
+    "variants": [
+     [
+      "m.hold.end.1"
+     ]
+    ]
+   },
+   "after.best": {
+    "variants": [
+     [
+      "m.after.best.1"
+     ]
+    ]
+   },
+   "after.beat": {
+    "variants": [
+     [
+      "m.after.beat.1"
+     ]
+    ]
+   },
+   "after.ok": {
+    "variants": [
+     [
+      "m.after.ok.1"
+     ],
+     [
+      "m.after.ok.2"
+     ]
+    ]
+   },
+   "after.rough": {
+    "variants": [
+     [
+      "m.after.rough.1"
+     ]
+    ]
+   },
+   "rest.breathe": {
+    "variants": [
+     [
+      "{secs?}",
+      "m.rest.breathe.1"
+     ]
+    ]
+   },
+   "rest.ten": {
+    "variants": [
+     [
+      "m.rest.ten.1"
+     ]
+    ]
+   },
+   "session.done": {
+    "variants": [
+     [
+      "m.session.done.1a",
+      "{min?}",
+      "m.session.done.1b"
+     ],
+     [
+      "m.session.done.2"
+     ]
+    ]
+   },
+   "test.go": {
+    "variants": [
+     [
+      "m.test.go.1"
+     ]
+    ]
+   },
+   "test.record": {
+    "variants": [
+     [
+      "m.test.record.1"
+     ]
+    ]
+   }
+  },
+  "baku": {
+   "study.start": {
+    "variants": [
+     [
+      "m.study.start.1"
+     ],
+     [
+      "m.study.start.2"
+     ],
+     [
+      "m.study.start.3"
+     ],
+     [
+      "m.study.start.4"
+     ]
+    ]
+   },
+   "study.away": {
+    "variants": [
+     [
+      "m.study.away.1"
+     ],
+     [
+      "{left}",
+      "m.study.away.2"
+     ],
+     [
+      "m.study.away.3"
+     ]
+    ]
+   },
+   "study.parents": {
+    "variants": [
+     [
+      "m.study.parents.1"
+     ]
+    ],
+    "once": "parents",
+    "alt": "study.away"
+   },
+   "quit.warn": {
+    "variants": [
+     [
+      "m.quit.warn.1"
+     ]
+    ]
+   },
+   "quit.man": {
+    "variants": [
+     [
+      "m.quit.man.1"
+     ]
+    ]
+   },
+   "quit.parents": {
+    "variants": [
+     [
+      "m.quit.parents.1"
+     ]
+    ],
+    "once": "parents",
+    "alt": "quit.warn"
+   },
+   "break.start": {
+    "variants": [
+     [
+      "{brk}"
+     ]
+    ]
+   },
+   "break.over": {
+    "variants": [
+     [
+      "m.break.over.1"
+     ]
+    ]
+   },
+   "behind": {
+    "variants": [
+     [
+      "m.behind.1"
+     ],
+     [
+      "m.behind.2"
+     ]
+    ]
+   },
+   "done": {
+    "variants": [
+     [
+      "m.done.1"
+     ],
+     [
+      "m.done.2"
+     ],
+     [
+      "m.done.3"
+     ]
+    ]
+   },
+   "night": {
+    "variants": [
+     [
+      "m.night.1"
+     ],
+     [
+      "m.night.2"
+     ]
+    ]
+   },
+   "countdown": {
+    "variants": [
+     [
+      "{days}",
+      "m.countdown.1"
+     ]
+    ]
+   },
+   "workout.begin": {
+    "variants": [
+     [
+      "m.workout.begin.1"
+     ]
+    ]
+   },
+   "workout.rest": {
+    "variants": [
+     [
+      "m.workout.rest.1",
+      "{secs}"
+     ]
+    ]
+   },
+   "workout.again": {
+    "variants": [
+     [
+      "m.workout.again.1"
+     ]
+    ]
+   },
+   "workout.done": {
+    "variants": [
+     [
+      "m.workout.done.1"
+     ]
+    ]
+   }
+  }
+ }
+}

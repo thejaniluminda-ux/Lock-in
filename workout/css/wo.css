@@ -1,0 +1,243 @@
+@font-face{font-family:'Geist';src:url(../assets/fonts/geist.woff2) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Geist Mono';src:url(../assets/fonts/geist-mono.woff2) format('woff2');font-weight:100 900;font-display:swap}
+.wo3{--bg:#090a0a;--p1:#111312;--p2:#171a19;--p3:#1e2220;--ln:rgba(255,255,255,.07);--ln2:rgba(255,255,255,.13);--ink:#eceeec;--i2:#a6ada8;--i3:#7f8781;
+  --acc:#7dffa8;--acc-d:rgba(125,255,168,.14);--holo:#5fb8ff;--holo2:#9fe3ff;--warn:#ffb36b;--bad:#ff8a8a;
+  --sans:'Geist',system-ui,'Segoe UI',sans-serif;--mono:'Geist Mono',ui-monospace,Consolas,monospace;
+  --r:18px;--fast:140ms;--mid:260ms;--slow:520ms;--ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.3,1.35,.5,1)}
+.wo3 *{box-sizing:border-box}
+.wo3{color:var(--ink);font:400 14px/1.45 var(--sans);-webkit-font-smoothing:antialiased}
+.wo3 button{font:inherit;color:inherit;cursor:pointer}
+.wo3 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.wo3 .k{font:500 11px/1.2 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--i3)}
+
+.wo3 .wrap{position:relative;z-index:2;display:grid;grid-template-columns:minmax(330px,27fr) minmax(0,43fr) minmax(300px,30fr);gap:14px;padding:0}
+.wo3 .col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.wo3 .pl{position:relative;border-radius:var(--r);background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.006)),var(--p1);box-shadow:inset 0 1px rgba(255,255,255,.05),0 0 0 1px var(--ln);padding:18px 18px 16px}
+.wo3 .pl h2{margin:0;font:500 15px/1.3 var(--sans)}.wo3 .pl .sub{margin:2px 0 0;font-size:12.5px;color:var(--i3)}
+.wo3 .hd{display:flex;align-items:flex-start;gap:10px}.wo3 .hd .sp{flex:1}
+.wo3 .seg{display:inline-flex;padding:3px;border-radius:999px;background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1px var(--ln)}
+.wo3 .seg button{border:0;background:none;padding:5px 12px;border-radius:999px;font-size:12.5px;color:var(--i2);transition:background var(--fast),color var(--fast)}
+.wo3 .seg button[aria-pressed=true]{background:rgba(255,255,255,.14);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
+.wo3 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 16px;border:0;border-radius:12px;background:var(--p2);box-shadow:inset 0 1px rgba(255,255,255,.06),0 0 0 1px var(--ln2);font-size:13.5px;font-weight:500;transition:transform var(--fast) var(--ease),background var(--fast)}
+.wo3 .btn:hover{background:var(--p3)}.wo3 .btn:active{transform:scale(.97)}
+.wo3 .btn.pri{background:var(--acc);color:#06140b;box-shadow:0 0 0 1px rgba(125,255,168,.4),0 10px 30px -10px rgba(125,255,168,.55)}.wo3 .btn.pri:hover{background:#95ffbb}.wo3 .btn:disabled{opacity:.35;pointer-events:none;box-shadow:none}
+.wo3 .btn.ghost{background:transparent}.wo3 .btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.wo3 :focus-visible{outline:2px solid var(--holo2);outline-offset:2px}
+
+.wo3 .today .date{display:flex;gap:8px;align-items:center}
+.wo3 .today .title{display:flex;align-items:center;gap:14px;margin:8px 0 4px}
+.wo3 .today h1{margin:0;font:300 40px/1.02 var(--sans);letter-spacing:-.02em;flex:1;min-width:0}
+.wo3 .ring{position:relative;flex:none;width:70px;height:70px}.wo3 .ring svg{width:100%;height:100%;transform:rotate(-90deg)}.wo3 .ring circle{fill:none;stroke-width:4}.wo3 .ring .b{stroke:rgba(255,255,255,.08)}.wo3 .ring .f{stroke:var(--acc);stroke-linecap:round;transition:stroke-dashoffset var(--slow) var(--ease)}
+.wo3 .ring b{position:absolute;inset:0;display:grid;place-items:center;font:500 15px var(--mono)}.wo3 .ring small{position:absolute;left:0;right:0;bottom:-16px;text-align:center;font-size:10.5px;color:var(--i3)}
+.wo3 .focus{font-size:13px;color:var(--i2)}
+.wo3 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}.wo3 .chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:999px;background:rgba(255,255,255,.035);box-shadow:inset 0 0 0 1px var(--ln);font-size:12px;color:var(--i2);white-space:nowrap}.wo3 .chip b{color:var(--ink);font-weight:500;font-family:var(--mono)}
+.wo3 .chip.now{color:var(--acc);box-shadow:inset 0 0 0 1px rgba(125,255,168,.35)}
+.wo3 .blk{margin-top:12px}.wo3 .blk-h{display:flex;align-items:baseline;gap:8px;padding:6px 0 4px;border-top:1px solid var(--ln)}.wo3 .blk-h .k{color:var(--i2)}.wo3 .blk-h span:last-child{margin-left:auto;font-size:11.5px;color:var(--i3)}
+.wo3 .ex{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;padding:7px 0;border-radius:10px;transition:background var(--fast)}
+.wo3 .ex:hover{background:rgba(255,255,255,.025)}
+.wo3 .ex .ab{font:500 11px var(--mono);color:var(--i3);text-align:center}.wo3 .ex .nm{font-size:14px;font-weight:500;line-height:1.25}.wo3 .ex .vr{font-size:12px;color:var(--i3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.wo3 .ex.pv{cursor:default}
+.wo3 .title h1.long{font-size:32px}.wo3 .dl{display:inline-block;vertical-align:8px;margin-left:8px;padding:3px 9px;border-radius:999px;font:500 11px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--warn);box-shadow:inset 0 0 0 1px rgba(255,179,107,.45);background:rgba(255,179,107,.08)}
+.wo3 .wd.pre{opacity:.35}
+.wo3 .ex .tg{text-align:right;font:500 13px var(--mono);white-space:nowrap}.wo3 .ex .tg small{display:block;font:400 11px var(--mono);color:var(--i3)}
+.wo3 .dots{display:flex;gap:4px;margin-top:4px}.wo3 .dots i{width:6px;height:6px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--i3)}.wo3 .dots i.f{background:var(--i2);box-shadow:none}
+.wo3 .start{width:100%;height:46px;margin-top:14px;font-size:15px;border-radius:14px}
+.wo3 .week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px}
+.wo3 .wd{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 7px;border-radius:12px;background:rgba(255,255,255,.02);box-shadow:inset 0 0 0 1px var(--ln);font-size:11px;color:var(--i3)}
+.wo3 .wd b{font:500 12px var(--mono);color:var(--i2)}.wo3 .wd.today{box-shadow:inset 0 0 0 1px rgba(125,255,168,.45);color:var(--acc)}.wo3 .wd.today b{color:var(--ink)}
+.wo3 .wd.done b{color:var(--ink)}.wo3 .wd .st{width:14px;height:14px}.wo3 .wd .st svg{width:14px;height:14px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.wo3 .wd.done .st svg{stroke:var(--i2)}.wo3 .wd.miss .st svg{stroke:var(--warn)}.wo3 .wd.rest{opacity:.7}
+.wo3 .nudge{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(255,179,107,.07);box-shadow:inset 0 0 0 1px rgba(255,179,107,.22);font-size:12.5px;color:var(--i2)}.wo3 .nudge b{color:var(--ink);font-weight:500}
+
+.wo3 .holo{display:flex;flex-direction:column;min-height:640px;padding:0;overflow:hidden}
+.wo3 .holo .hd{padding:16px 18px 0}
+.wo3 .stage{position:relative;flex:1;min-height:480px}
+.wo3 .stage canvas{position:absolute;inset:0;width:100%!important;height:100%!important;cursor:grab;touch-action:none}.wo3 .stage canvas:active{cursor:grabbing}
+.wo3 .stage .glow{position:absolute;left:50%;bottom:4%;width:60%;height:30%;transform:translateX(-50%);background:radial-gradient(ellipse at 50% 100%,rgba(95,184,255,.18),transparent 70%);pointer-events:none}
+.wo3 .hint{position:absolute;left:18px;top:8px;font-size:12px;color:var(--i3);pointer-events:none;transition:opacity var(--mid)}
+.wo3 .legend{display:flex;flex-wrap:wrap;gap:6px;padding:0 18px 16px}
+.wo3 .mchip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:0;border-radius:999px;background:rgba(255,255,255,.03);box-shadow:inset 0 0 0 1px var(--ln);font-size:12.5px;color:var(--i2);transition:background var(--fast),box-shadow var(--fast)}
+.wo3 .mchip i{width:7px;height:7px;border-radius:50%;background:rgba(159,227,255,.35)}.wo3 .mchip.tgt i{background:var(--acc);box-shadow:0 0 8px var(--acc)}.wo3 .mchip.rec i{background:var(--holo2);box-shadow:0 0 6px var(--holo)}
+.wo3 .mchip.sel{background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.4);color:var(--ink)}.wo3 .mchip b{font:500 11.5px var(--mono);color:var(--i3)}
+.wo3 .mpanel{position:absolute;right:16px;bottom:14px;width:min(320px,calc(100% - 32px));padding:14px 16px;border-radius:16px;background:rgba(10,12,12,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px var(--ln2);
+  opacity:0;transform:translateY(10px);pointer-events:none;transition:opacity var(--mid) var(--ease),transform var(--mid) var(--ease)}
+.wo3 .mpanel.on{opacity:1;transform:none;pointer-events:auto}
+.wo3 .mpanel h3{margin:0;font:500 17px var(--sans)}.wo3 .mpanel .row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--ln);font-size:13px;color:var(--i2)}.wo3 .mpanel .row b{color:var(--ink);font-family:var(--mono);font-weight:500}
+.wo3 .mbar{position:relative;height:6px;margin:8px 0 2px;border-radius:3px;background:rgba(255,255,255,.07)}.wo3 .mbar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--holo2)}.wo3 .mbar s{position:absolute;top:-3px;bottom:-3px;border-radius:2px;background:rgba(125,255,168,.18);box-shadow:inset 0 0 0 1px rgba(125,255,168,.35)}
+.wo3 .mpanel ul{margin:6px 0 0;padding:0;list-style:none;font-size:12.5px;color:var(--i2)}.wo3 .mpanel li{padding:2px 0}
+.wo3 .mclose{position:absolute;right:8px;top:8px;width:28px;height:28px;border:0;border-radius:50%;background:transparent;color:var(--i3)}.wo3 .mclose:hover{background:rgba(255,255,255,.06);color:var(--ink)}
+
+.wo3 .lift{display:grid;grid-template-columns:minmax(0,1fr) 84px 54px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--ln)}
+.wo3 .lift .nm{font-size:13.5px;font-weight:500}.wo3 .lift .vr{font-size:11.5px;color:var(--i3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.wo3 .lift svg{width:84px;height:26px}.wo3 .lift svg path{fill:none;stroke:var(--holo2);stroke-width:1.5}.wo3 .lift svg circle{fill:var(--ink)}
+.wo3 .lift .v{text-align:right;font:500 14px var(--mono)}.wo3 .lift .v small{display:block;font:400 10.5px var(--mono);color:var(--i3)}
+.wo3 .pb{display:inline-block;margin-left:6px;padding:0 5px;border-radius:5px;font:600 10px/16px var(--mono);letter-spacing:.06em;color:#06140b;background:var(--acc);vertical-align:1px}
+.wo3 .chal{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.wo3 .chal div{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.025);box-shadow:inset 0 0 0 1px var(--ln)}.wo3 .chal b{display:block;font:500 20px var(--mono)}.wo3 .chal span{font-size:11px;color:var(--i3)}.wo3 .chal em{display:block;margin-top:2px;font:normal 500 11px var(--mono);color:var(--acc)}
+
+.wo3 .bstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.wo3 .bstats div{padding:9px 10px;border-radius:12px;background:rgba(255,255,255,.025);box-shadow:inset 0 0 0 1px var(--ln)}
+.wo3 .bstats b{display:block;font:500 19px var(--mono)}.wo3 .bstats span{font-size:11px;color:var(--i3)}
+.wo3 .wchart{width:100%;height:56px;margin-top:10px}.wo3 .wchart path.l{fill:none;stroke:var(--holo2);stroke-width:1.6}.wo3 .wchart path.a{fill:url(#wg)}
+.wo3 .note{margin-top:8px;font-size:12.5px;color:var(--i2)}.wo3 .note b{color:var(--ink);font-weight:500}
+.wo3 .tape{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}.wo3 .tape div{font-size:11px;color:var(--i3)}.wo3 .tape b{display:block;font:500 14px var(--mono);color:var(--ink)}.wo3 .tape em{font:normal 11px var(--mono);color:var(--i2)}
+.wo3 .photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.wo3 .ph{position:relative;aspect-ratio:3/4;border:0;border-radius:12px;overflow:hidden;background:#0c1416;box-shadow:inset 0 0 0 1px var(--ln)}
+.wo3 .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.9}.wo3 .ph span{position:absolute;left:8px;bottom:6px;font-size:11px;color:var(--i2)}
+
+.wo3 .pbar{position:relative;height:8px;margin:10px 0 4px;border-radius:4px;background:rgba(255,255,255,.07);overflow:hidden}.wo3 .pbar i{position:absolute;left:0;top:0;bottom:0;background:var(--holo2);border-radius:4px;transition:width var(--mid) var(--ease)}
+.wo3 .foods{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.wo3 .food{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border:0;border-radius:999px;background:rgba(255,255,255,.03);box-shadow:inset 0 0 0 1px var(--ln);font-size:12.5px;color:var(--i2);transition:transform var(--fast) var(--ease),background var(--fast)}
+.wo3 .food:hover{background:rgba(255,255,255,.06)}.wo3 .food:active{transform:scale(.95)}.wo3 .food b{font:500 11px var(--mono);color:var(--i3)}.wo3 .food .c{font:500 11px var(--mono);color:var(--ink);background:rgba(255,255,255,.1);border-radius:8px;padding:0 5px}
+
+.wo3.enter .pl{opacity:0;transform:translateY(14px)}
+.wo3 .pl{transition:opacity var(--slow) var(--ease),transform var(--slow) var(--ease)}
+
+#woSess{position:fixed;inset:0;z-index:300;color:var(--ink);display:none;grid-template-rows:auto auto auto minmax(0,1fr);background:radial-gradient(ellipse at 30% 40%,rgba(95,184,255,.07),transparent 60%),var(--bg)}
+#woSess.on{display:grid;animation:woSIn var(--slow) var(--ease)}
+@keyframes woSIn{from{opacity:0;transform:scale(1.02)}to{opacity:1;transform:none}}
+.wo3 .s-top{display:flex;align-items:center;gap:14px;padding:16px 24px 6px}
+.wo3 .s-top h1{margin:0;font:300 38px/1.05 var(--sans);letter-spacing:-.02em;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wo3 .s-sub{display:flex;align-items:center;gap:10px;padding:0 24px;font-size:13.5px;color:var(--i2)}
+.wo3 .segs{display:flex;gap:3px;padding:10px 24px 0}.wo3 .segs i{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.08);transition:background var(--mid)}.wo3 .segs i.f{background:var(--i2)}.wo3 .segs i.n{background:var(--acc)}
+.wo3 .s-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(380px,460px);gap:18px;padding:12px 24px 22px;min-height:0}
+.wo3 .s-stage{position:relative;border-radius:22px;background:radial-gradient(ellipse at 50% 85%,rgba(95,184,255,.12),transparent 60%),#070909;box-shadow:inset 0 0 0 1px var(--ln);overflow:hidden;min-height:0}
+.wo3 .s-stage .tag .chip{color:var(--i2);background:rgba(10,12,12,.7);box-shadow:inset 0 0 0 1px var(--ln2)}
+.wo3 .s-stage .cue{position:absolute;left:0;right:0;bottom:0;padding:28px 18px 14px;font-size:14px;color:var(--i2);text-align:center;background:linear-gradient(transparent,rgba(5,7,8,.82) 55%);border-radius:0 0 20px 20px;z-index:1}
+.wo3 .s-stage .tag{position:absolute;left:18px;top:14px}
+.wo3 .s-side{display:flex;flex-direction:column;gap:12px;min-height:0}
+.wo3 .s-card{border-radius:20px;background:var(--p1);box-shadow:inset 0 1px rgba(255,255,255,.05),0 0 0 1px var(--ln);padding:18px}
+.wo3 .flip{display:flex;justify-content:center;gap:8px;margin:6px 0 2px}
+.wo3 .fd{position:relative;width:72px;height:96px;perspective:400px;font:500 64px/96px var(--mono);text-align:center;color:var(--ink)}
+.wo3 .fd .h{position:absolute;left:0;right:0;height:48px;overflow:hidden;background:#141716;box-shadow:inset 0 0 0 1px var(--ln)}
+.wo3 .fd .h span{display:block;height:96px}.wo3 .fd .t{top:0;border-radius:12px 12px 0 0}.wo3 .fd .b{bottom:0;border-radius:0 0 12px 12px}.wo3 .fd .b span{transform:translateY(-48px)}
+.wo3 .fd .fl{position:absolute;left:0;right:0;top:0;height:48px;overflow:hidden;background:#141716;border-radius:12px 12px 0 0;transform-origin:50% 100%;box-shadow:inset 0 0 0 1px var(--ln);backface-visibility:hidden}
+.wo3 .fd .fl span{display:block;height:96px}.wo3 .fd.go .fl{animation:woFlipT 260ms var(--ease) forwards}
+@keyframes woFlipT{from{transform:rotateX(0)}to{transform:rotateX(-90deg)}}
+.wo3 .fd::after{content:'';position:absolute;left:0;right:0;top:47.5px;height:1px;background:rgba(0,0,0,.6)}
+.wo3 .colon{font:500 54px/96px var(--mono);color:var(--i3)}
+.wo3 .flab{text-align:center;font-size:12.5px;color:var(--i3)}
+.wo3 .step{display:flex;align-items:center;justify-content:center;gap:14px;margin:12px 0 4px}
+.wo3 .step button{width:46px;height:46px;border:0;border-radius:14px;background:var(--p2);box-shadow:inset 0 0 0 1px var(--ln2);font:500 22px var(--mono)}
+.wo3 .step output{min-width:86px;text-align:center;font:500 44px/1 var(--mono)}
+.wo3 .shadow{display:flex;justify-content:space-between;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--ln);font-size:13px;color:var(--i2)}.wo3 .shadow b{color:var(--ink);font-family:var(--mono);font-weight:500}
+.wo3 .ctl{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.wo3 .ctl .btn{height:40px;padding:0 8px;font-size:12.5px}.wo3 .ctl .done{grid-column:1/-1;height:52px;font-size:16px}
+.wo3 .splan{flex:1;min-height:0;overflow:auto;padding:16px 18px}.wo3 .splan>.k{margin-bottom:6px}
+@media (max-height:820px){.wo3 .splan{padding:12px 16px}.wo3 .splan .sp-row{padding:5px 0}.wo3 .splan .sp-d{margin-top:3px}.wo3 .splan .sp-n{font-size:13px}}
+.wo3 .sp-row{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--ln)}.wo3 .sp-row:first-of-type{border-top:0}
+.wo3 .sp-l{font:500 12px/20px var(--mono);color:var(--i3);width:12px}.wo3 .sp-b{flex:1;min-width:0}.wo3 .sp-n{font-size:13.5px;color:var(--i2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wo3 .sp-d{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:6px}.wo3 .sp-d i{width:14px;height:4px;border-radius:2px;background:rgba(255,255,255,.1)}.wo3 .sp-d i.f{background:var(--i3)}.wo3 .sp-d i.n{background:var(--acc)}
+.wo3 .sp-g{margin-left:8px;font:500 11.5px/1 var(--mono);color:var(--i3)}
+.wo3 .sp-row.now .sp-n{color:var(--ink)}.wo3 .sp-row.now .sp-l{color:var(--acc)}.wo3 .sp-row.fin .sp-n{color:var(--i3)}
+.wo3 .upnext{display:flex;align-items:center;gap:12px}.wo3 .upnext .k{margin-bottom:2px}.wo3 .upnext b{font-weight:500}
+.wo3 .restov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(7,9,9,.6);opacity:0;pointer-events:none;transition:opacity var(--mid)}
+.wo3 .restov.on{opacity:1;pointer-events:auto}.wo3 .restov .k{color:var(--holo2)}.wo3 .restov .big{font:200 120px/1 var(--mono);color:var(--ink)}
+.wo3 .burst{position:absolute;inset:0;pointer-events:none}
+.wo3.done-ov{position:fixed;inset:0;z-index:310;display:none;place-items:center;background:rgba(5,6,6,.82);backdrop-filter:blur(10px)}
+.wo3.done-ov.on{display:grid}.wo3 .done-c{width:min(620px,92vw);padding:28px;border-radius:24px;background:var(--p1);box-shadow:inset 0 0 0 1px var(--ln2);text-align:center;animation:woPopIn 520ms var(--spring)}
+@keyframes woPopIn{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+.wo3 .done-c h2{margin:6px 0 4px;font:300 40px var(--sans)}.wo3 .done-g{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}.wo3 .done-g div{padding:12px;border-radius:14px;background:rgba(255,255,255,.03);box-shadow:inset 0 0 0 1px var(--ln)}.wo3 .done-g b{display:block;font:500 24px var(--mono)}.wo3 .done-g span{font-size:11.5px;color:var(--i3)}
+.wo3 .pbl{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:18px}
+.wo3 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (max-width:1200px){.wo3 .wrap{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.wo3 .wrap>.col:nth-child(2){grid-column:1/-1;order:-1}}
+@media (max-height:800px){.wo3 .today h1{font-size:34px}.wo3 .ex{padding:5px 0}.wo3 .holo{min-height:560px}.wo3 .stage{min-height:420px}}
+@media (prefers-reduced-motion:reduce){.wo3 *,.wo3 *::before,.wo3 *::after{animation-duration:1ms!important;transition-duration:1ms!important}}
+.wo3 .col>.holo{position:sticky;top:8px;height:calc(100vh - 76px);min-height:560px;max-height:1000px}
+.wo3 .mpanel,.wo3 .hint{z-index:2}
+.wo3 .nogl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}.wo3 .nogl img{max-height:88%;max-width:80%;object-fit:contain}.wo3 .nogl img+img,.wo3 .backv .nogl img:first-child{display:none}.wo3 .backv .nogl img+img{display:block}.wo3 .nogl p{font-size:12.5px;color:var(--i3);margin:0}
+
+/* ===== Lock In app integration (25 Nov 2026) ===== */
+/* app-wide classes with the same names (.legend, .seg, .dots, .ring, .date, .week) must not leak in */
+.wo3 .legend{margin-top:0;font-size:inherit;color:inherit}.wo3 .seg{border:0}.wo3 .dots{height:auto}.wo3 .ring{text-align:left}.wo3 .date{align-self:auto}
+#woPage.wo3{font-size:14px}
+#woPage .wo-load{padding:40px 0;color:var(--i3)}
+/* the body map column fills the screen height under the app's header */
+.wo3 .col>.holo{top:12px;height:calc(100vh - 120px);min-height:540px;max-height:960px}
+.wo3 .btn.wsm{height:30px;padding:0 11px;font-size:12.5px;border-radius:10px}
+.wo3 .note.wsm{font-size:12px;color:var(--i3);margin:8px 0 0}
+
+/* ladder: move up / step back on the exercise row, and rung arrows in the muscle panel */
+.wo3 .lvup{display:inline-flex;align-items:center;gap:6px;margin-top:6px;height:26px;padding:0 10px;border:0;border-radius:999px;background:var(--acc-d);color:var(--acc);font-size:12px;box-shadow:inset 0 0 0 1px rgba(125,255,168,.35)}
+.wo3 .lvup.dn{background:rgba(255,179,107,.08);color:var(--warn);box-shadow:inset 0 0 0 1px rgba(255,179,107,.35)}
+.wo3 .lvup svg,.wo3 .rung svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.wo3 .mpanel li{display:flex;align-items:center;gap:8px;padding:4px 0}.wo3 .mpanel .ln{flex:1;min-width:0}
+.wo3 .rung{display:inline-flex;align-items:center;gap:2px;flex:none}.wo3 .rung b{font:500 11.5px var(--mono);color:var(--i2);min-width:30px;text-align:center}
+.wo3 .rung button{width:24px;height:24px;border:0;border-radius:8px;background:rgba(255,255,255,.05);color:var(--i2);display:grid;place-items:center}.wo3 .rung button:hover{background:rgba(255,255,255,.1);color:var(--ink)}.wo3 .rung button:disabled{opacity:.3;pointer-events:none}
+/* body card: forms, face checklist, photos and the compare slider */
+.wo3 .bform{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;margin-top:10px;padding:10px;border-radius:12px;background:rgba(0,0,0,.3);box-shadow:inset 0 0 0 1px var(--ln)}
+.wo3 .bform label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--i3)}
+.wo3 .bform input{width:84px;height:32px;padding:0 9px;border:0;border-radius:9px;background:var(--p2);box-shadow:inset 0 0 0 1px var(--ln2);color:var(--ink);font:500 13px var(--mono)}
+.wo3 .face{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--ln)}.wo3 .face .k{width:100%;margin-bottom:2px}
+.wo3 .face button{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border:0;border-radius:999px;background:rgba(255,255,255,.03);box-shadow:inset 0 0 0 1px var(--ln);font-size:12.5px;color:var(--i2)}
+.wo3 .face button i{width:8px;height:8px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--i3)}
+.wo3 .face button[aria-pressed=true]{color:var(--ink)}.wo3 .face button[aria-pressed=true] i{background:var(--acc);box-shadow:0 0 6px rgba(125,255,168,.6)}
+.wo3 .phh{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid var(--ln)}
+.wo3 .ph{padding:0;cursor:pointer}.wo3 .ph:hover{box-shadow:inset 0 0 0 1px var(--ln2)}.wo3 .ph.has img{opacity:1}.wo3 .ph span{background:rgba(5,7,8,.6);padding:1px 6px;border-radius:6px;left:6px}
+.wo3 .cmp{position:relative;aspect-ratio:3/4;max-height:320px;margin:10px auto 0;border-radius:12px;overflow:hidden;background:#070909;box-shadow:inset 0 0 0 1px var(--ln)}
+.wo3 .cmp img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.wo3 .cmp .after{clip-path:inset(0 0 0 var(--x,50%))}
+.wo3 .cmp .hdl{position:absolute;top:0;bottom:0;left:var(--x,50%);width:2px;margin-left:-1px;background:var(--holo2);box-shadow:0 0 10px rgba(95,184,255,.6)}
+.wo3 .cmp .lbl{position:absolute;bottom:8px;font-size:11px;padding:2px 8px;border-radius:999px;background:rgba(5,7,8,.7)}.wo3 .cmp .lbl.a{left:8px}.wo3 .cmp .lbl.b{right:8px}
+.wo3 .cmpr{width:100%;margin:8px 0 2px;accent-color:#9fe3ff}
+.wo3 .cmpc{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;color:var(--i3)}.wo3 .cmpc select{height:28px;padding:0 8px;border:0;border-radius:8px;background:var(--p2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ln2)}
+.wo3 .pnum{display:flex;align-items:baseline;gap:8px;margin-top:8px}.wo3 .pnum b{font-size:28px;font-weight:500}.wo3 .pnum span{color:var(--i3)}.wo3 .pnum em{font-style:normal;font-size:12.5px}
+/* normal (non-Shadow) mode: the same dark panels sit on the app's warm background */
+html:not(.shadow) #woPage .pl{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.01)),#141615}
+.wo3 .wbb{display:flex;gap:6px;flex:none}.wo3 .hd .btn.wsm{white-space:nowrap}
+.wo3 .sp{flex:1}.wo3 .hd>div:first-child{min-width:0}
+.wo3 .today .ring{margin-bottom:18px}.wo3 .today .title{margin-bottom:0}
+/* ===== review fixes (26 Nov 2026) ===== */
+/* week strip: two plain lines ("Upper" / "B") instead of codes */
+.wo3 .wd b{font:500 11.5px/1.15 var(--sans);letter-spacing:-.01em;color:var(--i2);white-space:nowrap}
+.wo3 .wd em{font:400 10.5px/1.1 var(--sans);font-style:normal;color:var(--i3);white-space:nowrap;margin-top:-2px}
+.wo3 .wd.today em,.wo3 .wd.done em{color:var(--i2)}
+/* strength rows: chart and numbers keep their own columns; no data = one empty-state line */
+.wo3 .lift .spk{display:block;width:84px;height:26px}
+.wo3 .lift .v.none{grid-column:2/-1;font:400 12px var(--sans);color:var(--i3)}
+/* monthly challenge: the baseline under the change */
+.wo3 .chal small{display:block;font:400 10.5px/1.25 var(--sans);color:var(--i3)}
+/* body card: title and buttons on one row, the subtitle under them at full width */
+#woBody>.hd{align-items:center}.wo3 .pl .sub.bsub{margin:4px 0 0}
+/* session side column: the cards never squeeze the session list; if the screen is too short the column scrolls */
+.wo3 .s-side{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.wo3 .s-side>.s-card{flex:none}.wo3 .s-side>.splan{flex:1 0 auto;overflow:visible}
+.wo3 .sp-det{display:none}
+.wo3 .sp-h{font-size:12px;color:var(--i3);margin-bottom:2px}
+.wo3 .sp-x{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;align-items:baseline;padding:5px 0 0}
+.wo3 .sp-xn{font-size:14px;color:var(--i2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wo3 .sp-xt{font-size:12px;color:var(--i3)}
+.wo3 .sp-x .sp-d{grid-column:1/-1;margin-top:5px}.wo3 .sp-x .sp-g{margin-left:6px}
+.wo3 .sp-row.now .sp-xn{color:var(--ink)}.wo3 .sp-row.fin .sp-xn{color:var(--i3)}
+@media (max-height:820px){.wo3 .s-card{padding:14px 16px}.wo3 .fd{width:62px;height:82px;font-size:54px;line-height:82px}.wo3 .fd .h,.wo3 .fd .fl{height:41px}.wo3 .fd .h span,.wo3 .fd .fl span{height:82px}.wo3 .fd .b span{transform:translateY(-41px)}.wo3 .fd::after{top:40.5px}.wo3 .colon{font-size:46px;line-height:82px}.wo3 .step{margin:8px 0 2px}.wo3 .ctl .done{height:46px}.wo3 .shadow{margin-top:8px;padding-top:8px}}
+/* tall screens (1080p): the session list shows every exercise with its target, set marks and results */
+@media (min-height:900px){.wo3 .splan .sp-row{padding:12px 0}.wo3 .sp-l{font-size:13px;line-height:18px}
+  .wo3 .fd{width:84px;height:112px;font-size:76px;line-height:112px}.wo3 .fd .h,.wo3 .fd .fl{height:56px}.wo3 .fd .h span,.wo3 .fd .fl span{height:112px}.wo3 .fd .b span{transform:translateY(-56px)}.wo3 .fd::after{top:55.5px}.wo3 .colon{font-size:64px;line-height:112px}
+  .wo3 .step output{font-size:56px}.wo3 .step button{width:54px;height:54px}}
+/* very short windows: tighter cards; if the list still runs past the bottom, the column fades out at the edge to show it scrolls */
+@media (max-height:700px){.wo3 .s-side{gap:8px}.wo3 .s-card{padding:10px 14px}.wo3 .step{margin:4px 0 0}.wo3 .step button{width:38px;height:38px}.wo3 .step output{font-size:36px}.wo3 .shadow{margin-top:6px;padding-top:6px}
+  .wo3 .ctl{gap:6px}.wo3 .ctl .btn{height:34px}.wo3 .ctl .done{height:40px}.wo3 .upnext b{font-size:13px}.wo3 .splan{padding:10px 14px}.wo3 .splan .sp-row{padding:4px 0}}
+.wo3 .s-side.ovf{-webkit-mask-image:linear-gradient(#000 calc(100% - 36px),transparent);mask-image:linear-gradient(#000 calc(100% - 36px),transparent)}
+.wo3 .s-side.ovf.end{-webkit-mask-image:none;mask-image:none}
+/* ===== review round 2 (26 Nov 2026) ===== */
+/* body map hint: three short lines at the left edge, clear of the head; fades on first touch or after 5 s */
+.wo3 .hint{max-width:120px;line-height:1.35;top:10px;transition:opacity 600ms var(--ease)}.wo3 .hint.gone{opacity:0!important}
+/* Strength: a challenge result shown when there are no working sets yet */
+.wo3 .lift .v.tst{grid-column:2/-1}.wo3 .lift .v.tst small{color:var(--i3)}
+/* Body card empty state */
+.wo3 .bempty{display:flex;align-items:center;gap:12px;margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.025);box-shadow:inset 0 0 0 1px var(--ln)}
+.wo3 .bempty>div{flex:1;min-width:0}.wo3 .bempty b{display:block;font-weight:500;font-size:14px}.wo3 .bempty span{display:block;margin-top:2px;font-size:12px;color:var(--i3)}
+.wo3 .bempty .btn{flex:none}.wo3 .note.tnone b{color:var(--i2);font-weight:500}
+/* session: the figure has its own view above the caption band, so the caption never sits on the floor rings */
+.wo3 .s-stage{--cueh:50px}
+.wo3 .s-view{position:absolute;left:0;right:0;top:0;bottom:var(--cueh)}.wo3 .s-view canvas{display:block}
+.wo3 .s-stage .cue{height:var(--cueh);padding:0 18px;display:flex;align-items:center;justify-content:center;background:rgba(5,7,8,.55);border-top:1px solid var(--ln);border-radius:0 0 22px 22px}
+/* ===== review round 3 (26 Nov 2026) ===== */
+/* the app's Calendar hour grid (.col) must not draw lines behind the Workout columns */
+.wo3 .wrap>.col{background:none!important;border:0!important;box-shadow:none!important}
+/* slot chip: green only while the slot is on; amber once it has passed */
+.wo3 .chip.late{color:var(--warn);box-shadow:inset 0 0 0 1px rgba(255,179,107,.35)}
+/* challenge with a comparison: 2 x 2 so "start 5-6 · +1" fits on one line */
+.wo3 .chal.chalc{grid-template-columns:repeat(2,1fr)}.wo3 .chal.chalc small{display:block;margin-top:3px;font:400 11.5px var(--sans);color:var(--i3)}
+.wo3 .chal.chalc em{display:inline;margin:0;font:500 11.5px var(--mono);color:var(--acc)}.wo3 .chal.chalc em.z{color:var(--i3)}.wo3 .chal.chalc em.dn{color:var(--warn)}
+.wo3 .chal.chalc b{display:inline-block;margin-right:6px}.wo3 .chal.chalc span{font-size:12px}
+/* session list: detailed mode is chosen in JS when it fits; one line per exercise */
+.wo3 .splan.det .sp-sum{display:none}.wo3 .splan.det .sp-det{display:block}
+.wo3 .sp-x{grid-template-columns:minmax(0,1fr) auto auto;align-items:center;padding:4px 0 0}
+.wo3 .sp-x .sp-d{grid-column:auto;margin:0;flex-wrap:nowrap}.wo3 .sp-xn{font-size:13.5px}.wo3 .sp-xt{min-width:62px;text-align:right}
+.wo3 .sp-h{font-size:11.5px}
+.wo3 .splan.nh .sp-h{display:none}.wo3 .splan.nh .sp-row{padding:6px 0}.wo3 .splan.nh .sp-x{padding-top:2px}
+.wo3 .sp-x .sp-d{min-width:100px}
