@@ -603,3 +603,12 @@ html.shadow .sxm-leg .h{color:var(--sx-i2)}
 .sx-ea .ea-b.pri:disabled{opacity:1;background:#2c302e;border-color:#3b403d;color:#a6ada8;cursor:not-allowed}
 @media (min-height:950px){html.shadow #shx #sxMast .sx-rad svg{width:min(270px,90%);height:auto;aspect-ratio:1}}
 html.shadow #shx .sx-sec{gap:12px;white-space:nowrap}
+/* ---- Baku voice switch on the Focus dial (27 Nov 2026) ---- */
+html.shadow #sxfDial{position:relative}
+html.shadow #sxFoc .sxf-vo{position:absolute;top:16px;right:16px;display:inline-flex;align-items:center;gap:7px;border:0;cursor:pointer;padding:6px 12px 6px 10px;border-radius:999px;background:var(--sx-p2);box-shadow:inset 0 0 0 1px var(--sx-ln2);color:var(--sx-i2);font:500 12.5px var(--font);z-index:3}
+html.shadow #sxFoc .sxf-vo:hover{color:var(--sx-ink)}
+html.shadow #sxFoc .sxf-vo svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+html.shadow #sxFoc .sxf-vo .st{font:500 11px var(--sx-mono);letter-spacing:.06em;color:var(--sx-i3)}
+html.shadow #sxFoc .sxf-vo[aria-pressed="true"]{color:var(--sx-ink)}html.shadow #sxFoc .sxf-vo[aria-pressed="true"] .st{color:var(--sx-ink)}
+html.shadow #sxFoc .sxf-vo[aria-pressed="false"] .w{opacity:.25}
+html.shadow #sxFoc .sxf-vo:focus-visible{outline:2px solid var(--sx-acc);outline-offset:2px}

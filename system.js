@@ -323,6 +323,30 @@ document.addEventListener('click',e=>{if(e.target.closest('#earlyBtn'))earlyOpen
 
 /* missions column: a fade and "more below" cue while there is more to scroll (26 Nov 2026) */
 function misMore(){const m=box&&box.querySelector('#sxMis');if(!m)return;const f=()=>m.classList.toggle('sx-more',m.scrollHeight>m.clientHeight+4&&m.scrollTop+m.clientHeight<m.scrollHeight-4);requestAnimationFrame(f);if(!m.__mm){m.__mm=1;m.addEventListener('scroll',f,{passive:true});addEventListener('resize',f)}}
+/* ---------- Baku study voice (27 Nov 2026, his "Add Baku study lines too") ----------
+   Recorded clips through workout/js/voice.js (loaded on demand). One line per event; voice.js stop()s the previous one, so lines
+   never overlap. Never during the intro or while any dialog is open. The switch and the day counters live in lockin-baku-voice. */
+const BVK='lockin-baku-voice';
+const bvS=()=>{const S=Object.assign({on:true,d:'',quits:0,cd:''},rd(BVK,{}));const tk=todayK();if(S.d!==tk){S.d=tk;S.quits=0}return S};
+let BV=null,bvLoad=null,bvPre=false;window.__bakuLog=window.__bakuLog||[];
+function bvMod(){if(!bvLoad)bvLoad=import('./workout/js/voice.js').then(m=>{m.configure({base:new URL('workout/assets/voice/',location.href).href,src:new URL('workout/voice/',location.href).href});BV=m;m.setMuted(!bvS().on);return m}).catch(e=>{bvLoad=null;throw e});return bvLoad}
+function bvBlocked(){/* no click on the page yet: the browser would refuse the audio (and warn), so wait for the first gesture */if(navigator.userActivation&&!navigator.userActivation.hasBeenActive&&!window.__bvForce)return 'no gesture yet';const i=document.getElementById('intro');if(i&&!i.classList.contains('gone')&&!i.classList.contains('fade'))return 'intro';
+  if(document.querySelector('.sx-pop,.sx-dlg,.sh-ov,#awQ,#lightQ,#v13chk,#partQ.show,#fin.show,#mmock.show,#hall.show,#quiz.show,#fqz.show'))return 'dialog';return ''}
+function baku(id,vars){const S=bvS(),why=!S.on?'off':bvBlocked(),E={t:hm(nowMin()),id,vars:vars||{},played:!why,why};window.__bakuLog.push(E);if(window.__bakuLog.length>60)window.__bakuLog.shift();
+  if(why){if(BV)BV.stop();return}bvMod().then(m=>m.moment(id,'baku',vars||{})).then(r=>{if(r){E.how=r.how;E.v=r.v;E.rid=r.id}}).catch(()=>{})}
+function bvBehind(){try{const S=shadow();return !!(S&&S.at&&S.you<S.at(nowMin()))}catch(e){return false}}
+function bvDays(){return Math.ceil((EXAM-new Date(todayK()+'T00:00'))/864e5)}
+/* the app's own Focus code calls this at each moment (index.html) */
+window.bakuStudy=function(ev,x){x=x||{};const S=bvS();
+  if(ev==='start'){baku(nowMin()>=1290?'night':bvBehind()?'behind':'study.start');return}
+  if(ev==='away'){baku(x.count>=2?'study.parents':'study.away',{left:Math.max(1,Math.min(50,x.left|0))});return}
+  if(ev==='quit1'){S.quits=(S.quits||0)+1;wr(BVK,S);baku(S.quits===1?(Math.random()<.5?'quit.warn':'quit.man'):'quit.parents');return}
+  if(ev==='sessDone'){baku(x.blockDone?'done':'break.start',x.blockDone?{}:{brk:x.brk});return}
+  if(ev==='breakOver'){baku('break.over');return}
+  if(ev==='focusOpen'){const d=bvDays();if(S.cd!==todayK()&&d>=1&&d<=255&&S.on&&!bvBlocked()){S.cd=todayK();wr(BVK,S);setTimeout(()=>baku('countdown',{days:d}),600)}
+    if(!bvPre&&S.on){bvPre=true;(window.requestIdleCallback||(f=>setTimeout(f,4000)))(()=>bvMod().then(m=>m.preload('baku')).catch(()=>{}))}}};
+function bvSwitch(){const b=q1('#sxfVoice');if(!b)return;const on=bvS().on;b.setAttribute('aria-pressed',on);b.querySelector('.st').textContent=on?'On':'Off';b.title=on?'Baku voice is on. Click to mute.':'Baku voice is off. Click to turn it on.'}
+document.addEventListener('click',e=>{if(!e.target.closest('#sxfVoice'))return;const S=bvS();S.on=!S.on;wr(BVK,S);if(BV)BV.setMuted(!S.on);else if(!S.on)bvMod().then(m=>m.setMuted(true)).catch(()=>{});bvSwitch()});
 /* ---------- render ---------- */
 const onHome=()=>isShadow()&&!/\bpage-/.test(document.body.className);
 function render(force){if(!box||!isShadow()||!onHome())return;if(force||!box.querySelector('.sx-grid'))shell();
@@ -487,6 +511,7 @@ function focBuild(){const P=document.getElementById('focPage');if(!P||P.querySel
   d.innerHTML=`<div class="sx2-col"><section class="sx2-pl sxf-blk"><div id="sxfBlk"></div>
       <form class="sxf-cf" id="sxfCf" autocomplete="off"><div class="lbl">Stuck? Write one line and keep going.</div><div class="in"><input id="sxfCfIn" maxlength="300" placeholder="Your question" aria-label="Question you can't answer yet"><button class="sx2-btn sm" type="submit">Save</button></div><select id="sxfCfU" aria-label="Unit this question belongs to"></select><div id="sxfCfL"></div></form></section></div>
     <section class="sx2-pl sxf-dial" id="sxfDial"><div class="sxf-ban" id="sxfBan" role="status" hidden></div>
+      <button type="button" class="sxf-vo" id="sxfVoice" aria-pressed="true" aria-label="Baku voice"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path class="w" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>Baku voice</span><span class="st">On</span></button>
       <div class="sx2-seg" id="sxfModes" role="group" aria-label="Session length"><button type="button" data-m="pomo">25 / 5</button><button type="button" data-m="deep">50 / 10</button></div>
       <div class="sxf-face"><svg viewBox="0 0 400 400" id="sxfRing" aria-hidden="true">${tk}<circle cx="200" cy="200" r="152" fill="none" stroke="rgba(255,255,255,.05)"/></svg>
         <div class="sxf-in"><div class="st" id="sxfSt"></div><b class="num" id="sxfTm" aria-live="off"></b><div class="sub" id="sxfSub"></div><div class="sxf-dots" id="sxfDots"></div></div></div>
@@ -495,7 +520,7 @@ function focBuild(){const P=document.getElementById('focPage');if(!P||P.querySel
       <div class="sxf-sp" id="sxfSp" hidden><span>Playback speed · 1-week trial</span><div class="sx2-seg" role="group" aria-label="Playback speed"><button type="button" data-sp="1">1×</button><button type="button" data-sp="1.25">1.25×</button></div></div>
       <div class="sxf-ctl"><button type="button" class="sx2-btn" id="sxfReset">Reset</button><button type="button" class="sx2-btn pri" id="sxfGo"></button><button type="button" class="sx2-btn" id="sxfQuit">Quit</button></div></section>
     <div class="sx2-col"><section class="sx2-pl sxf-race" id="sxfRace"></section><section class="sx2-pl sxf-side" id="sxfSide"></section></div>`;
-  P.appendChild(d);
+  P.appendChild(d);bvSwitch();
   d.querySelector('#sxfModes').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b)document.querySelector(`#fModes [data-m="${b.dataset.m}"]`)?.click();focFull()});
   d.querySelector('#sxfSj').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(b)document.querySelector(`#fSubj [data-s="${b.dataset.s}"]`)?.click();focFull()});
   d.querySelector('#sxfSp').addEventListener('click',e=>{const b=e.target.closest('[data-sp]');if(b)document.querySelector(`#fSpeed [data-sp="${b.dataset.sp}"]`)?.click();focSp()});
@@ -564,9 +589,9 @@ function focTick(noFull){const D=q1('#sxFoc');if(!D)return;const left=fRun?Math.
   const t=D.querySelectorAll('#sxfRing .t');if(+D.dataset.on!==on){D.dataset.on=on;t.forEach((l,i)=>l.classList.toggle('on',i<on))}
   const sig=[fPhase,fRun,fMode,(FO.log[todayK()]||{n:0}).n,nowMin()>>2].join('|');if(!noFull&&sig!==P2.sig){P2.sig=sig;focFull()}}
 document.addEventListener('visibilitychange',()=>{if(typeof fRun==='undefined')return;
-  if(document.hidden){if(fRun&&fPhase==='focus')P2.awayAt=Date.now();return}
+  if(document.hidden){if(fRun&&fPhase==='focus'){P2.awayAt=Date.now();P2.awayMin=Math.round((fTotal-Math.max(0,(fEnd-Date.now())/1000))/60)}return}
   if(!P2.awayAt)return;const sec=(Date.now()-P2.awayAt)/1000;P2.awayAt=0;if(sec<3||!fRun||fPhase!=='focus')return;
-  P2.A.n++;P2.A.sec+=sec;const tk=todayK(),a=SYS.away||(SYS.away={});a[tk]=[((a[tk]||[0,0])[0]+1),Math.round((a[tk]||[0,0])[1]+sec)];const ks=Object.keys(a).sort();while(ks.length>21)delete a[ks.shift()];saveSys();
+  P2.A.n++;P2.A.sec+=sec;const tk=todayK(),a=SYS.away||(SYS.away={});a[tk]=[((a[tk]||[0,0])[0]+1),Math.round((a[tk]||[0,0])[1]+sec)];const ks=Object.keys(a).sort();while(ks.length>21)delete a[ks.shift()];saveSys();window.bakuStudy('away',{count:a[tk][0],left:P2.awayMin||1});
   const B=q1('#sxfBan');if(B&&isShadow()){B.innerHTML=`<span>You left the tab for <b class="num">${ssm(sec)}</b>. The timer kept running; the shadow saw it.</span><button type="button" class="sx2-btn sm">Back to work</button>`;B.hidden=false;clearTimeout(P2.banT);P2.banT=setTimeout(()=>B.hidden=true,12000)}
   if(pageOf()==='foc')focFull()});
 
@@ -721,7 +746,7 @@ function p2boot(){p2wrap();mapWire();bars();focBuild();
   document.addEventListener('click',e=>{const g=e.target.closest('[data-sxgo]');if(g){goP(g.dataset.sxgo);return}
     const bk=e.target.closest('[data-sxback]');if(bk){lbOpen=null;renderLibrary();return}const t=e.target.closest('[data-sxt]');if(t){const[k,v]=t.dataset.sxt.split('|');P2.tab[k]=v;renderLibrary();if(!e.detail)q1('.sxl-tabs [aria-selected="true"]')?.focus()}});
   let last=pageOf();
-  const mo=new MutationObserver(()=>{const pg=pageOf();if(pg===last)return;last=pg;if(pg)p2refresh()});
+  const mo=new MutationObserver(()=>{const pg=pageOf();if(pg===last)return;last=pg;if(pg)p2refresh();if(pg==='foc')window.bakuStudy('focusOpen')});
   mo.observe(document.body,{attributes:true,attributeFilter:['class']});mo.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
   setInterval(()=>{if(!isShadow())return;const pg=pageOf();if(pg==='foc')focTick()},250);
   setInterval(()=>{if(!isShadow())return;barTick();const pg=pageOf();if(pg==='foc'){logSessions();focFull()}if(pg==='cal'&&P2.links)calLinks()},20000);

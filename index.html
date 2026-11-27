@@ -2878,14 +2878,19 @@ function fDone(){
   clearInterval(fI);fRun=false;chime();
   if(fPhase==='focus'){const k=dkey(new Date()),t=FO.log[k]||(FO.log[k]={min:0,n:0});t.min+=FMODES[fMode].f;t.n++;FO.sessions++;saveFO();spLog();
     toast(`Session ${t.n} done. Take your break.`);if(typeof hop==='function'){hop();say(['Nice work! Stretch a bit.','That’s one more! 💪','Break time. Drink water.'][t.n%3],3200)}
-    fSet('break');const goBreak=()=>{fEnd=Date.now()+fLeft*1000;fRun=true;clearInterval(fI);fI=setInterval(fTick,250);fShow()};let aw=false;try{aw=awOpen(t.n,goBreak)}catch(e){}if(!aw)goBreak();
-  }else{toast('Break over. Ready when you are.');fSet('focus');if(typeof say==='function')say('Back to it?',2500)}
+    /* Baku: the block is finished when less than one more session fits in it; otherwise the break starts. Said when the break really starts,
+       so it waits for the active-watching dialog to close instead of being dropped */
+    const bkLine=()=>{try{const b=curBlock(),nm=new Date().getHours()*60+new Date().getMinutes();window.bakuStudy&&bakuStudy('sessDone',{brk:FMODES[fMode].b,blockDone:!b||b.e-nm<FMODES[fMode].f})}catch(e){}};
+    fSet('break');const goBreak=()=>{fEnd=Date.now()+fLeft*1000;fRun=true;clearInterval(fI);fI=setInterval(fTick,250);fShow();bkLine()};let aw=false;try{aw=awOpen(t.n,goBreak)}catch(e){}if(!aw)goBreak();
+  }else{toast('Break over. Ready when you are.');fSet('focus');if(typeof say==='function')say('Back to it?',2500);try{window.bakuStudy&&bakuStudy('breakOver')}catch(e){}}
 }
 $('#fGo').addEventListener('click',()=>{
   if(fRun){clearInterval(fI);fRun=false;fLeft=Math.max(0,(fEnd-Date.now())/1000);fShow();return}
   if(fPhase==='focus'&&fLeft>=fTotal-1){const S0=lsGet('lockin-fstart-v1',{}),k0=dkey(new Date());S0[k0]=(S0[k0]||0)+1;lsSet('lockin-fstart-v1',S0)}
+  const fresh=fPhase==='focus'&&fLeft>=fTotal-1;
   fEnd=Date.now()+fLeft*1000;fRun=true;clearInterval(fI);fI=setInterval(fTick,250);fShow();
   if(fPhase==='focus'&&typeof say==='function')say('I’ll keep watch. 👀',2400);
+  if(fresh)try{window.bakuStudy&&bakuStudy('start')}catch(e){}
 });
 $('#fReset').addEventListener('click',()=>fSet(fPhase));
 /* playback speed trial (17 Nov 2026, his call): a manual 1x / 1.25x switch for recording blocks of easy units, for one week.
@@ -2901,7 +2906,7 @@ let quitArm=0;
 $('#fSkip').addEventListener('click',()=>{
   if(fPhase==='break'){fSet('focus');return}
   if(!fRun&&fLeft===fTotal)return;
-  if(Date.now()-quitArm>4000){quitArm=Date.now();toast('Please don’t quit now. Keep going! Tap Skip again to really quit.');
+  if(Date.now()-quitArm>4000){quitArm=Date.now();toast('Please don’t quit now. Keep going! Tap Skip again to really quit.');try{window.bakuStudy&&bakuStudy('quit1')}catch(e){}
     if(typeof setPose==='function'){setPose('sad');say('Nooo, keep going… 🥺',3500);setTimeout(()=>{if(typeof lmood!=='undefined'&&lmood==='idle')setPose('sit')},3800)}return}
   quitArm=0;fSet('focus');lockMode(false);
 });
